@@ -1,0 +1,36 @@
+---
+enforce:
+  line_length: 100
+
+execution:
+  enabled_tools: []
+  tool_order: 'priority'
+  fail_fast: false
+  parallel: true
+  max_workers: 10
+
+defaults:
+  prettier:
+    semi: true
+    singleQuote: true
+    tabWidth: 2
+    printWidth: 100
+    trailingComma: 'es5'
+    overrides:
+      - files: '*.md'
+        options:
+          printWidth: 88
+
+  markdownlint:
+    MD013:
+      line_length: 100
+      code_blocks: false
+      tables: false
+
+tools:
+  prettier:
+    enabled: true
+  markdownlint:
+    enabled: true
+  yamllint:
+    enabled: true

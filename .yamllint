@@ -1,0 +1,16 @@
+---
+extends: default
+
+rules:
+  line-length:
+    max: 120
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+  truthy:
+    # GitHub Actions uses 'on:' as a key, not a boolean
+    allowed-values: ['true', 'false', 'on']
+    check-keys: false
+  comments:
+    min-spaces-from-content: 1
+  document-start:
+    present: true
