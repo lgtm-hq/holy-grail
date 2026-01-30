@@ -24,21 +24,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
+      - name: Check for E2E test setup
+        id: check
+        run: |
+          if [[ -f "playwright.config.ts" ]] && [[ -f "package.json" ]]; then
+            echo "has_e2e=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_e2e=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup environment
+        if: steps.check.outputs.has_e2e == 'true'
         uses: ./.github/actions/setup-env
 
       - name: Install Playwright
+        if: steps.check.outputs.has_e2e == 'true'
         run: bunx playwright install --with-deps chromium
 
       - name: Build site
+        if: steps.check.outputs.has_e2e == 'true'
         run: bun run build
 
       - name: Run Playwright tests
+        if: steps.check.outputs.has_e2e == 'true'
         id: playwright
         run: |
           # Run tests and capture exit code
           set +e
-          bunx playwright test --project=chromium --reporter=json --reporter=html 2>&1 | tee playwright-output.txt
+          bunx playwright test --project=chromium --reporter=json --reporter=html \
+            2>&1 | tee playwright-output.txt
           exit_code=${PIPESTATUS[0]}
           set -e
 
@@ -55,7 +69,7 @@ jobs:
 
       - name: Generate test summary
         id: summary
-        if: always()
+        if: steps.check.outputs.has_e2e == 'true' && always()
         run: |
           scripts/ci/generate-playwright-comment.sh > comment.md
           {
@@ -65,7 +79,9 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Post PR comment
-        if: github.event_name == 'pull_request' && always()
+        if: >-
+          steps.check.outputs.has_e2e == 'true' && github.event_name == 'pull_request'
+          && always()
         uses: ./.github/actions/post-pr-comment
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -73,13 +89,20 @@ jobs:
           body: ${{ steps.summary.outputs.comment }}
 
       - name: Upload Playwright report
-        if: always()
+        if: steps.check.outputs.has_e2e == 'true' && always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 14
+          if-no-files-found: ignore
 
       - name: Fail if tests failed
-        if: steps.playwright.outputs.exit_code != '0'
+        if: >-
+          steps.check.outputs.has_e2e == 'true' && steps.playwright.outputs.exit_code !=
+          '0'
         run: exit 1
+
+      - name: Skip notification
+        if: steps.check.outputs.has_e2e == 'false'
+        run: echo "No E2E test setup found, skipping Playwright tests"
