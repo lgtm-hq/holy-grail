@@ -1,10 +1,10 @@
 ---
 enforce:
-  line_length: 100
+  line_length: 88
 
 execution:
   enabled_tools: []
-  tool_order: 'priority'
+  tool_order: priority
   fail_fast: false
   parallel: true
   max_workers: 10
@@ -14,23 +14,43 @@ defaults:
     semi: true
     singleQuote: true
     tabWidth: 2
-    printWidth: 100
-    trailingComma: 'es5'
+    printWidth: 88
+    trailingComma: es5
     overrides:
       - files: '*.md'
         options:
           printWidth: 88
+          proseWrap: always
 
   markdownlint:
     MD013:
-      line_length: 100
+      line_length: 88
       code_blocks: false
       tables: false
 
+  yamllint:
+    line-length:
+      max: 88
+      allow-non-breakable-inline-mappings: true
+
 tools:
+  biome:
+    enabled: true
   prettier:
     enabled: true
+    # Exclude JS/TS since biome handles those
+    exclude_extensions:
+      - js
+      - ts
+      - jsx
+      - tsx
   markdownlint:
     enabled: true
   yamllint:
+    enabled: true
+  shellcheck:
+    enabled: true
+  shfmt:
+    enabled: true
+  actionlint:
     enabled: true

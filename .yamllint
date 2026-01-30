@@ -1,6 +1,12 @@
 ---
 extends: default
 
+ignore:
+  - node_modules/
+  - dist/
+  - .astro/
+  - .lintro/
+
 rules:
   line-length:
     max: 120
@@ -12,5 +18,6 @@ rules:
     check-keys: false
   comments:
     min-spaces-from-content: 1
+  comments-indentation: disable
   document-start:
     present: true
