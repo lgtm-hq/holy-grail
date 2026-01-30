@@ -13,9 +13,8 @@ jobs:
   review:
     name: Dependency Review
     runs-on: ubuntu-latest
-    # This action requires GitHub Advanced Security on private repos
-    # It will fail gracefully on repos without it enabled
-    continue-on-error: true
+    # Only run on public repos (requires GitHub Advanced Security on private repos)
+    if: github.event.repository.visibility == 'public'
 
     steps:
       - name: Checkout
