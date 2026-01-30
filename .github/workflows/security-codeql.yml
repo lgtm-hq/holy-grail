@@ -45,6 +45,7 @@ jobs:
         id: check-files
         run: |
           if find . -name "*.ts" -o -name "*.js" -o -name "*.tsx" -o -name "*.jsx" \
+             -o -name "*.mjs" -o -name "*.cjs" \
              | grep -v node_modules | grep -q .; then
             echo "has_source=true" >> "$GITHUB_OUTPUT"
           else

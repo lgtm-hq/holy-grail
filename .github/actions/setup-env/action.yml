@@ -47,7 +47,12 @@ runs:
       shell: bash
       run: |
         if [[ "${{ inputs.frozen-lockfile }}" == "true" ]]; then
-          bun install --frozen-lockfile
+          if [[ -f "bun.lock" ]] || [[ -f "bun.lockb" ]]; then
+            bun install --frozen-lockfile
+          else
+            echo "Warning: frozen-lockfile requested but no lockfile found, running normal install"
+            bun install
+          fi
         else
           bun install
         fi

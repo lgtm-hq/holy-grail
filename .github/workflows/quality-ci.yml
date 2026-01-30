@@ -61,7 +61,16 @@ jobs:
       - name: Check for buildable project
         id: check
         run: |
-          if [[ -f "package.json" ]] && [[ -f "astro.config.mjs" ]]; then
+          # Check for package.json and any astro.config.* file
+          has_astro_config=false
+          for ext in mjs js ts mts cjs cts; do
+            if [[ -f "astro.config.${ext}" ]]; then
+              has_astro_config=true
+              break
+            fi
+          done
+
+          if [[ -f "package.json" ]] && [[ "$has_astro_config" == "true" ]]; then
             echo "has_project=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_project=false" >> "$GITHUB_OUTPUT"

@@ -51,7 +51,7 @@ jobs:
         run: |
           # Run tests and capture exit code
           set +e
-          bunx playwright test --project=chromium --reporter=json --reporter=html \
+          bunx playwright test --project=chromium --reporter=json,html \
             2>&1 | tee playwright-output.txt
           exit_code=${PIPESTATUS[0]}
           set -e
@@ -79,9 +79,10 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Post PR comment
+        # Skip for forked PRs (GITHUB_TOKEN is read-only)
         if: >-
           steps.check.outputs.has_e2e == 'true' && github.event_name == 'pull_request'
-          && always()
+          && github.event.pull_request.head.repo.fork != true && always()
         uses: ./.github/actions/post-pr-comment
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
