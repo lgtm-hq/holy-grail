@@ -15,6 +15,12 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    # Use lintro-tools image which has all external tools pre-installed
+    # (shellcheck, prettier, biome, yamllint, actionlint, etc.)
+    container:
+      # yamllint disable-line rule:line-length
+      image: ghcr.io/lgtm-hq/lintro-tools:latest@sha256:b3940578b3fa10215d2ba4accba89250753360ec6f34cebe2dc588694084dad4
+      options: --user root
 
     steps:
       - name: Checkout
@@ -32,13 +38,13 @@ jobs:
             echo "has_code=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Install uv
+      - name: Install lintro
         if: steps.check.outputs.has_code == 'true'
-        uses: astral-sh/setup-uv@0ac92fe25c58e323fe6aa14ead64a79eb8ddd2b8 # v6
+        run: uv pip install --system lintro
 
       - name: Run lintro
         if: steps.check.outputs.has_code == 'true'
-        run: uv tool run lintro chk
+        run: lintro chk
 
       - name: Skip notification
         if: steps.check.outputs.has_code == 'false'
