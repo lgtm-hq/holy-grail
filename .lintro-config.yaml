@@ -3,7 +3,6 @@ enforce:
   line_length: 88
 
 execution:
-  enabled_tools: []
   tool_order: priority
   fail_fast: false
   parallel: true

@@ -35,8 +35,12 @@ runs:
         path: |
           ~/.bun/install/cache
           node_modules
-        key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+        key: >-
+          ${{ runner.os }}-bun-${{ inputs.bun-version }}-node-${{ inputs.node-version
+          }}-${{ hashFiles('bun.lock', 'bun.lockb') }}
         restore-keys: |
+          ${{ runner.os }}-bun-${{ inputs.bun-version }}-node-${{ inputs.node-version }}-
+          ${{ runner.os }}-bun-${{ inputs.bun-version }}-
           ${{ runner.os }}-bun-
 
     - name: Install dependencies

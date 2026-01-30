@@ -8,6 +8,6 @@
 .github/ @eiteldagnin
 
 # Documentation
-*.md @eiteldagnin
+**/*.md @eiteldagnin
 docs/ @eiteldagnin
 src/content/ @eiteldagnin

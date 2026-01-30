@@ -14,3 +14,6 @@ bun.lock
 
 # Pagefind
 public/pagefind/
+
+# Test artifacts
+coverage/

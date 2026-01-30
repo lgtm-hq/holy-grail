@@ -21,11 +21,14 @@ runs:
   steps:
     - name: Post or update PR comment
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+      env:
+        COMMENT_BODY: ${{ inputs.body }}
+        COMMENT_MARKER: ${{ inputs.marker }}
       with:
         github-token: ${{ inputs.github-token }}
         script: |
-          const marker = `<!-- ${{ inputs.marker }} -->`;
-          const body = `${marker}\n${{ inputs.body }}`;
+          const marker = `<!-- ${process.env.COMMENT_MARKER} -->`;
+          const body = `${marker}\n${process.env.COMMENT_BODY}`;
 
           const prNumber = ${{ inputs.pr-number || 'context.issue.number' }};
 
@@ -34,12 +37,15 @@ runs:
             return;
           }
 
-          // Find existing comment with marker
-          const { data: comments } = await github.rest.issues.listComments({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: prNumber,
-          });
+          // Find existing comment with marker (paginate to get all comments)
+          const comments = await github.paginate(
+            github.rest.issues.listComments,
+            {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            }
+          );
 
           const existingComment = comments.find(comment =>
             comment.body && comment.body.includes(marker)

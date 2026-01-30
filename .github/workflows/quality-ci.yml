@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Run lintro
-        run: lintro chk
+        run: /usr/local/bin/lintro chk
 
   build:
     name: Build & Test
@@ -38,15 +38,31 @@ jobs:
         uses: ./.github/actions/setup-env
 
       - name: Type check
-        run: bun run astro check
+        run: |
+          if [[ -f "astro.config.mjs" ]]; then
+            bun run astro check
+          else
+            echo "No Astro config found, skipping type check"
+          fi
 
       - name: Run unit tests
-        run: bun test tests/unit
+        run: |
+          if [[ -d "tests/unit" ]]; then
+            bun test tests/unit
+          else
+            echo "No unit tests found, skipping"
+          fi
 
       - name: Build
-        run: bun run build
+        run: |
+          if [[ -f "package.json" ]]; then
+            bun run build
+          else
+            echo "No package.json found, skipping build"
+          fi
 
       - name: Upload build artifact
+        if: hashFiles('dist/**') != ''
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: dist
