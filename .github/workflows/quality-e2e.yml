@@ -1,0 +1,85 @@
+---
+name: Quality E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: quality-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+
+      - name: Install Playwright
+        run: bunx playwright install --with-deps chromium
+
+      - name: Build site
+        run: bun run build
+
+      - name: Run Playwright tests
+        id: playwright
+        run: |
+          # Run tests and capture exit code
+          set +e
+          bunx playwright test --project=chromium --reporter=json --reporter=html 2>&1 | tee playwright-output.txt
+          exit_code=${PIPESTATUS[0]}
+          set -e
+
+          # Parse results for summary
+          if [[ -f playwright-report/index.html ]]; then
+            echo "report_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "report_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
+          exit $exit_code
+        continue-on-error: true
+
+      - name: Generate test summary
+        id: summary
+        if: always()
+        run: |
+          scripts/ci/generate-playwright-comment.sh > comment.md
+          {
+            echo 'comment<<EOF'
+            cat comment.md
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Post PR comment
+        if: github.event_name == 'pull_request' && always()
+        uses: ./.github/actions/post-pr-comment
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          marker: playwright-e2e-results
+          body: ${{ steps.summary.outputs.comment }}
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Fail if tests failed
+        if: steps.playwright.outputs.exit_code != '0'
+        run: exit 1
