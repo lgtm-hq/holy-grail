@@ -12,6 +12,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    container:
+      # SHA-pinned lintro tools image with all linters pre-installed
+      image: ghcr.io/lgtm-hq/lintro-tools:latest@sha256:b3940578b3fa10215d2ba4accba89250753360ec6f34cebe2dc588694084dad4
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Run lintro
+        run: lintro chk
+
   build:
     name: Build & Test
     runs-on: ubuntu-latest
