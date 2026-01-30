@@ -1,0 +1,19 @@
+# Build output
+dist/
+.astro/
+build/
+
+# Dependencies
+node_modules/
+
+# Linting artifacts
+.lintro/
+
+# Lock files
+bun.lock
+
+# Pagefind
+public/pagefind/
+
+# Test artifacts
+coverage/

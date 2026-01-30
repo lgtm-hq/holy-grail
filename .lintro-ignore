@@ -1,0 +1,27 @@
+# Build output
+dist/
+.astro/
+build/
+out/
+
+# Dependencies
+node_modules/
+
+# Linting artifacts
+.lintro/
+
+# Test artifacts
+playwright-report/
+test-results/
+coverage/
+
+# Cache directories
+.cache/
+.ruff_cache/
+.mypy_cache/
+
+# Lock files (generated)
+bun.lock
+
+# Pagefind (generated at build time)
+public/pagefind/

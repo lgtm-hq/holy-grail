@@ -1,0 +1,13 @@
+# CODEOWNERS
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything
+* @eiteldagnin
+
+# CI/CD workflows
+.github/ @eiteldagnin
+
+# Documentation
+**/*.md @eiteldagnin
+docs/ @eiteldagnin
+src/content/ @eiteldagnin

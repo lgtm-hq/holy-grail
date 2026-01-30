@@ -1,0 +1,23 @@
+---
+extends: default
+
+ignore:
+  - node_modules/
+  - dist/
+  - .astro/
+  - .lintro/
+
+rules:
+  line-length:
+    max: 120
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+  truthy:
+    # GitHub Actions uses 'on:' as a key, not a boolean
+    allowed-values: ['true', 'false', 'on']
+    check-keys: false
+  comments:
+    min-spaces-from-content: 1
+  comments-indentation: disable
+  document-start:
+    present: true

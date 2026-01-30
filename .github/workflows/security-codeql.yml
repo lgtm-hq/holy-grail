@@ -1,0 +1,75 @@
+---
+name: Security CodeQL
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.js'
+      - '**.ts'
+      - '**.jsx'
+      - '**.tsx'
+      - '**.mjs'
+      - '**.cjs'
+  pull_request:
+    branches: [main]
+    paths:
+      - '**.js'
+      - '**.ts'
+      - '**.jsx'
+      - '**.tsx'
+      - '**.mjs'
+      - '**.cjs'
+  schedule:
+    # Run weekly on Sunday at 00:00 UTC
+    - cron: '0 0 * * 0'
+
+permissions:
+  security-events: write
+  contents: read
+
+jobs:
+  analyze:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    # Only run if there are JS/TS files to analyze
+    if: >-
+      github.event_name == 'schedule' || github.event_name == 'push' ||
+      github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Check for source files
+        id: check-files
+        run: |
+          if find . -name "*.ts" -o -name "*.js" -o -name "*.tsx" -o -name "*.jsx" \
+             -o -name "*.mjs" -o -name "*.cjs" \
+             | grep -v node_modules | grep -q .; then
+            echo "has_source=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_source=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Initialize CodeQL
+        if: steps.check-files.outputs.has_source == 'true'
+        uses: github/codeql-action/init@b56ba49b26e50535fa1e7f7db0f4f7b4bf65d80d # v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+
+      - name: Autobuild
+        if: steps.check-files.outputs.has_source == 'true'
+        uses: github/codeql-action/autobuild@b56ba49b26e50535fa1e7f7db0f4f7b4bf65d80d # v3
+
+      - name: Perform CodeQL Analysis
+        if: steps.check-files.outputs.has_source == 'true'
+        uses: github/codeql-action/analyze@b56ba49b26e50535fa1e7f7db0f4f7b4bf65d80d # v3
+        with:
+          category: /language:javascript-typescript
+
+      - name: Skip notification
+        if: steps.check-files.outputs.has_source == 'false'
+        run:
+          echo "No JavaScript/TypeScript source files found, skipping CodeQL analysis"
