@@ -1,0 +1,49 @@
+---
+name: Setup Environment
+description: Set up Bun and Node.js with dependency caching
+
+inputs:
+  node-version:
+    description: Node.js version to use
+    required: false
+    default: '22'
+  bun-version:
+    description: Bun version to use
+    required: false
+    default: 'latest'
+  frozen-lockfile:
+    description: Enforce frozen lockfile
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2
+      with:
+        bun-version: ${{ inputs.bun-version }}
+
+    - name: Cache Bun dependencies
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+      with:
+        path: |
+          ~/.bun/install/cache
+          node_modules
+        key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-bun-
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        if [[ "${{ inputs.frozen-lockfile }}" == "true" ]]; then
+          bun install --frozen-lockfile
+        else
+          bun install
+        fi

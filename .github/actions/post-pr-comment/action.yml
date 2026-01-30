@@ -1,0 +1,66 @@
+---
+name: Post PR Comment
+description: Post or update a comment on a PR with marker-based deduplication
+
+inputs:
+  github-token:
+    description: GitHub token for API access
+    required: true
+  marker:
+    description: Unique marker to identify and update existing comments
+    required: true
+  body:
+    description: Comment body content (markdown)
+    required: true
+  pr-number:
+    description: PR number (defaults to current PR)
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Post or update PR comment
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const marker = `<!-- ${{ inputs.marker }} -->`;
+          const body = `${marker}\n${{ inputs.body }}`;
+
+          const prNumber = ${{ inputs.pr-number || 'context.issue.number' }};
+
+          if (!prNumber) {
+            console.log('No PR number found, skipping comment');
+            return;
+          }
+
+          // Find existing comment with marker
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: prNumber,
+          });
+
+          const existingComment = comments.find(comment =>
+            comment.body && comment.body.includes(marker)
+          );
+
+          if (existingComment) {
+            // Update existing comment
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: existingComment.id,
+              body: body,
+            });
+            console.log(`Updated comment ${existingComment.id}`);
+          } else {
+            // Create new comment
+            const { data: newComment } = await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: body,
+            });
+            console.log(`Created comment ${newComment.id}`);
+          }
