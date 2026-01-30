@@ -1,0 +1,60 @@
+---
+# PR Labeler Configuration
+# https://github.com/actions/labeler
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '*.md'
+          - 'docs/**/*'
+          - 'src/content/**/*'
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**/*'
+          - 'scripts/ci/**/*'
+
+testing:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'tests/**/*'
+          - 'playwright.config.ts'
+          - '**/*.test.ts'
+          - '**/*.spec.ts'
+
+components:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/components/**/*'
+
+styling:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.css'
+          - '**/*.scss'
+          - 'tailwind.config.*'
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'package.json'
+          - 'bun.lock'
+
+config:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'astro.config.*'
+          - 'tsconfig.json'
+          - '*.config.ts'
+          - '*.config.js'
+
+pages:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/pages/**/*'
+
+layouts:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/layouts/**/*'
