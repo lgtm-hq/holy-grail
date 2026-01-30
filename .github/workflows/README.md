@@ -32,24 +32,24 @@ Weekly (Sunday 00:00 UTC)
 
 ### Deployment
 
-| Workflow           | Trigger              | Purpose              |
-| ------------------ | -------------------- | -------------------- |
-| `deploy-pages.yml` | After CI, manual     | Deploy to GH Pages   |
+| Workflow           | Trigger          | Purpose            |
+| ------------------ | ---------------- | ------------------ |
+| `deploy-pages.yml` | After CI, manual | Deploy to GH Pages |
 
 ### PR Management
 
-| Workflow                | Trigger           | Purpose              |
-| ----------------------- | ----------------- | -------------------- |
-| `pr-labeler.yml`        | PR opened/updated | Auto-label by files  |
-| `semantic-pr-title.yml` | PR opened/edited  | Validate title       |
+| Workflow                | Trigger           | Purpose             |
+| ----------------------- | ----------------- | ------------------- |
+| `pr-labeler.yml`        | PR opened/updated | Auto-label by files |
+| `semantic-pr-title.yml` | PR opened/edited  | Validate title      |
 
 ### Security
 
-| Workflow                         | Trigger          | Purpose            |
-| -------------------------------- | ---------------- | ------------------ |
-| `security-codeql.yml`            | Push, PRs, weekly| CodeQL analysis    |
-| `security-dependency-review.yml` | PRs              | Scan deps          |
-| `validate-action-pinning.yml`    | PRs on workflows | Check SHA pinning  |
+| Workflow                         | Trigger           | Purpose           |
+| -------------------------------- | ----------------- | ----------------- |
+| `security-codeql.yml`            | Push, PRs, weekly | CodeQL analysis   |
+| `security-dependency-review.yml` | PRs               | Scan deps         |
+| `validate-action-pinning.yml`    | PRs on workflows  | Check SHA pinning |
 
 ## Reusable Actions
 
@@ -60,8 +60,8 @@ Sets up Bun and Node.js with dependency caching.
 ```yaml
 - uses: ./.github/actions/setup-env
   with:
-    node-version: '22'      # optional, default: 22
-    bun-version: 'latest'   # optional, default: latest
+    node-version: '22' # optional, default: 22
+    bun-version: 'latest' # optional, default: latest
     frozen-lockfile: 'true' # optional, default: true
 ```
 
@@ -81,11 +81,11 @@ Posts or updates a PR comment with marker-based deduplication.
 
 ## Configuration Files
 
-| File                       | Purpose                    |
-| -------------------------- | -------------------------- |
-| `labeler.yml`              | Rules for auto-labeling    |
-| `CODEOWNERS`               | Code ownership for review  |
-| `pull_request_template.md` | PR description template    |
+| File                       | Purpose                   |
+| -------------------------- | ------------------------- |
+| `labeler.yml`              | Rules for auto-labeling   |
+| `CODEOWNERS`               | Code ownership for review |
+| `pull_request_template.md` | PR description template   |
 
 ## Scripts
 
