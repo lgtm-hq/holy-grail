@@ -1,0 +1,44 @@
+# dependencies
+node_modules
+
+# astro
+.astro
+
+# output
+out
+dist
+*.tgz
+
+# pagefind (copied to public for dev mode)
+public/pagefind
+
+# code coverage
+coverage
+*.lcov
+
+# playwright
+test-results/
+playwright-report/
+
+# logs
+logs
+*.log
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# caches
+.eslintcache
+.cache
+*.tsbuildinfo
+
+# IntelliJ based IDEs
+.idea
+
+# Finder (MacOS) folder config
+.DS_Store

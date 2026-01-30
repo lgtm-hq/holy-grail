@@ -1,0 +1,13 @@
+{
+  "name": "holy-grail",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^5.16.16"
+  }
+}
