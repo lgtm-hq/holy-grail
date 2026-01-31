@@ -10,8 +10,11 @@ inputs:
     description: Unique marker to identify and update existing comments
     required: true
   body:
-    description: Comment body content (markdown)
-    required: true
+    description: Comment body content (markdown) - mutually exclusive with file
+    required: false
+  file:
+    description: Path to file containing comment body - mutually exclusive with body
+    required: false
   pr-number:
     description: PR number (defaults to current PR)
     required: false
@@ -19,10 +22,40 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Validate inputs
+      shell: bash
+      run: |
+        if [[ -n "${{ inputs.body }}" && -n "${{ inputs.file }}" ]]; then
+          echo "::error::Specify either 'body' or 'file', not both"
+          exit 1
+        fi
+        if [[ -z "${{ inputs.body }}" && -z "${{ inputs.file }}" ]]; then
+          echo "::error::Either 'body' or 'file' must be provided"
+          exit 1
+        fi
+
+    - name: Read comment from file
+      if: inputs.file != ''
+      id: read-file
+      shell: bash
+      run: |
+        if [ ! -f "${{ inputs.file }}" ]; then
+          echo "::error::Comment file not found: ${{ inputs.file }}"
+          exit 1
+        fi
+        # Use dynamic delimiter to avoid collisions with file content
+        delim="EOF_$(date +%s%N)"
+        {
+          echo "content<<${delim}"
+          cat "${{ inputs.file }}"
+          echo "${delim}"
+        } >> "$GITHUB_OUTPUT"
+
     - name: Post or update PR comment
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
       env:
-        COMMENT_BODY: ${{ inputs.body }}
+        COMMENT_BODY:
+          ${{ inputs.file != '' && steps.read-file.outputs.content || inputs.body }}
         COMMENT_MARKER: ${{ inputs.marker }}
       with:
         github-token: ${{ inputs.github-token }}
