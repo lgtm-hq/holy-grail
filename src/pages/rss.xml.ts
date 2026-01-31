@@ -45,6 +45,11 @@ export async function GET(context: APIContext) {
     throw new Error('RSS feed requires site to be configured in astro.config.mjs');
   }
 
+  // Get base path and ensure it has trailing slash
+  const base = import.meta.env.BASE_URL.endsWith('/')
+    ? import.meta.env.BASE_URL
+    : `${import.meta.env.BASE_URL}/`;
+
   return rss({
     title: 'Holy Grail - Developer Guides',
     description: 'The quest for the perfect dev environment. Installation guides for mobile testing and development tools.',
@@ -52,7 +57,7 @@ export async function GET(context: APIContext) {
     items: sortedGuides.map((guide) => ({
       title: guide.data.title,
       description: guide.data.description,
-      link: `/holy-grail/guides/${guide.id}/`,
+      link: `${base}guides/${guide.id}/`,
       categories: [guide.data.category, ...(guide.data.tags || [])],
     })),
     customData: `<language>en-us</language>`,

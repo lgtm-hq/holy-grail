@@ -73,8 +73,12 @@
     updateProgress();
   }
 
-  // Initialize on page load
-  document.addEventListener('DOMContentLoaded', initReadingProgress);
+  // Initialize on page load (handle case where DOM is already ready)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initReadingProgress);
+  } else {
+    initReadingProgress();
+  }
 
   // Re-initialize after Astro page transitions
   document.addEventListener('astro:after-swap', initReadingProgress);

@@ -3,9 +3,9 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
 // Base path configuration:
-// - Local development: / (default)
-// - Production (GitHub Pages): /holy-grail/
-// Set ASTRO_BASE=/holy-grail/ for production builds (CI deploy workflow sets this)
+// - Default: /holy-grail (for GitHub Pages deployment)
+// - Override with ASTRO_BASE env var for different deployments
+// - Set ASTRO_BASE=/ for local development at root path
 const base = process.env.ASTRO_BASE || '/holy-grail';
 
 export default defineConfig({

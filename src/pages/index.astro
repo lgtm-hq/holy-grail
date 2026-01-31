@@ -8,13 +8,15 @@ import CategoriesGrid from '../components/home/CategoriesGrid.astro';
 import FeaturedGuides from '../components/home/FeaturedGuides.astro';
 import CTASection from '../components/home/CTASection.astro';
 import { getCollection } from 'astro:content';
+import { withBase } from '../lib/paths';
 
 const allGuides = await getCollection('guides');
 const featuredGuides = allGuides.slice(0, 6);
+const currentPath = withBase('');
 ---
 
 <BaseLayout title="Holy Grail" description="The quest for the perfect dev environment - comprehensive installation guides for developers">
-  <Header slot="header" currentPath="/holy-grail/" />
+  <Header slot="header" currentPath={currentPath} />
 
   <div data-pagefind-ignore="all">
     <HeroSection guideCount={allGuides.length} />

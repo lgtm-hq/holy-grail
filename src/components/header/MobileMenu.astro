@@ -64,17 +64,28 @@ const navItems = [
 
 <script>
   function initMobileMenu() {
-    const toggle = document.querySelector('.mobile-menu-toggle');
+    const toggle = document.querySelector('.mobile-menu-toggle') as HTMLButtonElement;
     const menu = document.getElementById('mobile-menu');
 
-    toggle?.addEventListener('click', () => {
+    // Prevent duplicate event listeners on re-initialization
+    if (!toggle || toggle.dataset.bound === 'true') return;
+    toggle.dataset.bound = 'true';
+
+    toggle.addEventListener('click', () => {
       const expanded = toggle.getAttribute('aria-expanded') === 'true';
       toggle.setAttribute('aria-expanded', String(!expanded));
       menu?.toggleAttribute('hidden');
     });
   }
 
-  initMobileMenu();
+  // Initialize on page load (handle case where DOM is already ready)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobileMenu);
+  } else {
+    initMobileMenu();
+  }
+
+  // Re-initialize after Astro page transitions
   document.addEventListener('astro:after-swap', initMobileMenu);
 </script>
 

@@ -1,4 +1,6 @@
 ---
+import { withBase } from '../lib/paths';
+
 const currentYear = new Date().getFullYear();
 
 const questQuotes = [
@@ -36,17 +38,17 @@ const randomQuote = questQuotes[Math.floor(Math.random() * questQuotes.length)];
       <div class="footer-section">
         <h4>Categories</h4>
         <ul>
-          <li><a href="/holy-grail/categories/foundation/">🏗️ Foundation</a></li>
-          <li><a href="/holy-grail/categories/languages/">📚 Languages</a></li>
-          <li><a href="/holy-grail/categories/ides/">🛠️ IDEs</a></li>
-          <li><a href="/holy-grail/categories/testing/">🧪 Testing</a></li>
+          <li><a href={withBase('categories/foundation/')}>🏗️ Foundation</a></li>
+          <li><a href={withBase('categories/languages/')}>📚 Languages</a></li>
+          <li><a href={withBase('categories/ides/')}>🛠️ IDEs</a></li>
+          <li><a href={withBase('categories/testing/')}>🧪 Testing</a></li>
         </ul>
       </div>
 
       <div class="footer-section">
         <h4>Resources</h4>
         <ul>
-          <li><a href="/holy-grail/guides/">All Guides</a></li>
+          <li><a href={withBase('guides/')}>All Guides</a></li>
           <li><a href="https://github.com/lgtm-hq/holy-grail" target="_blank" rel="noopener">GitHub</a></li>
           <li><a href="https://github.com/lgtm-hq/turbo-themes" target="_blank" rel="noopener">Turbo Themes</a></li>
         </ul>

@@ -166,8 +166,12 @@ const difficulties = getAllDifficulties();
     }
   }
 
-  // Initialize on page load
-  document.addEventListener('DOMContentLoaded', initFilters);
+  // Initialize on page load (handle case where DOM is already ready)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFilters);
+  } else {
+    initFilters();
+  }
 
   // Re-initialize after Astro page transitions
   document.addEventListener('astro:after-swap', initFilters);

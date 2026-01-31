@@ -3,8 +3,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { withBase } from '../../lib/paths';
-
-const base = withBase;
 ---
 
 <BaseLayout title="Search" description="Search all guides and documentation">
@@ -35,18 +33,15 @@ const base = withBase;
   <Footer slot="footer" />
 </BaseLayout>
 
-<link href={base('pagefind/pagefind-ui.css')} rel="stylesheet" />
+<link href={withBase('pagefind/pagefind-ui.css')} rel="stylesheet" />
 
-<script is:inline define:vars={{ base: withBase('') }}>
+<script is:inline define:vars={{ base: withBase(''), pagefindJsPath: withBase('pagefind/pagefind-ui.js') }}>
   window.addEventListener('DOMContentLoaded', async () => {
     const searchContainer = document.getElementById('search');
     if (!searchContainer) return;
 
-    // Load Pagefind UI from the built assets
-    const pagefindPath = base + 'pagefind/pagefind-ui.js';
-
     try {
-      const module = await import(/* @vite-ignore */ pagefindPath);
+      const module = await import(/* @vite-ignore */ pagefindJsPath);
       const { PagefindUI } = module;
 
       new PagefindUI({

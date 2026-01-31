@@ -14,7 +14,7 @@ interface Props {
   title?: string;
 }
 
-const { type, title } = Astro.props;
+const { type: rawType, title } = Astro.props;
 
 const config = {
   info: { icon: 'ℹ️', label: 'Info', color: '#89b4fa' },
@@ -23,6 +23,8 @@ const config = {
   tip: { icon: '💡', label: 'Tip', color: '#a6e3a1' },
 };
 
+// Validate type and fall back to 'info' if invalid
+const type = rawType && rawType in config ? rawType : 'info';
 const { icon, label, color } = config[type];
 const displayTitle = title || label;
 ---

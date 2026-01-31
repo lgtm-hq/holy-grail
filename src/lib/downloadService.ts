@@ -33,10 +33,19 @@ const NOTIFICATION_ICONS: Record<NotificationType, string> = {
 export function showNotification(type: NotificationType, message: string): void {
   const notification = document.createElement('div');
   notification.className = `download-notification ${type}`;
-  notification.innerHTML = `
-    <span class="notification-icon" aria-hidden="true">${NOTIFICATION_ICONS[type]}</span>
-    <span class="notification-text">${message}</span>
-  `;
+
+  // Build DOM safely without innerHTML to prevent XSS
+  const iconSpan = document.createElement('span');
+  iconSpan.className = 'notification-icon';
+  iconSpan.setAttribute('aria-hidden', 'true');
+  iconSpan.textContent = NOTIFICATION_ICONS[type];
+
+  const textSpan = document.createElement('span');
+  textSpan.className = 'notification-text';
+  textSpan.textContent = message;
+
+  notification.appendChild(iconSpan);
+  notification.appendChild(textSpan);
   document.body.appendChild(notification);
 
   // Animate in

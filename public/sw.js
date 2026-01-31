@@ -2,6 +2,10 @@
  * Holy Grail Service Worker
  *
  * Provides offline support and caching for the documentation site.
+ *
+ * NOTE: BASE_URL is hardcoded because service workers cannot use import.meta.env.
+ * If deploying to a different base path, update BASE_URL here or generate this
+ * file at build time with the correct value.
  */
 
 const CACHE_NAME = 'holy-grail-v1';

@@ -81,7 +81,9 @@ const base = withBase('');
       if (initializedContainers.has(container)) return;
       initializedContainers.add(container);
 
-      const base = (container as HTMLElement).dataset.base || '';
+      const rawBase = (container as HTMLElement).dataset.base || '/';
+      // Ensure base has trailing slash for proper URL construction
+      const base = rawBase.endsWith('/') ? rawBase : `${rawBase}/`;
 
       container.querySelectorAll('.download-btn').forEach((btn) => {
         btn.addEventListener('click', async (e) => {
