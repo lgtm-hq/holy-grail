@@ -7,7 +7,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# shellcheck source=utils.sh
+# shellcheck disable=SC1091
 source "$SCRIPT_DIR/utils.sh"
 
 # Check if we're in a PR context
@@ -16,15 +16,15 @@ if ! is_pr_context; then
 	exit 0
 fi
 
-# Read the output file and extract summary
+# Read the output file and extract summary (capped at 200 lines to avoid oversized comments)
 if [ -f chk-output.txt ]; then
 	# Try to extract from the EXECUTION SUMMARY section
 	start_line=$(grep -n "EXECUTION SUMMARY" chk-output.txt | head -n1 | cut -d: -f1 || true)
 	if [ -n "${start_line:-}" ]; then
-		tail -n +"$start_line" chk-output.txt >chk-summary.txt || true
+		tail -n +"$start_line" chk-output.txt | head -n 200 >chk-summary.txt || true
 	else
-		# Fallback to last 50 lines to capture table if header not found
-		tail -n 50 chk-output.txt >chk-summary.txt || true
+		# Fallback to last 200 lines to capture table if header not found
+		tail -n 200 chk-output.txt >chk-summary.txt || true
 	fi
 fi
 

@@ -22,6 +22,18 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Validate inputs
+      shell: bash
+      run: |
+        if [[ -n "${{ inputs.body }}" && -n "${{ inputs.file }}" ]]; then
+          echo "::error::Specify either 'body' or 'file', not both"
+          exit 1
+        fi
+        if [[ -z "${{ inputs.body }}" && -z "${{ inputs.file }}" ]]; then
+          echo "::error::Either 'body' or 'file' must be provided"
+          exit 1
+        fi
+
     - name: Read comment from file
       if: inputs.file != ''
       id: read-file
@@ -31,11 +43,12 @@ runs:
           echo "::error::Comment file not found: ${{ inputs.file }}"
           exit 1
         fi
-        # Use delimiter to handle multiline content
+        # Use dynamic delimiter to avoid collisions with file content
+        delim="EOF_$(date +%s%N)"
         {
-          echo "content<<EOF"
+          echo "content<<${delim}"
           cat "${{ inputs.file }}"
-          echo "EOF"
+          echo "${delim}"
         } >> "$GITHUB_OUTPUT"
 
     - name: Post or update PR comment

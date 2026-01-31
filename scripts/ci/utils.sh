@@ -62,20 +62,32 @@ $content
 	log_success "PR comment generated: $output_file"
 }
 
-# Set a GitHub Actions output variable
+# Set a GitHub Actions output variable (multiline-safe)
 set_github_output() {
 	local key="$1"
 	local value="$2"
 	if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
-		echo "$key=$value" >>"$GITHUB_OUTPUT"
+		local delim
+		delim="EOF_$(date +%s%N)"
+		{
+			echo "${key}<<${delim}"
+			echo "$value"
+			echo "${delim}"
+		} >>"$GITHUB_OUTPUT"
 	fi
 }
 
-# Set a GitHub Actions environment variable
+# Set a GitHub Actions environment variable (multiline-safe)
 set_github_env() {
 	local key="$1"
 	local value="$2"
 	if [[ -n "${GITHUB_ENV:-}" ]]; then
-		echo "$key=$value" >>"$GITHUB_ENV"
+		local delim
+		delim="EOF_$(date +%s%N)"
+		{
+			echo "${key}<<${delim}"
+			echo "$value"
+			echo "${delim}"
+		} >>"$GITHUB_ENV"
 	fi
 }
