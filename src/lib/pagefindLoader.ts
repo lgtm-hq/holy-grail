@@ -20,10 +20,45 @@ export interface PagefindUIOptions {
 }
 
 /**
+ * Sanitize a base path to prevent XSS attacks
+ *
+ * - Rejects absolute URLs, protocol-relative URLs, and dangerous schemes
+ * - Normalizes to a safe relative path under the current origin
+ * - Returns '/' if the value is invalid
+ */
+function sanitizeBasePath(rawBase: string | null): string {
+  if (!rawBase) return '/';
+
+  const trimmed = rawBase.trim();
+
+  // Reject protocol-relative URLs (//example.com)
+  if (trimmed.startsWith('//')) return '/';
+
+  // Reject URLs with schemes (http:, javascript:, data:, etc.)
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/i.test(trimmed)) return '/';
+
+  // Reject values with dangerous characters (quotes, whitespace that could break out)
+  if (/[\s"'<>]/.test(trimmed)) return '/';
+
+  // Use URL constructor to resolve against current origin and extract only the pathname
+  try {
+    const url = new URL(trimmed, window.location.origin);
+    // Only keep the pathname, discarding any scheme/host changes
+    const pathname = url.pathname;
+    // Ensure it starts with /
+    return pathname.startsWith('/') ? pathname : '/' + pathname;
+  } catch {
+    // If URL parsing fails, return safe default
+    return '/';
+  }
+}
+
+/**
  * Get the base path from the document
  */
 export function getBasePath(): string {
-  const base = document.documentElement.getAttribute('data-base') || '/';
+  const rawBase = document.documentElement.getAttribute('data-base');
+  const base = sanitizeBasePath(rawBase);
   return base.endsWith('/') ? base : base + '/';
 }
 
