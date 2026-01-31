@@ -20,35 +20,34 @@ export interface PagefindUIOptions {
 }
 
 /**
- * Sanitize a base path to prevent XSS attacks
+ * Sanitize the base path read from the document
  *
- * Uses a strict whitelist approach - only allows simple relative paths
- * containing alphanumeric characters, hyphens, underscores, and slashes.
- * Returns '/' if the value doesn't match the whitelist.
+ * Ensures the base path is a safe relative path rooted at `/` and
+ * does not contain a URL scheme or protocol-relative prefix.
  */
 function sanitizeBasePath(rawBase: string | null): string {
-  if (!rawBase) return '/';
-
-  const trimmed = rawBase.trim();
-
-  // Whitelist: only allow paths starting with / and containing safe characters
-  // This strict pattern prevents any scheme, query params, or dangerous chars
-  if (!/^\/[a-zA-Z0-9\-_/]*$/.test(trimmed)) {
+  if (!rawBase) {
     return '/';
   }
 
-  // Normalize: collapse multiple slashes, remove any path traversal attempts
-  const normalized = trimmed.replace(/\/+/g, '/').replace(/\.\./g, '');
+  const trimmed = rawBase.trim();
 
-  return normalized;
+  // Disallow absolute/protocol-relative URLs like "http://", "https://", "//", "javascript:", etc.
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed) || trimmed.startsWith('//')) {
+    return '/';
+  }
+
+  // Ensure path starts with a single leading slash
+  const withLeadingSlash = trimmed.startsWith('/') ? trimmed : '/' + trimmed;
+
+  return withLeadingSlash;
 }
 
 /**
  * Get the base path from the document
  */
 export function getBasePath(): string {
-  const rawBase = document.documentElement.getAttribute('data-base');
-  const base = sanitizeBasePath(rawBase);
+  const base = sanitizeBasePath(document.documentElement.getAttribute('data-base'));
   return base.endsWith('/') ? base : base + '/';
 }
 
