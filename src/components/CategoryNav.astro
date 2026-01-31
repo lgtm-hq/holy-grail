@@ -139,28 +139,15 @@ const difficulties = getAllDifficulties();
       });
     });
 
-    // Parse URL hash for initial state
+    // Parse URL hash for initial state (default missing params to "all")
     const hash = window.location.hash.slice(1);
     if (hash) {
       const params = new URLSearchParams(hash);
-      const category = params.get('category');
-      const difficulty = params.get('difficulty');
-
-      if (category) {
-        setActiveCategory(category);
-      }
-      if (difficulty) {
-        setActiveDifficulty(difficulty);
-      }
-
-      // Apply filters if hash had values
-      if (category || difficulty) {
-        filterCards();
-      }
-    }
-
-    // Set default active state if no hash
-    if (!hash) {
+      setActiveCategory(params.get('category') ?? 'all');
+      setActiveDifficulty(params.get('difficulty') ?? 'all');
+      filterCards();
+    } else {
+      // No hash - set default active state
       setActiveCategory('all');
       setActiveDifficulty('all');
     }
