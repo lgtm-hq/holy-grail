@@ -166,6 +166,14 @@ const difficulties = getAllDifficulties();
     }
   }
 
+  // Re-register astro:after-swap listener after each invocation
+  function registerSwapListener() {
+    document.addEventListener('astro:after-swap', () => {
+      initFilters();
+      registerSwapListener();
+    }, { once: true });
+  }
+
   // Initialize on page load (handle case where DOM is already ready)
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initFilters);
@@ -173,8 +181,8 @@ const difficulties = getAllDifficulties();
     initFilters();
   }
 
-  // Re-initialize after Astro page transitions
-  document.addEventListener('astro:after-swap', initFilters);
+  // Register astro:after-swap listener (once, will re-register itself)
+  registerSwapListener();
 </script>
 
 <style>

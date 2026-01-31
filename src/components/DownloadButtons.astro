@@ -91,9 +91,12 @@ const base = withBase('');
           const format = button.dataset.format;
           const slug = button.dataset.slug;
 
-          // Show loading state
-          const originalText = button.innerHTML;
-          button.innerHTML = '<span class="loading-spinner"></span> Loading...';
+          // Show loading state - store and restore child nodes for consistency
+          const originalChildren = Array.from(button.childNodes).map((n) => n.cloneNode(true));
+          button.textContent = '';
+          const spinner = document.createElement('span');
+          spinner.className = 'loading-spinner';
+          button.append(spinner, ' Loading...');
           button.disabled = true;
 
           try {
@@ -123,7 +126,8 @@ const base = withBase('');
             console.error('Download error:', error);
             showNotification('error', 'Download failed. Please try again.');
           } finally {
-            button.innerHTML = originalText;
+            button.textContent = '';
+            originalChildren.forEach((child) => button.appendChild(child));
             button.disabled = false;
           }
         });
@@ -225,6 +229,11 @@ const base = withBase('');
 
   .download-btn:active:not(:disabled) {
     transform: scale(0.98);
+  }
+
+  .download-btn:focus-visible {
+    outline: 2px solid var(--grail-gold);
+    outline-offset: 2px;
   }
 
   .download-btn:disabled {

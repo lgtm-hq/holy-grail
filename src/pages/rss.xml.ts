@@ -58,7 +58,7 @@ export async function GET(context: APIContext) {
       title: guide.data.title,
       description: guide.data.description,
       link: `${base}guides/${guide.id}/`,
-      categories: [guide.data.category, ...(guide.data.tags || [])],
+      categories: [guide.data.category, ...(guide.data.tags || [])].filter(Boolean),
     })),
     customData: `<language>en-us</language>`,
   });
