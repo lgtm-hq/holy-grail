@@ -63,10 +63,19 @@ export function getBasePath(): string {
 }
 
 /**
+ * Escape a string for safe use in CSS attribute selectors
+ */
+function escapeCssSelector(value: string): string {
+  return value.replace(/["\\]/g, '\\$&');
+}
+
+/**
  * Load a CSS file dynamically
  */
 export function loadCss(href: string): void {
-  if (document.querySelector(`link[href="${href}"]`)) return;
+  // Use escaped selector to prevent CSS selector injection
+  const escapedHref = escapeCssSelector(href);
+  if (document.querySelector(`link[href="${escapedHref}"]`)) return;
 
   const link = document.createElement('link');
   link.rel = 'stylesheet';
@@ -79,7 +88,9 @@ export function loadCss(href: string): void {
  */
 export function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const existingScript = document.querySelector(`script[src="${src}"]`);
+    // Use escaped selector to prevent CSS selector injection
+    const escapedSrc = escapeCssSelector(src);
+    const existingScript = document.querySelector(`script[src="${escapedSrc}"]`);
     if (existingScript) {
       existingScript.addEventListener('load', () => resolve());
       return;
