@@ -18,46 +18,30 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    # Use lintro-tools image which has all external tools pre-installed
-    # (shellcheck, prettier, biome, yamllint, actionlint, etc.)
-    container:
-      # yamllint disable-line rule:line-length
-      image: ghcr.io/lgtm-hq/lintro-tools:latest@sha256:b3940578b3fa10215d2ba4accba89250753360ec6f34cebe2dc588694084dad4
-      options: --user root
 
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
-      - name: Check for lintable files
-        id: check
-        run: |
-          # Check if there are files to lint (not just CI config)
-          if find . -type f \( -name "*.ts" -o -name "*.js" -o -name "*.tsx" \
-                              -o -name "*.jsx" -o -name "*.py" -o -name "*.sh" \) \
-             ! -path "./node_modules/*" ! -path "./.git/*" | grep -q .; then
-            echo "has_code=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_code=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Install lintro
-        if: steps.check.outputs.has_code == 'true'
-        run: uv pip install --system lintro
-
       - name: Run lintro
-        if: steps.check.outputs.has_code == 'true'
-        run: ./scripts/ci/ci-lintro.sh
+        id: lintro
+        run: |
+          set +e
+          docker run --rm -v "${{ github.workspace }}:/code" \
+            ghcr.io/lgtm-hq/py-lintro:latest check --output-format grid 2>&1 | tee chk-output.txt
+          exit_code=${PIPESTATUS[0]}
+          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
+          exit 0
         continue-on-error: true
 
       - name: Generate PR comment
-        if:
-          github.event_name == 'pull_request' && steps.check.outputs.has_code == 'true'
+        if: github.event_name == 'pull_request'
+        env:
+          CHK_EXIT_CODE: ${{ steps.lintro.outputs.exit_code }}
         run: ./scripts/ci/ci-pr-comment.sh
 
       - name: Post lintro results to PR
-        if:
-          github.event_name == 'pull_request' && steps.check.outputs.has_code == 'true'
+        if: github.event_name == 'pull_request'
         uses: ./.github/actions/post-pr-comment
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -65,12 +49,8 @@ jobs:
           file: pr-comment.txt
 
       - name: Fail on linting issues
-        if: steps.check.outputs.has_code == 'true' && env.CHK_EXIT_CODE != '0'
+        if: steps.lintro.outputs.exit_code != '0'
         run: exit 1
-
-      - name: Skip notification
-        if: steps.check.outputs.has_code == 'false'
-        run: echo "No source files to lint, skipping lintro check"
 
   build:
     name: Build & Test
