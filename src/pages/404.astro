@@ -1,0 +1,235 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { withBase } from '../lib/paths';
+
+const blackKnightImage = withBase('images/black-knight-404.svg');
+---
+
+<BaseLayout title="Page Not Found" description="None shall pass! The page you seek does not exist.">
+  <Header slot="header" />
+
+  <div class="not-found">
+    <div class="container">
+      <div class="not-found-image">
+        <img src={blackKnightImage} alt="The Black Knight says 'Tis but a scratch!" width="280" height="280" />
+      </div>
+
+      <h1 class="not-found-title">None Shall Pass!</h1>
+
+      <p class="not-found-message">
+        The page you seek? <strong>'Tis but a scratch!</strong>
+        <br />
+        Actually... it doesn't exist at all. The Black Knight is guarding nothing.
+      </p>
+
+      <div class="not-found-quotes">
+        <p class="quote">"It's just a flesh wound!"</p>
+        <p class="quote-sub">— The Black Knight, on this missing page</p>
+      </div>
+
+      <div class="not-found-code">404</div>
+
+      <div class="not-found-actions">
+        <a href={withBase('')} class="btn btn-primary">
+          <span class="btn-icon">🏰</span>
+          Run Away! (To Home)
+        </a>
+        <a href={withBase('guides/')} class="btn btn-secondary">
+          <span class="btn-icon">📜</span>
+          Seek the Grail (Guides)
+        </a>
+      </div>
+
+      <div class="not-found-search">
+        <p>Or bring us... a shrubbery! (Just kidding, try searching instead):</p>
+        <a href={withBase('search/')} class="search-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          Search guides
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <Footer slot="footer" />
+</BaseLayout>
+
+<style>
+  .not-found {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-3xl) var(--space-lg);
+  }
+
+  .not-found-image {
+    margin-bottom: var(--space-lg);
+  }
+
+  .not-found-image img {
+    max-width: 280px;
+    height: auto;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+    animation: float 4s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) rotate(-2deg);
+    }
+    50% {
+      transform: translateY(-15px) rotate(2deg);
+    }
+  }
+
+  .not-found-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    margin-bottom: var(--space-md);
+    background: linear-gradient(
+      135deg,
+      var(--grail-gold) 0%,
+      var(--grail-gold-light) 50%,
+      var(--grail-gold) 100%
+    );
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% center;
+    }
+    100% {
+      background-position: -200% center;
+    }
+  }
+
+  .not-found-message {
+    color: var(--turbo-text-secondary);
+    max-width: 500px;
+    margin: 0 auto var(--space-lg);
+    line-height: 1.6;
+    font-size: 1.1rem;
+  }
+
+  .not-found-message strong {
+    color: var(--turbo-text-primary);
+  }
+
+  .not-found-quotes {
+    margin-bottom: var(--space-lg);
+    padding: var(--space-md) var(--space-xl);
+    background: var(--turbo-bg-surface);
+    border-left: 3px solid var(--grail-gold);
+    border-radius: var(--radius-md);
+    display: inline-block;
+  }
+
+  .quote {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--turbo-text-primary);
+    margin: 0;
+  }
+
+  .quote-sub {
+    font-size: 0.85rem;
+    color: var(--turbo-text-secondary);
+    margin: var(--space-xs) 0 0 0;
+  }
+
+  .not-found-code {
+    font-family: var(--font-display);
+    font-size: clamp(5rem, 12vw, 8rem);
+    font-weight: 700;
+    opacity: 0.06;
+    margin-bottom: var(--space-lg);
+    line-height: 1;
+    user-select: none;
+  }
+
+  .not-found-actions {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: var(--space-xl);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-lg);
+    border-radius: var(--radius-md);
+    font-family: var(--font-display);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--grail-gold), var(--grail-gold-light));
+    color: var(--turbo-bg-base);
+    border: none;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px color-mix(in srgb, var(--grail-gold) 40%, transparent);
+  }
+
+  .btn-secondary {
+    background: var(--turbo-bg-surface);
+    color: var(--turbo-text-primary);
+    border: 1px solid var(--turbo-border-default);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--grail-gold);
+    color: var(--grail-gold);
+  }
+
+  .btn::after {
+    display: none;
+  }
+
+  .not-found-search {
+    color: var(--turbo-text-secondary);
+    font-size: 0.9rem;
+  }
+
+  .not-found-search p {
+    margin-bottom: var(--space-sm);
+  }
+
+  .search-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--grail-gold);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+
+  .search-link:hover {
+    color: var(--grail-gold-light);
+    transform: translateX(4px);
+  }
+
+  .search-link::after {
+    display: none;
+  }
+</style>

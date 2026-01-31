@@ -1,0 +1,89 @@
+---
+/**
+ * HeaderNav - Main navigation links
+ */
+import { withBase } from '../../lib/paths';
+
+interface Props {
+  currentPath?: string;
+}
+
+const { currentPath = '' } = Astro.props;
+const base = withBase;
+
+const navItems = [
+  { href: base(''), label: 'Home', icon: '🏰' },
+  { href: base('guides/'), label: 'Guides', icon: '📜' },
+  { href: base('categories/'), label: 'Categories', icon: '⚔️' },
+  { href: base('search/'), label: 'Search', icon: '🔍' },
+];
+---
+
+<nav class="main-nav" aria-label="Main navigation">
+  <ul class="nav-list">
+    {navItems.map((item) => (
+      <li>
+        <a
+          href={item.href}
+          class:list={['nav-link', { active: currentPath === item.href }]}
+        >
+          <span class="nav-icon">{item.icon}</span>
+          <span class="nav-label">{item.label}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .main-nav {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .main-nav {
+      display: block;
+    }
+  }
+
+  .nav-list {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--turbo-text-secondary);
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    letter-spacing: 0.03em;
+    transition: all var(--transition-fast);
+  }
+
+  .nav-link::after {
+    display: none;
+  }
+
+  .nav-link:hover,
+  .nav-link.active {
+    color: var(--turbo-text-primary);
+    background: var(--turbo-bg-surface);
+  }
+
+  .nav-link.active {
+    border-bottom: 2px solid var(--grail-gold);
+  }
+
+  .nav-icon {
+    font-size: 1.1rem;
+  }
+</style>

@@ -1,0 +1,8 @@
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- SDKMAN package/box -->
+  <path d="M16 3L4 9v14l12 6 12-6V9L16 3z" fill="#6DB33F"/>
+  <path d="M16 3L4 9l12 6 12-6L16 3z" fill="#8BC34A"/>
+  <path d="M16 15v14l12-6V9L16 15z" fill="#4CAF50"/>
+  <path d="M10 12l6 3 6-3" stroke="#fff" stroke-width="1.5" fill="none"/>
+  <path d="M16 15v6" stroke="#fff" stroke-width="1.5"/>
+</svg>

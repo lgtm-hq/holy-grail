@@ -1,0 +1,87 @@
+---
+/**
+ * FeaturedGuides - Grid of featured guide cards for homepage
+ */
+import GuideCard from '../GuideCard.astro';
+import { withBase } from '../../lib/paths';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  guides: CollectionEntry<'guides'>[];
+}
+
+const { guides } = Astro.props;
+const base = withBase;
+---
+
+{guides.length > 0 && (
+  <section class="featured-section">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Featured Guides</h2>
+          <p class="section-subtitle">Start with these essential quests</p>
+        </div>
+        <a href={base('guides/')} class="view-all-link">
+          View all guides →
+        </a>
+      </div>
+
+      <div class="guides-grid">
+        {guides.map((guide) => (
+          <GuideCard
+            title={guide.data.title}
+            description={guide.data.description}
+            href={base(`guides/${guide.id}/`)}
+            category={guide.data.category}
+            tags={guide.data.tags}
+            order={guide.data.order}
+            slug={guide.id}
+            difficulty={guide.data.difficulty}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .featured-section {
+    padding: var(--space-4xl) 0;
+    background: var(--turbo-bg-surface);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+  }
+
+  .section-title {
+    text-align: left;
+    margin-bottom: 0;
+  }
+
+  .section-subtitle {
+    text-align: left;
+    color: var(--turbo-text-secondary);
+    font-size: 1.1rem;
+    margin-top: var(--space-xs);
+    margin-bottom: 0;
+  }
+
+  .view-all-link {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    color: var(--grail-gold);
+  }
+
+  .guides-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-lg);
+  }
+</style>

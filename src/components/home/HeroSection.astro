@@ -1,0 +1,298 @@
+---
+/**
+ * HeroSection - Landing page hero with title, stats, and call-to-action
+ */
+import { withBase } from '../../lib/paths';
+
+interface Props {
+  guideCount: number;
+}
+
+const { guideCount } = Astro.props;
+const base = withBase;
+---
+
+<section class="hero">
+  <div class="hero-bg" aria-hidden="true">
+    <div class="hero-gradient"></div>
+    <div class="hero-pattern"></div>
+  </div>
+
+  <div class="hero-content container">
+    <div class="hero-badge">
+      <span class="badge-icon">⚔️</span>
+      <span class="badge-text">Developer Installation Guides</span>
+    </div>
+
+    <h1 class="hero-title">
+      <span class="title-line">Seek the</span>
+      <span class="title-highlight">Holy Grail</span>
+    </h1>
+
+    <p class="hero-subtitle">
+      'Tis no ordinary documentation.
+      <br />
+      We are the knights who say "npm install"... and we demand a shrubbery!
+      <br />
+      <span class="subtitle-small">(Also: comprehensive guides for every tool a modern developer needs.)</span>
+    </p>
+
+    <div class="hero-actions">
+      <a href={base('guides/')} class="btn btn-primary">
+        <span class="btn-icon">📜</span>
+        Browse All Guides
+      </a>
+      <a href="#categories" class="btn btn-secondary">
+        <span class="btn-icon">⚔️</span>
+        Choose Your Quest
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-value">{guideCount}+</span>
+        <span class="stat-label">Guides</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-value">4</span>
+        <span class="stat-label">Categories</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-value">3</span>
+        <span class="stat-label">Download Formats</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-scroll-indicator" aria-hidden="true">
+    <span class="scroll-text">Scroll to begin your quest</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: var(--space-4xl) 0;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+
+  .hero-gradient {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      ellipse 80% 50% at 50% 20%,
+      color-mix(in srgb, var(--grail-gold) 15%, transparent) 0%,
+      transparent 50%
+    );
+  }
+
+  .hero-pattern {
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    background-image:
+      radial-gradient(circle at 25% 25%, var(--turbo-text-primary) 1px, transparent 1px),
+      radial-gradient(circle at 75% 75%, var(--turbo-text-primary) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  .hero-content {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-md);
+    background: var(--turbo-bg-surface);
+    border: var(--border-manuscript);
+    border-radius: var(--radius-full);
+    margin-bottom: var(--space-xl);
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .badge-icon {
+    font-size: 1rem;
+  }
+
+  .badge-text {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--grail-gold);
+  }
+
+  .hero-title {
+    margin-bottom: var(--space-lg);
+  }
+
+  .title-line {
+    display: block;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    color: var(--turbo-text-secondary);
+    margin-bottom: var(--space-xs);
+  }
+
+  .title-highlight {
+    display: block;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 700;
+    background: linear-gradient(
+      135deg,
+      var(--grail-gold) 0%,
+      var(--grail-gold-light) 25%,
+      var(--grail-gold) 50%,
+      var(--grail-gold-light) 75%,
+      var(--grail-gold) 100%
+    );
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 4s linear infinite;
+    text-shadow: none;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+    color: var(--turbo-text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--space-xl);
+  }
+
+  .subtitle-small {
+    font-size: 0.85em;
+    opacity: 0.8;
+    font-style: italic;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-2xl);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-xl);
+    border-radius: var(--radius-md);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn::after {
+    display: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--grail-gold), var(--grail-gold-light));
+    color: var(--turbo-bg-base);
+    box-shadow: 0 4px 20px color-mix(in srgb, var(--grail-gold) 30%, transparent);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px color-mix(in srgb, var(--grail-gold) 40%, transparent);
+  }
+
+  .btn-secondary {
+    background: var(--turbo-bg-surface);
+    color: var(--turbo-text-primary);
+    border: 1px solid var(--turbo-border-default);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--grail-gold);
+    color: var(--grail-gold);
+  }
+
+  .btn-icon {
+    font-size: 1.2em;
+  }
+
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-lg);
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-value {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--grail-gold);
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+    color: var(--turbo-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .stat-divider {
+    width: 1px;
+    height: 40px;
+    background: var(--turbo-border-default);
+  }
+
+  .hero-scroll-indicator {
+    position: absolute;
+    bottom: var(--space-xl);
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    animation: float 2s ease-in-out infinite;
+  }
+
+  .scroll-text {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--turbo-text-secondary);
+  }
+
+  .scroll-arrow {
+    width: 20px;
+    height: 20px;
+    border-right: 2px solid var(--grail-gold);
+    border-bottom: 2px solid var(--grail-gold);
+    transform: rotate(45deg);
+  }
+</style>

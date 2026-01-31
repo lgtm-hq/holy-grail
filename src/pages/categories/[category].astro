@@ -1,0 +1,215 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import GuideCard from '../../components/GuideCard.astro';
+import CategoryNav from '../../components/CategoryNav.astro';
+import { getCollection } from 'astro:content';
+import { CATEGORIES, getCategory } from '../../lib/categories';
+import { withBase } from '../../lib/paths';
+
+export async function getStaticPaths() {
+  const categories = Object.keys(CATEGORIES);
+  return categories.map((category) => ({
+    params: { category },
+  }));
+}
+
+const { category } = Astro.params;
+const categoryInfo = getCategory(category!);
+const info = categoryInfo
+  ? { name: categoryInfo.name, icon: categoryInfo.icon, description: categoryInfo.description, color: categoryInfo.color }
+  : { name: category, icon: '📜', description: '', color: '#ccc' };
+
+const base = withBase;
+
+const allGuides = await getCollection('guides');
+const categoryGuides = allGuides
+  .filter((guide) => guide.data.category.toLowerCase() === category)
+  .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
+---
+
+<BaseLayout title={info.name} description={info.description}>
+  <Header slot="header" />
+
+  <section class="category-page" data-pagefind-ignore="all" style={`--category-accent: ${info.color}`}>
+    <div class="container">
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <ol>
+          <li><a href={base('')}>Home</a></li>
+          <li><a href={base('categories/')}>Categories</a></li>
+          <li aria-current="page">{info.name}</li>
+        </ol>
+      </nav>
+
+      <header class="page-header">
+        <div class="header-icon">{info.icon}</div>
+        <h1>{info.name}</h1>
+        <p class="page-description">{info.description}</p>
+        <div class="guide-count">
+          <span class="count-number">{categoryGuides.length}</span>
+          <span class="count-label">guide{categoryGuides.length !== 1 ? 's' : ''} in this quest</span>
+        </div>
+      </header>
+
+      <CategoryNav />
+
+      {categoryGuides.length > 0 ? (
+        <div class="guides-grid">
+          {categoryGuides.map((guide) => (
+            <GuideCard
+              title={guide.data.title}
+              description={guide.data.description}
+              href={base(`guides/${guide.id}/`)}
+              category={guide.data.category}
+              tags={guide.data.tags}
+              order={guide.data.order}
+              slug={guide.id}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <div class="empty-icon">🏰</div>
+          <h2>The knights are preparing...</h2>
+          <p>Guides for {info.name} are being forged. Check back soon!</p>
+          <a href={base('guides/')} class="back-link">
+            ← Browse all guides
+          </a>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</BaseLayout>
+
+<style>
+  .category-page {
+    padding: var(--space-2xl) 0 var(--space-4xl);
+    min-height: 60vh;
+  }
+
+  /* Breadcrumb */
+  .breadcrumb {
+    margin-bottom: var(--space-xl);
+  }
+
+  .breadcrumb ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.85rem;
+  }
+
+  .breadcrumb li {
+    display: flex;
+    align-items: center;
+  }
+
+  .breadcrumb li:not(:last-child)::after {
+    content: '/';
+    margin-left: var(--space-xs);
+    color: var(--turbo-text-secondary);
+  }
+
+  .breadcrumb a {
+    color: var(--turbo-text-secondary);
+  }
+
+  .breadcrumb a:hover {
+    color: var(--grail-gold);
+  }
+
+  .breadcrumb li[aria-current="page"] {
+    color: var(--turbo-text-primary);
+    font-weight: 500;
+  }
+
+  /* Page Header */
+  .page-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+    padding-bottom: var(--space-2xl);
+    border-bottom: var(--border-manuscript);
+  }
+
+  .header-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-md);
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .page-header h1 {
+    color: var(--category-accent);
+    margin-bottom: var(--space-md);
+  }
+
+  .page-description {
+    font-size: 1.1rem;
+    color: var(--turbo-text-secondary);
+    max-width: 600px;
+    margin: 0 auto var(--space-lg);
+  }
+
+  .guide-count {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-lg);
+    background: var(--turbo-bg-surface);
+    border: 1px solid var(--category-accent);
+    border-radius: var(--radius-full);
+  }
+
+  .count-number {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--category-accent);
+  }
+
+  .count-label {
+    font-size: 0.9rem;
+    color: var(--turbo-text-secondary);
+  }
+
+  /* Guides Grid */
+  .guides-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-lg);
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: var(--space-4xl) var(--space-xl);
+    background: var(--turbo-bg-surface);
+    border: var(--border-manuscript);
+    border-radius: var(--radius-lg);
+  }
+
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-md);
+  }
+
+  .empty-state h2 {
+    margin-bottom: var(--space-sm);
+  }
+
+  .empty-state p {
+    color: var(--turbo-text-secondary);
+    margin-bottom: var(--space-lg);
+  }
+
+  .back-link {
+    font-family: var(--font-display);
+    color: var(--grail-gold);
+  }
+</style>

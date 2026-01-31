@@ -1,0 +1,206 @@
+---
+import { getCategoryColor } from '../lib/categories';
+import ToolIcon from './ToolIcon.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  href: string;
+  category: string;
+  tags?: string[];
+  order?: number;
+  slug?: string;
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+}
+
+const { title, description, href, category, tags = [], order, slug, difficulty } = Astro.props;
+
+// Extract slug from href if not provided
+const guideSlug = slug || href.split('/').filter(Boolean).pop() || '';
+const categoryColor = getCategoryColor(category);
+---
+
+<a href={href} class="guide-card" style={`--category-color: ${categoryColor};`} data-category={category.toLowerCase()} data-difficulty={difficulty || ''}>
+  <div class="card-header">
+    <span class="card-icon">
+      <ToolIcon slug={guideSlug} category={category} size={40} />
+    </span>
+    {order !== undefined && (
+      <span class="card-order">Quest #{order}</span>
+    )}
+  </div>
+
+  <div class="card-body">
+    <h3 class="card-title">{title}</h3>
+    <p class="card-description">{description}</p>
+  </div>
+
+  <div class="card-footer">
+    <span class="card-category">{category}</span>
+    {tags.length > 0 && (
+      <div class="card-tags">
+        {tags.slice(0, 3).map((tag) => (
+          <span class="tag">{tag}</span>
+        ))}
+      </div>
+    )}
+  </div>
+
+  <div class="card-shine" aria-hidden="true"></div>
+</a>
+
+<style>
+  .guide-card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-lg);
+    background: var(--turbo-bg-surface);
+    border: 1px solid var(--turbo-border-default);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--turbo-text-primary);
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-normal);
+  }
+
+  .guide-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--category-color, var(--grail-gold));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--transition-normal);
+  }
+
+  .guide-card:hover {
+    border-color: var(--category-color, var(--grail-gold));
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .guide-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .guide-card::after {
+    display: none;
+  }
+
+  /* Shine effect */
+  .card-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--grail-gold) 10%, transparent),
+      transparent
+    );
+    transition: left 0.5s ease;
+    pointer-events: none;
+  }
+
+  .guide-card:hover .card-shine {
+    left: 150%;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-md);
+  }
+
+  .card-icon {
+    font-size: 2rem;
+    transition: transform var(--transition-fast);
+  }
+
+  .guide-card:hover .card-icon {
+    transform: scale(1.1) rotate(-5deg);
+  }
+
+  .card-order {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--turbo-text-secondary);
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--turbo-bg-overlay);
+    border-radius: var(--radius-full);
+  }
+
+  .card-body {
+    flex: 1;
+    margin-bottom: var(--space-md);
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 var(--space-sm) 0;
+    color: var(--turbo-text-primary);
+    transition: color var(--transition-fast);
+  }
+
+  .guide-card:hover .card-title {
+    color: var(--category-color, var(--grail-gold));
+  }
+
+  .card-description {
+    font-size: 0.95rem;
+    color: var(--turbo-text-secondary);
+    margin: 0;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+  }
+
+  .card-category {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--category-color, var(--grail-gold));
+  }
+
+  .card-tags {
+    display: flex;
+    gap: var(--space-xs);
+  }
+
+  .tag {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    background: color-mix(in srgb, var(--category-color, var(--grail-gold)) 15%, var(--turbo-bg-overlay));
+    border: 1px solid color-mix(in srgb, var(--category-color, var(--grail-gold)) 30%, transparent);
+    border-radius: var(--radius-full);
+    color: var(--turbo-text-primary);
+    transition: all var(--transition-fast);
+  }
+
+  .guide-card:hover .tag {
+    background: color-mix(in srgb, var(--category-color, var(--grail-gold)) 25%, var(--turbo-bg-overlay));
+    border-color: color-mix(in srgb, var(--category-color, var(--grail-gold)) 50%, transparent);
+  }
+</style>

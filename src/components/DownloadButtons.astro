@@ -1,0 +1,243 @@
+---
+/**
+ * DownloadButtons - Download guide as Markdown, JSON, or PDF
+ */
+import { withBase } from '../lib/paths';
+
+interface Props {
+  slug: string;
+  title: string;
+}
+
+const { slug, title } = Astro.props;
+const base = withBase('');
+---
+
+<div class="download-buttons" data-base={base}>
+  <span class="download-label">Download as:</span>
+  <div class="download-options">
+    <button
+      class="download-btn download-btn--md"
+      data-format="md"
+      data-slug={slug}
+      data-title={title}
+      aria-label={`Download ${title} as Markdown`}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <path d="M12 18v-6"/>
+        <path d="M9 15l3-3 3 3"/>
+      </svg>
+      Markdown
+    </button>
+
+    <button
+      class="download-btn download-btn--json"
+      data-format="json"
+      data-slug={slug}
+      data-title={title}
+      aria-label={`Download ${title} as JSON`}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <path d="M8 13h2"/>
+        <path d="M8 17h2"/>
+        <path d="M14 13h2"/>
+        <path d="M14 17h2"/>
+      </svg>
+      JSON
+    </button>
+
+    <button
+      class="download-btn download-btn--pdf"
+      data-format="pdf"
+      data-slug={slug}
+      data-title={title}
+      aria-label={`Print ${title} as PDF`}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <path d="M10 12h4"/>
+        <path d="M10 16h4"/>
+      </svg>
+      Print/PDF
+    </button>
+  </div>
+</div>
+
+<script>
+  import { downloadFile, showNotification } from '../lib/downloadService';
+  import { generateMarkdown } from '../lib/markdownExporter';
+
+  // Track initialized containers to prevent duplicate event listeners
+  const initializedContainers = new WeakSet<Element>();
+
+  function initDownloadButtons() {
+    document.querySelectorAll('.download-buttons').forEach((container) => {
+      // Skip if already initialized
+      if (initializedContainers.has(container)) return;
+      initializedContainers.add(container);
+
+      const base = (container as HTMLElement).dataset.base || '';
+
+      container.querySelectorAll('.download-btn').forEach((btn) => {
+        btn.addEventListener('click', async (e) => {
+          const button = e.currentTarget as HTMLButtonElement;
+          const format = button.dataset.format;
+          const slug = button.dataset.slug;
+
+          // Show loading state
+          const originalText = button.innerHTML;
+          button.innerHTML = '<span class="loading-spinner"></span> Loading...';
+          button.disabled = true;
+
+          try {
+            if (format === 'json') {
+              const response = await fetch(`${base}api/guides/${slug}.json`);
+              if (!response.ok) throw new Error('Failed to fetch guide data');
+              const data = await response.json();
+
+              downloadFile(JSON.stringify(data, null, 2), `${slug}.json`, 'application/json');
+              showNotification('success', 'JSON downloaded successfully!');
+            } else if (format === 'md') {
+              const response = await fetch(`${base}api/guides/${slug}.json`);
+              if (!response.ok) throw new Error('Failed to fetch guide data');
+              const data = await response.json();
+
+              const markdown = generateMarkdown(data);
+              downloadFile(markdown, `${slug}.md`, 'text/markdown');
+              showNotification('success', 'Markdown downloaded successfully!');
+            } else if (format === 'pdf') {
+              window.print();
+              showNotification(
+                'info',
+                'Tip: Enable "Print backgrounds" and disable headers/footers in print settings.',
+              );
+            }
+          } catch (error) {
+            console.error('Download error:', error);
+            showNotification('error', 'Download failed. Please try again.');
+          } finally {
+            button.innerHTML = originalText;
+            button.disabled = false;
+          }
+        });
+      });
+    });
+  }
+
+  // Initialize on load and after navigation
+  initDownloadButtons();
+  document.addEventListener('astro:after-swap', initDownloadButtons);
+</script>
+
+<style>
+  .download-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    background: var(--turbo-bg-surface);
+    border: var(--border-manuscript);
+    border-radius: var(--radius-md);
+  }
+
+  @media (min-width: 480px) {
+    .download-buttons {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+
+  .download-label {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--turbo-text-secondary);
+    white-space: nowrap;
+  }
+
+  .download-options {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+  }
+
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-md);
+    background: var(--turbo-bg-overlay);
+    border: 1px solid var(--turbo-border-default);
+    border-radius: var(--radius-md);
+    color: var(--turbo-text-primary);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  /* Markdown button - blue/teal */
+  .download-btn--md {
+    --btn-color: #89b4fa;
+    border-color: color-mix(in srgb, var(--btn-color) 40%, transparent);
+    background: color-mix(in srgb, var(--btn-color) 10%, var(--turbo-bg-overlay));
+  }
+
+  .download-btn--md:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--btn-color) 20%, var(--turbo-bg-base));
+    border-color: var(--btn-color);
+    color: var(--btn-color);
+  }
+
+  /* JSON button - yellow/orange */
+  .download-btn--json {
+    --btn-color: #f9e2af;
+    border-color: color-mix(in srgb, var(--btn-color) 40%, transparent);
+    background: color-mix(in srgb, var(--btn-color) 10%, var(--turbo-bg-overlay));
+  }
+
+  .download-btn--json:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--btn-color) 20%, var(--turbo-bg-base));
+    border-color: var(--btn-color);
+    color: var(--btn-color);
+  }
+
+  /* PDF button - red/pink */
+  .download-btn--pdf {
+    --btn-color: #f38ba8;
+    border-color: color-mix(in srgb, var(--btn-color) 40%, transparent);
+    background: color-mix(in srgb, var(--btn-color) 10%, var(--turbo-bg-overlay));
+  }
+
+  .download-btn--pdf:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--btn-color) 20%, var(--turbo-bg-base));
+    border-color: var(--btn-color);
+    color: var(--btn-color);
+  }
+
+  .download-btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  .download-btn:disabled {
+    opacity: 0.7;
+    cursor: wait;
+  }
+
+  .download-btn svg {
+    flex-shrink: 0;
+  }
+
+  /* Print styles */
+  @media print {
+    .download-buttons {
+      display: none !important;
+    }
+  }
+</style>

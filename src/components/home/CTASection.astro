@@ -1,0 +1,135 @@
+---
+/**
+ * CTASection - Call-to-action section for homepage
+ */
+import { withBase } from '../../lib/paths';
+
+const base = withBase;
+---
+
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-content">
+      <div class="cta-icon">🏆</div>
+      <h2 class="cta-title">Ready to Begin Your Quest?</h2>
+      <p class="cta-description">
+        Join thousands of developers who have completed their setup journey.
+        <br />
+        All guides are free and open source.
+      </p>
+      <div class="cta-actions">
+        <a href={base('guides/')} class="btn btn-primary btn-large">
+          Start Your Journey
+        </a>
+        <a
+          href="https://github.com/lgtm-hq/holy-grail"
+          class="btn btn-ghost"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          ⭐ Star on GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta-section {
+    padding: var(--space-4xl) 0;
+    background: linear-gradient(
+      180deg,
+      var(--turbo-bg-base) 0%,
+      var(--turbo-bg-surface) 100%
+    );
+  }
+
+  .cta-content {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--space-3xl);
+    background: var(--turbo-bg-base);
+    border: var(--border-manuscript);
+    border-radius: var(--radius-xl);
+    position: relative;
+  }
+
+  .cta-content::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(135deg, var(--grail-gold), transparent, var(--grail-gold));
+    border-radius: var(--radius-xl);
+    z-index: -1;
+    opacity: 0.3;
+  }
+
+  .cta-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-md);
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .cta-title {
+    margin-bottom: var(--space-md);
+  }
+
+  .cta-description {
+    color: var(--turbo-text-secondary);
+    margin-bottom: var(--space-xl);
+  }
+
+  .cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-md);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-xl);
+    border-radius: var(--radius-md);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn::after {
+    display: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--grail-gold), var(--grail-gold-light));
+    color: var(--turbo-bg-base);
+    box-shadow: 0 4px 20px color-mix(in srgb, var(--grail-gold) 30%, transparent);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px color-mix(in srgb, var(--grail-gold) 40%, transparent);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--turbo-text-secondary);
+    border: 1px solid transparent;
+  }
+
+  .btn-ghost:hover {
+    color: var(--turbo-text-primary);
+    background: var(--turbo-bg-surface);
+  }
+
+  .btn-large {
+    padding: var(--space-lg) var(--space-2xl);
+    font-size: 1.1rem;
+  }
+</style>

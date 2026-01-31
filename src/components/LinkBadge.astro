@@ -1,0 +1,145 @@
+---
+/**
+ * LinkBadge - Compact badge/pill style link
+ *
+ * For internal guide links: auto-fetches title and category
+ * For external links: displays with external icon
+ *
+ * Usage:
+ *   <LinkBadge href="/guides/java/" />
+ *   <LinkBadge href="https://example.com" title="Example Site" />
+ */
+import { getCollection } from 'astro:content';
+import { getCategoryColor } from '../lib/categories';
+import { withBase, extractGuideSlug, isGuideHref } from '../lib/paths';
+import { logger } from '../lib/logger';
+
+interface Props {
+  href: string;
+  title?: string;
+  external?: boolean;
+}
+
+const { href, title: providedTitle, external: forceExternal } = Astro.props;
+
+// Determine if this is an internal guide link
+const isGuideLink = isGuideHref(href) && !forceExternal;
+let title = providedTitle || '';
+let category = '';
+let isExternal = forceExternal || href.startsWith('http');
+
+// Resolve the href - auto-prepend base for internal paths
+let resolvedHref = href;
+if (!isExternal && href.startsWith('/') && !href.startsWith(import.meta.env.BASE_URL)) {
+  // Strip leading slash and prepend base
+  resolvedHref = withBase(href.slice(1));
+}
+
+if (isGuideLink && !providedTitle) {
+  const slug = extractGuideSlug(href);
+  if (slug) {
+    const guides = await getCollection('guides');
+    const guide = guides.find(g => g.id === slug);
+    if (guide) {
+      title = guide.data.title;
+      category = guide.data.category.toLowerCase();
+    } else {
+      logger.warn('LinkBadge', `Guide not found for slug: ${slug}`);
+    }
+  }
+}
+
+// For external links without title, extract domain
+if (!title && isExternal) {
+  try {
+    const url = new URL(href);
+    title = url.hostname.replace('www.', '');
+  } catch {
+    title = href;
+  }
+}
+
+// Fallback
+if (!title) {
+  title = href.split('/').filter(Boolean).pop() || href;
+}
+
+const accentColor = getCategoryColor(category);
+---
+
+<a
+  href={resolvedHref}
+  class:list={['link-badge', { external: isExternal, [`category-${category}`]: category }]}
+  style={`--badge-accent: ${accentColor};`}
+  target={isExternal ? '_blank' : undefined}
+  rel={isExternal ? 'noopener noreferrer' : undefined}
+  title={isExternal ? `Visit ${title} (opens in new tab)` : undefined}
+>
+  {isGuideLink && !isExternal ? (
+    <svg class="badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+      <polyline points="14 2 14 8 20 8"></polyline>
+      <line x1="16" y1="13" x2="8" y2="13"></line>
+      <line x1="16" y1="17" x2="8" y2="17"></line>
+    </svg>
+  ) : (
+    <svg class="badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+      <polyline points="15 3 21 3 21 9"></polyline>
+      <line x1="10" y1="14" x2="21" y2="3"></line>
+    </svg>
+  )}
+  <span class="badge-title">{title}</span>
+  {category && <span class="badge-category">{category}</span>}
+</a>
+
+<style>
+  .link-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    background: color-mix(in srgb, var(--badge-accent) 15%, var(--turbo-bg-muted));
+    border: 1px solid color-mix(in srgb, var(--badge-accent) 40%, transparent);
+    border-radius: 2rem;
+    text-decoration: none;
+    color: var(--turbo-text);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    margin: 0.25rem;
+  }
+
+  .link-badge:hover {
+    background: color-mix(in srgb, var(--badge-accent) 25%, var(--turbo-bg-muted));
+    border-color: var(--badge-accent);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--badge-accent) 30%, transparent);
+  }
+
+  .badge-icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    color: var(--badge-accent);
+  }
+
+  .badge-title {
+    font-weight: 500;
+  }
+
+  .badge-category {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.15rem 0.4rem;
+    background: color-mix(in srgb, var(--badge-accent) 30%, transparent);
+    border-radius: 1rem;
+    color: var(--badge-accent);
+    font-weight: 600;
+  }
+
+  .external .badge-category {
+    display: none;
+  }
+</style>

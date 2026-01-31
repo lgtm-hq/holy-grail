@@ -1,0 +1,107 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import GuideCard from '../../components/GuideCard.astro';
+import CategoryNav from '../../components/CategoryNav.astro';
+import { getCollection } from 'astro:content';
+import { withBase } from '../../lib/paths';
+
+const allGuides = await getCollection('guides');
+const sortedGuides = allGuides.sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
+const base = withBase;
+---
+
+<BaseLayout title="All Guides" description="Browse all installation and setup guides">
+  <Header slot="header" currentPath={base('guides/')} />
+
+  <section class="guides-page" data-pagefind-ignore="all">
+    <div class="container">
+      <div class="page-header">
+        <h1>📜 All Guides</h1>
+        <p class="page-description">
+          Your complete collection of developer setup quests.
+          <br />
+          Choose your path and begin the journey.
+        </p>
+      </div>
+
+      <CategoryNav showDifficultyFilter={true} />
+
+      {sortedGuides.length > 0 ? (
+        <div class="guides-grid">
+          {sortedGuides.map((guide) => (
+            <GuideCard
+              title={guide.data.title}
+              description={guide.data.description}
+              href={base(`guides/${guide.id}/`)}
+              category={guide.data.category}
+              tags={guide.data.tags}
+              order={guide.data.order}
+              slug={guide.id}
+              difficulty={guide.data.difficulty}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <div class="empty-icon">🏰</div>
+          <h2>The quest begins soon...</h2>
+          <p>Guides are being prepared by the knights. Check back shortly!</p>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</BaseLayout>
+
+<style>
+  .guides-page {
+    padding: var(--space-3xl) 0;
+    min-height: 60vh;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+  }
+
+  .page-header h1 {
+    margin-bottom: var(--space-md);
+  }
+
+  .page-description {
+    font-size: 1.1rem;
+    color: var(--turbo-text-secondary);
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .guides-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-lg);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: var(--space-4xl) var(--space-xl);
+    background: var(--turbo-bg-surface);
+    border: var(--border-manuscript);
+    border-radius: var(--radius-lg);
+  }
+
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: var(--space-md);
+  }
+
+  .empty-state h2 {
+    margin-bottom: var(--space-sm);
+  }
+
+  .empty-state p {
+    color: var(--turbo-text-secondary);
+  }
+</style>

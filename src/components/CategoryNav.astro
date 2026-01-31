@@ -1,0 +1,301 @@
+---
+import { getAllCategories } from '../lib/categories';
+import { getAllDifficulties } from '../lib/difficulties';
+
+interface Props {
+  showDifficultyFilter?: boolean;
+}
+
+const { showDifficultyFilter = false } = Astro.props;
+
+// Build categories list with "All Guides" first
+const allCategoriesData = getAllCategories().filter(c => c.slug !== 'tools');
+const categories = [
+  {
+    slug: 'all',
+    name: 'All Guides',
+    icon: '📜',
+    color: 'var(--grail-gold)',
+  },
+  ...allCategoriesData.map(c => ({
+    slug: c.slug,
+    name: c.name,
+    icon: c.icon,
+    color: c.color,
+  })),
+];
+
+// Difficulty filter options from centralized config
+const difficulties = getAllDifficulties();
+---
+
+<div class="filter-controls">
+  <!-- Category Filter -->
+  <nav class="category-nav" aria-label="Filter by category">
+    <span class="filter-label">Category:</span>
+    <div class="category-list" role="group">
+      {categories.map((category) => (
+        <button
+          type="button"
+          class="category-pill"
+          data-category={category.slug}
+          aria-pressed="false"
+          style={`--category-color: ${category.color};`}
+        >
+          <span class="pill-icon" aria-hidden="true">{category.icon}</span>
+          <span class="pill-label">{category.name}</span>
+        </button>
+      ))}
+    </div>
+  </nav>
+
+  <!-- Difficulty Filter -->
+  {showDifficultyFilter && (
+    <div class="difficulty-filters" role="group" aria-label="Filter by difficulty">
+      <span class="filter-label">Difficulty:</span>
+      {difficulties.map((diff) => (
+        <button
+          type="button"
+          class="difficulty-pill"
+          data-difficulty={diff.value}
+          aria-pressed="false"
+        >
+          <span class="pill-icon" aria-hidden="true">{diff.icon}</span>
+          <span class="pill-label">{diff.label}</span>
+        </button>
+      ))}
+    </div>
+  )}
+</div>
+
+<script>
+  function initFilters() {
+    const categoryPills = document.querySelectorAll('.category-pill');
+    const difficultyPills = document.querySelectorAll('.difficulty-pill');
+    const cards = document.querySelectorAll('.guide-card');
+
+    if (categoryPills.length === 0 || cards.length === 0) return;
+
+    let currentCategory = 'all';
+    let currentDifficulty = 'all';
+
+    // Set active state for a category pill
+    function setActiveCategory(category: string) {
+      currentCategory = category;
+      categoryPills.forEach((p) => {
+        const pillCategory = (p as HTMLElement).dataset.category;
+        p.setAttribute('aria-pressed', pillCategory === category ? 'true' : 'false');
+      });
+    }
+
+    // Set active state for a difficulty pill
+    function setActiveDifficulty(difficulty: string) {
+      currentDifficulty = difficulty;
+      difficultyPills.forEach((p) => {
+        const pillDifficulty = (p as HTMLElement).dataset.difficulty;
+        p.setAttribute('aria-pressed', pillDifficulty === difficulty ? 'true' : 'false');
+      });
+    }
+
+    function filterCards() {
+      cards.forEach((card) => {
+        const cardEl = card as HTMLElement;
+        const cardCategory = cardEl.dataset.category?.toLowerCase() || '';
+        const cardDifficulty = cardEl.dataset.difficulty?.toLowerCase() || '';
+
+        const matchesCategory = currentCategory === 'all' || cardCategory === currentCategory;
+        const matchesDifficulty = currentDifficulty === 'all' || cardDifficulty === currentDifficulty;
+
+        cardEl.style.display = matchesCategory && matchesDifficulty ? '' : 'none';
+      });
+
+      // Update URL hash for bookmarking
+      const params: string[] = [];
+      if (currentCategory !== 'all') params.push(`category=${currentCategory}`);
+      if (currentDifficulty !== 'all') params.push(`difficulty=${currentDifficulty}`);
+
+      if (params.length > 0) {
+        history.replaceState(null, '', `#${params.join('&')}`);
+      } else {
+        history.replaceState(null, '', window.location.pathname);
+      }
+    }
+
+    // Category filter click handler
+    categoryPills.forEach((pill) => {
+      pill.addEventListener('click', () => {
+        const category = (pill as HTMLElement).dataset.category || 'all';
+        setActiveCategory(category);
+        filterCards();
+      });
+    });
+
+    // Difficulty filter click handler
+    difficultyPills.forEach((pill) => {
+      pill.addEventListener('click', () => {
+        const difficulty = (pill as HTMLElement).dataset.difficulty || 'all';
+        setActiveDifficulty(difficulty);
+        filterCards();
+      });
+    });
+
+    // Parse URL hash for initial state
+    const hash = window.location.hash.slice(1);
+    if (hash) {
+      const params = new URLSearchParams(hash);
+      const category = params.get('category');
+      const difficulty = params.get('difficulty');
+
+      if (category) {
+        setActiveCategory(category);
+      }
+      if (difficulty) {
+        setActiveDifficulty(difficulty);
+      }
+
+      // Apply filters if hash had values
+      if (category || difficulty) {
+        filterCards();
+      }
+    }
+
+    // Set default active state if no hash
+    if (!hash) {
+      setActiveCategory('all');
+      setActiveDifficulty('all');
+    }
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', initFilters);
+
+  // Re-initialize after Astro page transitions
+  document.addEventListener('astro:after-swap', initFilters);
+</script>
+
+<style>
+  .filter-controls {
+    margin-bottom: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  /* Category Navigation */
+  .category-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .category-list {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .category-pill {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--turbo-bg-surface);
+    border: 1px solid var(--turbo-border-default);
+    border-radius: var(--radius-full);
+    color: var(--turbo-text-secondary);
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .category-pill:hover {
+    border-color: var(--category-color, var(--turbo-text-secondary));
+    color: var(--turbo-text-primary);
+    background: var(--turbo-bg-overlay);
+  }
+
+  .category-pill[aria-pressed="true"] {
+    background: var(--category-color, var(--grail-gold));
+    border-color: var(--category-color, var(--grail-gold));
+    color: var(--turbo-bg-base);
+  }
+
+  /* Difficulty Filters */
+  .difficulty-filters {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .filter-label {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--turbo-text-secondary);
+    margin-right: var(--space-xs);
+  }
+
+  .difficulty-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-md);
+    background: var(--turbo-bg-surface);
+    border: 1px solid var(--turbo-border-default);
+    border-radius: var(--radius-full);
+    color: var(--turbo-text-secondary);
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .difficulty-pill:hover {
+    border-color: var(--grail-gold);
+    color: var(--turbo-text-primary);
+  }
+
+  .difficulty-pill[aria-pressed="true"] {
+    background: var(--grail-gold);
+    border-color: var(--grail-gold);
+    color: var(--turbo-bg-base);
+  }
+
+  .pill-icon {
+    font-size: 1rem;
+  }
+
+  @media (max-width: 640px) {
+    .filter-controls {
+      align-items: stretch;
+    }
+
+    .category-nav,
+    .difficulty-filters {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      padding-bottom: var(--space-sm);
+    }
+
+    .category-list {
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+    }
+
+    .difficulty-pill,
+    .category-pill {
+      white-space: nowrap;
+    }
+  }
+</style>

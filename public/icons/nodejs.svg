@@ -1,0 +1,6 @@
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Node.js hexagon logo -->
+  <path d="M16 3L4 10v12l12 7 12-7V10L16 3z" fill="#339933"/>
+  <path d="M16 6l9 5.2v10.6L16 27l-9-5.2V11.2L16 6z" fill="#66cc33"/>
+  <text x="16" y="20" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="8" fill="#fff">N</text>
+</svg>

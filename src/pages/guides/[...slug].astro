@@ -1,0 +1,492 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import DownloadButtons from '../../components/DownloadButtons.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
+import ReadingProgress from '../../components/ReadingProgress.astro';
+import BackToTop from '../../components/BackToTop.astro';
+import { getCollection, render } from 'astro:content';
+import { getCategoryIcon, getCategoryColor } from '../../lib/categories';
+import { getDifficulty } from '../../lib/difficulties';
+import { withBase } from '../../lib/paths';
+
+export async function getStaticPaths() {
+  const guides = await getCollection('guides');
+  return guides.map((guide) => ({
+    params: { slug: guide.id },
+    props: { guide },
+  }));
+}
+
+const { guide } = Astro.props;
+const { Content, headings } = await render(guide);
+
+const icon = getCategoryIcon(guide.data.category);
+const categoryColor = getCategoryColor(guide.data.category);
+const base = withBase;
+
+// Get related guides if specified
+const allGuides = await getCollection('guides');
+const relatedGuides = guide.data.relatedGuides
+  ? allGuides.filter(g => guide.data.relatedGuides?.includes(g.id))
+  : [];
+
+// Get difficulty config from centralized module
+const difficulty = guide.data.difficulty ? getDifficulty(guide.data.difficulty) : null;
+---
+
+<BaseLayout title={guide.data.title} description={guide.data.description} type="article">
+  <Header slot="header" />
+  <ReadingProgress />
+
+  <!-- Print-only header -->
+  <div class="print-header">
+    <div class="print-header-content">
+      <span class="print-logo">⚔️ Holy Grail</span>
+      <span class="print-title">{guide.data.title}</span>
+    </div>
+    <div class="print-meta">
+      <span>{guide.data.category}</span>
+      <span>•</span>
+      <span>holygrail.dev/guides/{guide.id}</span>
+    </div>
+  </div>
+
+  <article class="guide-page">
+    <div class="container">
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <ol>
+          <li><a href={base('')}>Home</a></li>
+          <li><a href={base('guides/')}>Guides</a></li>
+          <li>
+            <a href={base(`categories/${guide.data.category.toLowerCase()}/`)}>
+              {guide.data.category}
+            </a>
+          </li>
+          <li aria-current="page">{guide.data.title}</li>
+        </ol>
+      </nav>
+
+      <header class="guide-header">
+        <div class="guide-meta">
+          <span class="category-badge" style={`--category-color: ${categoryColor};`}>
+            <span class="category-icon" aria-hidden="true">{icon}</span>
+            {guide.data.category}
+          </span>
+          {guide.data.order && (
+            <span class="quest-number">Quest #{guide.data.order}</span>
+          )}
+          {difficulty && (
+            <span class="difficulty-badge" style={`--difficulty-color: ${difficulty.color};`}>
+              <span aria-hidden="true">{difficulty.icon}</span>
+              {difficulty.label}
+            </span>
+          )}
+          {guide.data.estimatedMinutes && (
+            <span class="time-estimate">
+              <span aria-hidden="true">⏱️</span>
+              ~{guide.data.estimatedMinutes} min
+            </span>
+          )}
+        </div>
+
+        <h1 class="guide-title">{guide.data.title}</h1>
+        <p class="guide-description">{guide.data.description}</p>
+
+        {guide.data.tags && guide.data.tags.length > 0 && (
+          <div class="guide-tags">
+            {guide.data.tags.map((tag: string) => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        )}
+
+        <DownloadButtons slug={guide.id} title={guide.data.title} />
+      </header>
+
+      <div class="guide-layout">
+        <div class="guide-content prose" data-pagefind-body>
+          <Content />
+        </div>
+
+        {headings.length > 0 && (
+          <aside class="guide-sidebar">
+            <TableOfContents headings={headings} />
+          </aside>
+        )}
+      </div>
+
+      {relatedGuides.length > 0 && (
+        <section class="related-guides">
+          <h2 class="related-title">Continue Your Quest</h2>
+          <div class="related-grid">
+            {relatedGuides.map((related) => (
+              <a href={base(`guides/${related.id}/`)} class="related-card">
+                <span class="related-icon" aria-hidden="true">{getCategoryIcon(related.data.category)}</span>
+                <div class="related-content">
+                  <span class="related-name">{related.data.title}</span>
+                  <span class="related-desc">{related.data.description}</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <footer class="guide-footer">
+        <div class="footer-nav">
+          <a href={base('guides/')} class="nav-link prev">
+            <span class="nav-direction">← Back to</span>
+            <span class="nav-title">All Guides</span>
+          </a>
+          <a href={base(`categories/${guide.data.category.toLowerCase()}/`)} class="nav-link next">
+            <span class="nav-direction">More in</span>
+            <span class="nav-title">{guide.data.category} →</span>
+          </a>
+        </div>
+      </footer>
+    </div>
+  </article>
+
+  <Footer slot="footer" />
+  <BackToTop />
+</BaseLayout>
+
+<style>
+  .guide-page {
+    padding: var(--space-2xl) 0 var(--space-4xl);
+  }
+
+  /* Breadcrumb */
+  .breadcrumb {
+    margin-bottom: var(--space-xl);
+  }
+
+  .breadcrumb ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.85rem;
+  }
+
+  .breadcrumb li {
+    display: flex;
+    align-items: center;
+  }
+
+  .breadcrumb li:not(:last-child)::after {
+    content: '/';
+    margin-left: var(--space-xs);
+    color: var(--turbo-text-secondary);
+  }
+
+  .breadcrumb a {
+    color: var(--turbo-text-secondary);
+  }
+
+  .breadcrumb a:hover {
+    color: var(--grail-gold);
+  }
+
+  .breadcrumb li[aria-current="page"] {
+    color: var(--turbo-text-primary);
+    font-weight: 500;
+  }
+
+  /* Guide Header */
+  .guide-header {
+    max-width: 72ch;
+    margin-bottom: var(--space-3xl);
+    padding-bottom: var(--space-2xl);
+    border-bottom: var(--border-manuscript);
+  }
+
+  .guide-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+  }
+
+  .category-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--turbo-bg-surface);
+    border: 1px solid var(--category-color, var(--turbo-border-default));
+    border-radius: var(--radius-full);
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--category-color, var(--turbo-text-secondary));
+  }
+
+  .category-icon {
+    font-size: 1rem;
+  }
+
+  .quest-number {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--turbo-text-secondary);
+  }
+
+  .guide-title {
+    margin-bottom: var(--space-md);
+  }
+
+  .guide-description {
+    font-size: 1.25rem;
+    color: var(--turbo-text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--space-lg);
+  }
+
+  .guide-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+  }
+
+  .tag {
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--turbo-bg-surface);
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    color: var(--turbo-text-secondary);
+  }
+
+  /* Guide Layout with ToC */
+  .guide-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2xl);
+  }
+
+  @media (min-width: 1200px) {
+    .guide-layout {
+      grid-template-columns: 1fr 250px;
+    }
+  }
+
+  .guide-sidebar {
+    display: none;
+  }
+
+  @media (min-width: 1200px) {
+    .guide-sidebar {
+      display: block;
+    }
+  }
+
+  /* Guide Content */
+  .guide-content {
+    max-width: 72ch;
+    min-width: 0;
+  }
+
+  .guide-content :global(h2) {
+    margin-top: var(--space-3xl);
+  }
+
+  .guide-content :global(h3) {
+    margin-top: var(--space-2xl);
+  }
+
+  .guide-content :global(ul),
+  .guide-content :global(ol) {
+    padding-left: var(--space-lg);
+  }
+
+  .guide-content :global(li) {
+    margin-bottom: var(--space-sm);
+  }
+
+  .guide-content :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--turbo-border-default);
+  }
+
+  .guide-content :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--space-lg) 0;
+  }
+
+  .guide-content :global(th),
+  .guide-content :global(td) {
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--turbo-border-default);
+    text-align: left;
+  }
+
+  .guide-content :global(th) {
+    background: var(--turbo-bg-surface);
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Guide Footer */
+  .guide-footer {
+    max-width: 72ch;
+    margin-top: var(--space-3xl);
+    padding-top: var(--space-2xl);
+    border-top: var(--border-manuscript);
+  }
+
+  .footer-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-lg);
+  }
+
+  .nav-link {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-md);
+    background: var(--turbo-bg-surface);
+    border: 1px solid var(--turbo-border-default);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+
+  .nav-link::after {
+    display: none;
+  }
+
+  .nav-link:hover {
+    border-color: var(--grail-gold);
+    transform: translateY(-2px);
+  }
+
+  .nav-link.next {
+    text-align: right;
+  }
+
+  .nav-direction {
+    font-size: 0.8rem;
+    color: var(--turbo-text-secondary);
+    margin-bottom: var(--space-xs);
+  }
+
+  .nav-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--turbo-text-primary);
+  }
+
+  /* Difficulty Badge */
+  .difficulty-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    background: color-mix(in srgb, var(--difficulty-color, var(--turbo-text-secondary)) 15%, transparent);
+    border: 1px solid var(--difficulty-color, var(--turbo-border-default));
+    border-radius: var(--radius-full);
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--difficulty-color, var(--turbo-text-secondary));
+  }
+
+  /* Time Estimate */
+  .time-estimate {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    color: var(--turbo-text-secondary);
+  }
+
+  /* Related Guides */
+  .related-guides {
+    max-width: 72ch;
+    margin-top: var(--space-3xl);
+    padding-top: var(--space-2xl);
+    border-top: var(--border-manuscript);
+  }
+
+  .related-title {
+    font-size: 1.25rem;
+    margin-bottom: var(--space-lg);
+  }
+
+  .related-grid {
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  @media (min-width: 640px) {
+    .related-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .related-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--turbo-bg-surface);
+    border: 1px solid var(--turbo-border-default);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+
+  .related-card::after {
+    display: none;
+  }
+
+  .related-card:hover {
+    border-color: var(--grail-gold);
+    transform: translateY(-2px);
+  }
+
+  .related-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .related-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    min-width: 0;
+  }
+
+  .related-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--turbo-text-primary);
+  }
+
+  .related-desc {
+    font-size: 0.85rem;
+    color: var(--turbo-text-secondary);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+</style>

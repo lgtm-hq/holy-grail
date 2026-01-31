@@ -1,0 +1,263 @@
+---
+const currentYear = new Date().getFullYear();
+
+const questQuotes = [
+  "We are the knights who say... npm install!",
+  "It's just a flesh wound (in the build log)",
+  "Nobody expects the TypeScript Inquisition!",
+  "Run away! Run away! (from deprecated packages)",
+  "Your mother was a hamster and your father smelt of elderberries... and used var!",
+  "Strange women lying in ponds distributing swords is no basis for a package manager",
+  "'Tis but a scratch in the codebase",
+  "What... is your favorite text editor?",
+];
+
+const randomQuote = questQuotes[Math.floor(Math.random() * questQuotes.length)];
+---
+
+<footer class="site-footer">
+  <div class="footer-content container">
+    <div class="footer-main">
+      <div class="footer-brand">
+        <span class="footer-logo">🏆</span>
+        <div class="footer-text">
+          <span class="footer-title">Holy Grail</span>
+          <span class="footer-tagline">The quest for the perfect dev environment</span>
+        </div>
+      </div>
+
+      <div class="footer-quote">
+        <blockquote>"{randomQuote}"</blockquote>
+        <cite>— The Knights of Dev</cite>
+      </div>
+    </div>
+
+    <div class="footer-links">
+      <div class="footer-section">
+        <h4>Categories</h4>
+        <ul>
+          <li><a href="/holy-grail/categories/foundation/">🏗️ Foundation</a></li>
+          <li><a href="/holy-grail/categories/languages/">📚 Languages</a></li>
+          <li><a href="/holy-grail/categories/ides/">🛠️ IDEs</a></li>
+          <li><a href="/holy-grail/categories/testing/">🧪 Testing</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="/holy-grail/guides/">All Guides</a></li>
+          <li><a href="https://github.com/lgtm-hq/holy-grail" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="https://github.com/lgtm-hq/turbo-themes" target="_blank" rel="noopener">Turbo Themes</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section">
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="https://github.com/lgtm-hq" target="_blank" rel="noopener">LGTM HQ</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="copyright">
+        © {currentYear} LGTM HQ. Licensed under MIT.
+      </p>
+      <p class="made-with">
+        Made with ❤️ and 🥥 (coconut halves for horse sounds)
+      </p>
+    </div>
+  </div>
+
+  <div class="footer-decoration" aria-hidden="true">
+    <div class="castle-silhouette"></div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: auto;
+    background: var(--turbo-bg-surface);
+    border-top: var(--border-manuscript);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .footer-content {
+    position: relative;
+    z-index: 1;
+    padding-block: var(--space-3xl) var(--space-xl);
+  }
+
+  .footer-main {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    margin-bottom: var(--space-2xl);
+    padding-bottom: var(--space-xl);
+    border-bottom: 1px solid color-mix(in srgb, var(--turbo-border-default) 30%, transparent);
+  }
+
+  @media (min-width: 768px) {
+    .footer-main {
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+    }
+  }
+
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .footer-logo {
+    font-size: 2.5rem;
+  }
+
+  .footer-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .footer-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--grail-gold);
+  }
+
+  .footer-tagline {
+    font-size: 0.9rem;
+    color: var(--turbo-text-secondary);
+    font-style: italic;
+  }
+
+  .footer-quote {
+    text-align: left;
+  }
+
+  @media (min-width: 768px) {
+    .footer-quote {
+      text-align: right;
+    }
+  }
+
+  .footer-quote blockquote {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--turbo-text-secondary);
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+  }
+
+  .footer-quote blockquote::before {
+    display: none;
+  }
+
+  .footer-quote cite {
+    font-size: 0.85rem;
+    color: var(--turbo-text-secondary);
+    opacity: 0.7;
+  }
+
+  .footer-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--space-xl);
+    margin-bottom: var(--space-2xl);
+  }
+
+  .footer-section h4 {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--grail-gold);
+    margin-bottom: var(--space-md);
+  }
+
+  .footer-section ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .footer-section li {
+    margin-bottom: var(--space-sm);
+  }
+
+  .footer-section a {
+    color: var(--turbo-text-secondary);
+    font-size: 0.9rem;
+    transition: color var(--transition-fast);
+  }
+
+  .footer-section a:hover {
+    color: var(--turbo-text-primary);
+  }
+
+  .footer-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--turbo-text-secondary);
+  }
+
+  @media (min-width: 768px) {
+    .footer-bottom {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
+
+  .copyright,
+  .made-with {
+    margin: 0;
+  }
+
+  /* Decorative castle silhouette */
+  .footer-decoration {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    opacity: 0.03;
+    pointer-events: none;
+  }
+
+  .castle-silhouette {
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--turbo-text-primary) 0px,
+      var(--turbo-text-primary) 20px,
+      transparent 20px,
+      transparent 30px,
+      var(--turbo-text-primary) 30px,
+      var(--turbo-text-primary) 50px,
+      transparent 50px,
+      transparent 100px
+    );
+    mask-image: linear-gradient(
+      to top,
+      black 0%,
+      black 40%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to top,
+      black 0%,
+      black 40%,
+      transparent 100%
+    );
+  }
+</style>
