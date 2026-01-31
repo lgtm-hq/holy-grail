@@ -70,16 +70,51 @@ function escapeCssSelector(value: string): string {
 }
 
 /**
+ * Validate and sanitize a URL for safe resource loading
+ *
+ * - Only allows same-origin URLs (relative paths or same origin absolute)
+ * - Rejects javascript:, data:, and other dangerous schemes
+ * - Returns null if the URL is invalid/unsafe
+ */
+function sanitizeResourceUrl(url: string): string | null {
+  try {
+    const resolved = new URL(url, window.location.origin);
+
+    // Only allow same-origin resources
+    if (resolved.origin !== window.location.origin) {
+      return null;
+    }
+
+    // Reject dangerous schemes (only allow http/https which are same-origin)
+    if (!['http:', 'https:'].includes(resolved.protocol)) {
+      return null;
+    }
+
+    // Return the full URL (same-origin, safe protocol)
+    return resolved.href;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Load a CSS file dynamically
  */
 export function loadCss(href: string): void {
+  // Validate URL before loading to prevent loading malicious resources
+  const safeHref = sanitizeResourceUrl(href);
+  if (!safeHref) {
+    console.error('Refused to load CSS from unsafe URL:', href);
+    return;
+  }
+
   // Use escaped selector to prevent CSS selector injection
-  const escapedHref = escapeCssSelector(href);
+  const escapedHref = escapeCssSelector(safeHref);
   if (document.querySelector(`link[href="${escapedHref}"]`)) return;
 
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = href;
+  link.href = safeHref;
   document.head.appendChild(link);
 }
 
@@ -88,8 +123,15 @@ export function loadCss(href: string): void {
  */
 export function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
+    // Validate URL before loading to prevent loading malicious scripts
+    const safeSrc = sanitizeResourceUrl(src);
+    if (!safeSrc) {
+      reject(new Error(`Refused to load script from unsafe URL: ${src}`));
+      return;
+    }
+
     // Use escaped selector to prevent CSS selector injection
-    const escapedSrc = escapeCssSelector(src);
+    const escapedSrc = escapeCssSelector(safeSrc);
     const existingScript = document.querySelector(`script[src="${escapedSrc}"]`);
     if (existingScript) {
       existingScript.addEventListener('load', () => resolve());
@@ -97,9 +139,9 @@ export function loadScript(src: string): Promise<void> {
     }
 
     const script = document.createElement('script');
-    script.src = src;
+    script.src = safeSrc;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+    script.onerror = () => reject(new Error(`Failed to load script: ${safeSrc}`));
     document.head.appendChild(script);
   });
 }
