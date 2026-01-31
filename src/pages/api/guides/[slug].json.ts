@@ -38,7 +38,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 export const GET: APIRoute = async ({ props, params }) => {
   try {
-    const { guide } = props as { guide: Awaited<ReturnType<typeof getCollection<'guides'>>>[number] | undefined };
+    const { guide } = props as { guide: Awaited<ReturnType<typeof getCollection<'guides'>>>[number] };
 
     if (!guide) {
       logger.error('API', `Guide not found: ${params.slug}`);

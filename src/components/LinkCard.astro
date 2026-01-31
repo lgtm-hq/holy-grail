@@ -9,7 +9,7 @@
  *   <LinkCard href="/guides/java/" />
  *   <LinkCard href="https://appium.io" title="Appium" description="Mobile automation framework" />
  */
-import { getCollection } from 'astro:content';
+import { getEntry } from 'astro:content';
 import { getCategoryColor, getCategoryCardIcon } from '../lib/categories';
 import { withBase, extractGuideSlug, isGuideHref } from '../lib/paths';
 import { logger } from '../lib/logger';
@@ -41,8 +41,7 @@ if (!isExternal && href.startsWith('/') && !href.startsWith(import.meta.env.BASE
 if (isGuideLink && (!providedTitle || !providedDesc)) {
   const slug = extractGuideSlug(href);
   if (slug) {
-    const guides = await getCollection('guides');
-    const guide = guides.find(g => g.id === slug);
+    const guide = await getEntry('guides', slug);
     if (guide) {
       title = providedTitle || guide.data.title;
       description = providedDesc || guide.data.description;

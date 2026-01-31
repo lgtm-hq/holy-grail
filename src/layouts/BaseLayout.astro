@@ -77,7 +77,7 @@ const imageURL = new URL(withBase(image), Astro.site || 'https://lgtm-hq.github.
     <title>{fullTitle}</title>
 
     <!-- Prevent FOUC -->
-    <script is:inline define:vars={{ darkTheme: DEFAULT_DARK_THEME, lightTheme: DEFAULT_LIGHT_THEME }}>
+    <script define:vars={{ darkTheme: DEFAULT_DARK_THEME, lightTheme: DEFAULT_LIGHT_THEME }}>
       (function() {
         const stored = localStorage.getItem('turbo-theme');
         if (stored) {

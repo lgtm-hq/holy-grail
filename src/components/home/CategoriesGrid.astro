@@ -5,7 +5,6 @@
 import { getAllCategories } from '../../lib/categories';
 import { withBase } from '../../lib/paths';
 
-const base = withBase;
 const categories = getAllCategories().filter(c => c.slug !== 'tools');
 ---
 
@@ -17,7 +16,7 @@ const categories = getAllCategories().filter(c => c.slug !== 'tools');
     <div class="categories-grid">
       {categories.map((category) => (
         <a
-          href={`${base('categories/')}${category.slug}/`}
+          href={withBase(`categories/${category.slug}/`)}
           class={`category-card category-${category.slug}`}
           style={`--category-accent: ${category.color}`}
         >

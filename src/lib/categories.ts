@@ -88,5 +88,6 @@ export function getAllCategories() {
  * Check if a string is a valid category key
  */
 export function isValidCategory(key: string): key is CategoryKey {
-  return key.toLowerCase() in CATEGORIES;
+  const normalizedKey = key.toLowerCase();
+  return Object.prototype.hasOwnProperty.call(CATEGORIES, normalizedKey);
 }
