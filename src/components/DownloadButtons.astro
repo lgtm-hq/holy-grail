@@ -17,6 +17,7 @@ const base = withBase('');
   <span class="download-label">Download as:</span>
   <div class="download-options">
     <button
+      type="button"
       class="download-btn download-btn--md"
       data-format="md"
       data-slug={slug}
@@ -33,6 +34,7 @@ const base = withBase('');
     </button>
 
     <button
+      type="button"
       class="download-btn download-btn--json"
       data-format="json"
       data-slug={slug}
@@ -51,6 +53,7 @@ const base = withBase('');
     </button>
 
     <button
+      type="button"
       class="download-btn download-btn--pdf"
       data-format="pdf"
       data-slug={slug}
@@ -89,7 +92,11 @@ const base = withBase('');
         btn.addEventListener('click', async (e) => {
           const button = e.currentTarget as HTMLButtonElement;
           const format = button.dataset.format;
-          const slug = button.dataset.slug;
+          const slug = button.dataset.slug || '';
+
+          // Encode slug for URL and create safe filename (replace / with -)
+          const encodedSlug = encodeURIComponent(slug);
+          const safeFilename = slug.replace(/\//g, '-');
 
           // Show loading state - store and restore child nodes for consistency
           const originalChildren = Array.from(button.childNodes).map((n) => n.cloneNode(true));
@@ -101,19 +108,19 @@ const base = withBase('');
 
           try {
             if (format === 'json') {
-              const response = await fetch(`${base}api/guides/${slug}.json`);
+              const response = await fetch(`${base}api/guides/${encodedSlug}.json`);
               if (!response.ok) throw new Error('Failed to fetch guide data');
               const data = await response.json();
 
-              downloadFile(JSON.stringify(data, null, 2), `${slug}.json`, 'application/json');
+              downloadFile(JSON.stringify(data, null, 2), `${safeFilename}.json`, 'application/json');
               showNotification('success', 'JSON downloaded successfully!');
             } else if (format === 'md') {
-              const response = await fetch(`${base}api/guides/${slug}.json`);
+              const response = await fetch(`${base}api/guides/${encodedSlug}.json`);
               if (!response.ok) throw new Error('Failed to fetch guide data');
               const data = await response.json();
 
               const markdown = generateMarkdown(data);
-              downloadFile(markdown, `${slug}.md`, 'text/markdown');
+              downloadFile(markdown, `${safeFilename}.md`, 'text/markdown');
               showNotification('success', 'Markdown downloaded successfully!');
             } else if (format === 'pdf') {
               window.print();

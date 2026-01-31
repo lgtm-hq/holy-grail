@@ -30,9 +30,11 @@ export async function GET(context: APIContext) {
     const aOrder = a.data.order;
     const bOrder = b.data.order;
 
-    // If both have order, compare by order
+    // If both have order, compare by order (with title tie-break for equal orders)
     if (aOrder !== undefined && bOrder !== undefined) {
-      return aOrder - bOrder;
+      const orderDiff = aOrder - bOrder;
+      if (orderDiff !== 0) return orderDiff;
+      return a.data.title.localeCompare(b.data.title);
     }
     // Items with order come before items without
     if (aOrder !== undefined) return -1;
