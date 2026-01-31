@@ -5,8 +5,8 @@
 set -euo pipefail
 
 if find . -type f \( -name "*.ts" -o -name "*.js" -o -name "*.tsx" -o -name "*.jsx" -o -name "*.mjs" -o -name "*.cjs" \) \
-   -not -path "./node_modules/*" -not -path "./.git/*" | grep -q .; then
-  echo "has_source=true" >> "$GITHUB_OUTPUT"
+	-not -path "./node_modules/*" -not -path "./.git/*" | grep -q .; then
+	echo "has_source=true" >>"$GITHUB_OUTPUT"
 else
-  echo "has_source=false" >> "$GITHUB_OUTPUT"
+	echo "has_source=false" >>"$GITHUB_OUTPUT"
 fi
