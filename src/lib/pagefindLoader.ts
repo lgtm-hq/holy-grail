@@ -22,35 +22,25 @@ export interface PagefindUIOptions {
 /**
  * Sanitize a base path to prevent XSS attacks
  *
- * - Rejects absolute URLs, protocol-relative URLs, and dangerous schemes
- * - Normalizes to a safe relative path under the current origin
- * - Returns '/' if the value is invalid
+ * Uses a strict whitelist approach - only allows simple relative paths
+ * containing alphanumeric characters, hyphens, underscores, and slashes.
+ * Returns '/' if the value doesn't match the whitelist.
  */
 function sanitizeBasePath(rawBase: string | null): string {
   if (!rawBase) return '/';
 
   const trimmed = rawBase.trim();
 
-  // Reject protocol-relative URLs (//example.com)
-  if (trimmed.startsWith('//')) return '/';
-
-  // Reject URLs with schemes (http:, javascript:, data:, etc.)
-  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/i.test(trimmed)) return '/';
-
-  // Reject values with dangerous characters (quotes, whitespace that could break out)
-  if (/[\s"'<>]/.test(trimmed)) return '/';
-
-  // Use URL constructor to resolve against current origin and extract only the pathname
-  try {
-    const url = new URL(trimmed, window.location.origin);
-    // Only keep the pathname, discarding any scheme/host changes
-    const pathname = url.pathname;
-    // Ensure it starts with /
-    return pathname.startsWith('/') ? pathname : '/' + pathname;
-  } catch {
-    // If URL parsing fails, return safe default
+  // Whitelist: only allow paths starting with / and containing safe characters
+  // This strict pattern prevents any scheme, query params, or dangerous chars
+  if (!/^\/[a-zA-Z0-9\-_/]*$/.test(trimmed)) {
     return '/';
   }
+
+  // Normalize: collapse multiple slashes, remove any path traversal attempts
+  const normalized = trimmed.replace(/\/+/g, '/').replace(/\.\./g, '');
+
+  return normalized;
 }
 
 /**
