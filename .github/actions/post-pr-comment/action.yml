@@ -10,8 +10,11 @@ inputs:
     description: Unique marker to identify and update existing comments
     required: true
   body:
-    description: Comment body content (markdown)
-    required: true
+    description: Comment body content (markdown) - mutually exclusive with file
+    required: false
+  file:
+    description: Path to file containing comment body - mutually exclusive with body
+    required: false
   pr-number:
     description: PR number (defaults to current PR)
     required: false
@@ -19,10 +22,27 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Read comment from file
+      if: inputs.file != ''
+      id: read-file
+      shell: bash
+      run: |
+        if [ ! -f "${{ inputs.file }}" ]; then
+          echo "::error::Comment file not found: ${{ inputs.file }}"
+          exit 1
+        fi
+        # Use delimiter to handle multiline content
+        {
+          echo "content<<EOF"
+          cat "${{ inputs.file }}"
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"
+
     - name: Post or update PR comment
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
       env:
-        COMMENT_BODY: ${{ inputs.body }}
+        COMMENT_BODY:
+          ${{ inputs.file != '' && steps.read-file.outputs.content || inputs.body }}
         COMMENT_MARKER: ${{ inputs.marker }}
       with:
         github-token: ${{ inputs.github-token }}

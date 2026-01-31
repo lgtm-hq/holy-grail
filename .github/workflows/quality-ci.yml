@@ -15,6 +15,9 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     # Use lintro-tools image which has all external tools pre-installed
     # (shellcheck, prettier, biome, yamllint, actionlint, etc.)
     container:
@@ -44,7 +47,26 @@ jobs:
 
       - name: Run lintro
         if: steps.check.outputs.has_code == 'true'
-        run: lintro chk
+        run: ./scripts/ci/ci-lintro.sh
+        continue-on-error: true
+
+      - name: Generate PR comment
+        if:
+          github.event_name == 'pull_request' && steps.check.outputs.has_code == 'true'
+        run: ./scripts/ci/ci-pr-comment.sh
+
+      - name: Post lintro results to PR
+        if:
+          github.event_name == 'pull_request' && steps.check.outputs.has_code == 'true'
+        uses: ./.github/actions/post-pr-comment
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          marker: lintro-report
+          file: pr-comment.txt
+
+      - name: Fail on linting issues
+        if: steps.check.outputs.has_code == 'true' && env.CHK_EXIT_CODE != '0'
+        run: exit 1
 
       - name: Skip notification
         if: steps.check.outputs.has_code == 'false'
