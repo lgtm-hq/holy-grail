@@ -24,12 +24,24 @@
  * const response = await fetch('/api/guides/appium.json');
  * const data = await response.json();
  */
-import type { APIRoute, GetStaticPaths } from 'astro';
-import { getCollection } from 'astro:content';
-import { logger } from '../../../lib/logger';
+import type { APIRoute, GetStaticPaths } from "astro";
+import { getCollection } from "astro:content";
+import { logger } from "../../../lib/logger";
+
+// Guide data shape for standalone tsc compatibility
+interface GuideData {
+  title: string;
+  description: string;
+  category: string;
+  order?: number;
+  tags?: string[];
+  difficulty?: string;
+  estimatedMinutes?: number;
+  relatedGuides?: string[];
+}
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const guides = await getCollection('guides');
+  const guides = await getCollection("guides");
   return guides.map((guide) => ({
     params: { slug: guide.id },
     props: { guide },
@@ -38,43 +50,48 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 export const GET: APIRoute = async ({ props, params }) => {
   try {
-    const { guide } = props as { guide: Awaited<ReturnType<typeof getCollection<'guides'>>>[number] };
+    const { guide } = props as {
+      guide: Awaited<ReturnType<typeof getCollection<"guides">>>[number];
+    };
 
     if (!guide) {
-      logger.error('API', `Guide not found: ${params.slug}`);
-      return new Response(
-        JSON.stringify({ error: 'Guide not found', slug: params.slug }),
-        { status: 404, headers: { 'Content-Type': 'application/json' } }
-      );
+      logger.error("API", `Guide not found: ${params.slug}`);
+      return new Response(JSON.stringify({ error: "Guide not found", slug: params.slug }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    logger.info('API', `Serving guide: ${guide.id}`);
+    logger.info("API", `Serving guide: ${guide.id}`);
+
+    // Cast for standalone tsc compatibility (Astro provides proper types at runtime)
+    const guideData = guide.data as GuideData;
 
     const data = {
       id: guide.id,
-      title: guide.data.title,
-      description: guide.data.description,
-      category: guide.data.category,
-      order: guide.data.order ?? null,
-      tags: guide.data.tags ?? [],
-      difficulty: guide.data.difficulty ?? null,
-      estimatedMinutes: guide.data.estimatedMinutes ?? null,
-      relatedGuides: guide.data.relatedGuides ?? [],
-      content: guide.body ?? '',
+      title: guideData.title,
+      description: guideData.description,
+      category: guideData.category,
+      order: guideData.order ?? null,
+      tags: guideData.tags ?? [],
+      difficulty: guideData.difficulty ?? null,
+      estimatedMinutes: guideData.estimatedMinutes ?? null,
+      relatedGuides: guideData.relatedGuides ?? [],
+      content: guide.body ?? "",
     };
 
     return new Response(JSON.stringify(data, null, 2), {
       status: 200,
       headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=3600',
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=3600",
       },
     });
   } catch (error) {
-    logger.error('API', `Error processing guide ${params.slug}:`, error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    logger.error("API", `Error processing guide ${params.slug}:`, error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };

@@ -12,19 +12,19 @@ export interface Difficulty {
 
 export const DIFFICULTIES = {
   beginner: {
-    label: 'Beginner',
-    icon: '🌱',
-    color: '#a6e3a1',
+    label: "Beginner",
+    icon: "🌱",
+    color: "#a6e3a1",
   },
   intermediate: {
-    label: 'Intermediate',
-    icon: '🌿',
-    color: '#f9e2af',
+    label: "Intermediate",
+    icon: "🌿",
+    color: "#f9e2af",
   },
   advanced: {
-    label: 'Advanced',
-    icon: '🌳',
-    color: '#f38ba8',
+    label: "Advanced",
+    icon: "🌳",
+    color: "#f38ba8",
   },
 } as const;
 
@@ -42,7 +42,7 @@ export function getDifficulty(key: string): Difficulty | null {
  */
 export function getAllDifficulties() {
   return [
-    { value: 'all', label: 'All Levels', icon: '⚔️' },
+    { value: "all", label: "All Levels", icon: "⚔️" },
     ...Object.entries(DIFFICULTIES).map(([value, config]) => ({
       value,
       label: config.label,

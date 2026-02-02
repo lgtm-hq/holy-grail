@@ -17,9 +17,9 @@
  */
 export function withBase(path: string): string {
   const base = import.meta.env.BASE_URL;
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  const cleanPath = path.startsWith("/") ? path.slice(1) : path;
   // Ensure base ends with / for proper concatenation
-  const normalizedBase = base.endsWith('/') ? base : `${base}/`;
+  const normalizedBase = base.endsWith("/") ? base : `${base}/`;
   return `${normalizedBase}${cleanPath}`;
 }
 
@@ -28,7 +28,7 @@ export function withBase(path: string): string {
  */
 export function getBase(): string {
   const base = import.meta.env.BASE_URL;
-  return base.endsWith('/') ? base.slice(0, -1) : base;
+  return base.endsWith("/") ? base.slice(0, -1) : base;
 }
 
 /**
@@ -36,7 +36,7 @@ export function getBase(): string {
  */
 export function isInternalPath(path: string): boolean {
   const base = import.meta.env.BASE_URL;
-  return path.startsWith(base) || path.startsWith('/');
+  return path.startsWith(base) || path.startsWith("/");
 }
 
 /**
@@ -53,5 +53,5 @@ export function extractGuideSlug(href: string): string | null {
  * Check if href points to a guide
  */
 export function isGuideHref(href: string): boolean {
-  return href.includes('/guides/') && !href.startsWith('http');
+  return href.includes("/guides/") && !href.startsWith("http");
 }

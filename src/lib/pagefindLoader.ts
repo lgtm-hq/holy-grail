@@ -27,18 +27,18 @@ export interface PagefindUIOptions {
  */
 function sanitizeBasePath(rawBase: string | null): string {
   if (!rawBase) {
-    return '/';
+    return "/";
   }
 
   const trimmed = rawBase.trim();
 
   // Disallow absolute/protocol-relative URLs like "http://", "https://", "//", "javascript:", etc.
-  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed) || trimmed.startsWith('//')) {
-    return '/';
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed) || trimmed.startsWith("//")) {
+    return "/";
   }
 
   // Ensure path starts with a single leading slash
-  const withLeadingSlash = trimmed.startsWith('/') ? trimmed : '/' + trimmed;
+  const withLeadingSlash = trimmed.startsWith("/") ? trimmed : "/" + trimmed;
 
   return withLeadingSlash;
 }
@@ -47,15 +47,15 @@ function sanitizeBasePath(rawBase: string | null): string {
  * Get the base path from the document
  */
 export function getBasePath(): string {
-  const base = sanitizeBasePath(document.documentElement.getAttribute('data-base'));
-  return base.endsWith('/') ? base : base + '/';
+  const base = sanitizeBasePath(document.documentElement.getAttribute("data-base"));
+  return base.endsWith("/") ? base : base + "/";
 }
 
 /**
  * Escape a string for safe use in CSS attribute selectors
  */
 function escapeCssSelector(value: string): string {
-  return value.replace(/["\\]/g, '\\$&');
+  return value.replace(/["\\]/g, "\\$&");
 }
 
 /**
@@ -75,7 +75,7 @@ function sanitizeResourceUrl(url: string): string | null {
     }
 
     // Reject dangerous schemes (only allow http/https which are same-origin)
-    if (!['http:', 'https:'].includes(resolved.protocol)) {
+    if (!["http:", "https:"].includes(resolved.protocol)) {
       return null;
     }
 
@@ -93,7 +93,7 @@ export function loadCss(href: string): void {
   // Validate URL before loading to prevent loading malicious resources
   const safeHref = sanitizeResourceUrl(href);
   if (!safeHref) {
-    console.error('Refused to load CSS from unsafe URL:', href);
+    console.error("Refused to load CSS from unsafe URL:", href);
     return;
   }
 
@@ -101,8 +101,8 @@ export function loadCss(href: string): void {
   const escapedHref = escapeCssSelector(safeHref);
   if (document.querySelector(`link[href="${escapedHref}"]`)) return;
 
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
   link.href = safeHref;
   document.head.appendChild(link);
 }
@@ -123,11 +123,11 @@ export function loadScript(src: string): Promise<void> {
     const escapedSrc = escapeCssSelector(safeSrc);
     const existingScript = document.querySelector(`script[src="${escapedSrc}"]`);
     if (existingScript) {
-      existingScript.addEventListener('load', () => resolve());
+      existingScript.addEventListener("load", () => resolve());
       return;
     }
 
-    const script = document.createElement('script');
+    const script = document.createElement("script");
     script.src = safeSrc;
     script.onload = () => resolve();
     script.onerror = () => reject(new Error(`Failed to load script: ${safeSrc}`));
@@ -183,7 +183,7 @@ export async function loadPagefind(
       baseUrl: basePath,
     });
   } catch {
-    onError?.('Search unavailable. Run <code>bun run build</code> first.');
+    onError?.("Search unavailable. Run <code>bun run build</code> first.");
     return false;
   }
 }

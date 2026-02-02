@@ -6,39 +6,39 @@
 
 export const CATEGORIES = {
   foundation: {
-    name: 'Foundation',
-    color: '#a6e3a1',
-    icon: '🏗️',
-    cardIcon: '🏰',
-    description: 'Essential tools: Homebrew, ZSH, SDKMAN',
+    name: "Foundation",
+    color: "#a6e3a1",
+    icon: "🏗️",
+    cardIcon: "🏰",
+    description: "Essential tools: Homebrew, ZSH, SDKMAN",
   },
   languages: {
-    name: 'Languages',
-    color: '#89b4fa',
-    icon: '📚',
-    cardIcon: '📜',
-    description: 'Python, Java, NodeJS setup guides',
+    name: "Languages",
+    color: "#89b4fa",
+    icon: "📚",
+    cardIcon: "📜",
+    description: "Python, Java, NodeJS setup guides",
   },
   ides: {
-    name: 'IDEs',
-    color: '#f9e2af',
-    icon: '🛠️',
-    cardIcon: '⚔️',
-    description: 'Android Studio, XCode configuration',
+    name: "IDEs",
+    color: "#f9e2af",
+    icon: "🛠️",
+    cardIcon: "⚔️",
+    description: "Android Studio, XCode configuration",
   },
   testing: {
-    name: 'Testing',
-    color: '#f38ba8',
-    icon: '🧪',
-    cardIcon: '🛡️',
-    description: 'Appium, UI Testing frameworks',
+    name: "Testing",
+    color: "#f38ba8",
+    icon: "🧪",
+    cardIcon: "🛡️",
+    description: "Appium, UI Testing frameworks",
   },
   tools: {
-    name: 'Tools',
-    color: '#cba6f7',
-    icon: '⚙️',
-    cardIcon: '🔧',
-    description: 'Utilities and development tools',
+    name: "Tools",
+    color: "#cba6f7",
+    icon: "⚙️",
+    cardIcon: "🔧",
+    description: "Utilities and development tools",
   },
 } as const;
 
@@ -57,21 +57,21 @@ export function getCategory(key: string): Category | undefined {
  * Get category color, with fallback to gold for unknown categories
  */
 export function getCategoryColor(key: string): string {
-  return getCategory(key)?.color ?? 'var(--grail-gold)';
+  return getCategory(key)?.color ?? "var(--grail-gold)";
 }
 
 /**
  * Get category icon for headers/badges
  */
 export function getCategoryIcon(key: string): string {
-  return getCategory(key)?.icon ?? '📜';
+  return getCategory(key)?.icon ?? "📜";
 }
 
 /**
  * Get category icon for cards
  */
 export function getCategoryCardIcon(key: string): string {
-  return getCategory(key)?.cardIcon ?? '📄';
+  return getCategory(key)?.cardIcon ?? "📄";
 }
 
 /**

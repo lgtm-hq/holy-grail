@@ -1,7 +1,7 @@
 {
   "name": "holy-grail",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "astro dev",
     "build": "astro check && astro build && pagefind --site dist",
@@ -17,7 +17,11 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.6",
     "@pagefind/default-ui": "^1.4.0",
+    "markdownlint-cli2": "^0.20.0",
+    "oxfmt": "^0.27.0",
+    "oxlint": "^1.42.0",
     "pagefind": "^1.4.0",
+    "prettier": "^3.4.0",
     "typescript": "^5"
   }
 }
