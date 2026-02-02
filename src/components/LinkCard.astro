@@ -35,7 +35,7 @@ const isGuideLink = isGuideHref(href) && !forceExternal;
 let title = providedTitle || '';
 let description = providedDesc || '';
 let category = '';
-let isExternal = forceExternal || href.startsWith('http');
+let isExternal = forceExternal || href.startsWith('http') || href.startsWith('//');
 let domain = '';
 
 // Resolve the href - auto-prepend base for internal paths

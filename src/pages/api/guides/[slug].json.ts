@@ -25,6 +25,7 @@
  * const data = await response.json();
  */
 import type { APIRoute, GetStaticPaths } from "astro";
+import type { CollectionEntry } from "astro:content";
 import { getCollection } from "astro:content";
 import { logger } from "../../../lib/logger";
 
@@ -51,7 +52,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export const GET: APIRoute = async ({ props, params }) => {
   try {
     const { guide } = props as {
-      guide: Awaited<ReturnType<typeof getCollection<"guides">>>[number];
+      guide: CollectionEntry<"guides">;
     };
 
     if (!guide) {

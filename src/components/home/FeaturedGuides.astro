@@ -20,23 +20,23 @@ interface Props {
   guides: CollectionEntry<'guides'>[];
 }
 
-const { guides } = Astro.props;
+const { guides = [] } = Astro.props as Props;
 const base = withBase;
 ---
 
-{guides.length > 0 && (
-  <section class="featured-section">
-    <div class="container">
-      <div class="section-header">
-        <div>
-          <h2 class="section-title">Featured Guides</h2>
-          <p class="section-subtitle">Start with these essential quests</p>
-        </div>
-        <a href={base('guides/')} class="view-all-link">
-          View all guides →
-        </a>
+<section class="featured-section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Featured Guides</h2>
+        <p class="section-subtitle">Start with these essential quests</p>
       </div>
+      <a href={base('guides/')} class="view-all-link">
+        View all guides →
+      </a>
+    </div>
 
+    {guides.length > 0 ? (
       <div class="guides-grid">
         {guides.map((guide) => {
           const guideData = guide.data as GuideData;
@@ -54,9 +54,14 @@ const base = withBase;
           );
         })}
       </div>
-    </div>
-  </section>
-)}
+    ) : (
+      <div class="empty-state">
+        <p>Guides are being prepared. Check back soon!</p>
+        <a href={base('guides/')} class="empty-cta">Browse all guides →</a>
+      </div>
+    )}
+  </div>
+</section>
 
 <style>
   .featured-section {
@@ -96,5 +101,23 @@ const base = withBase;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: var(--space-lg);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: var(--space-2xl);
+    background: var(--turbo-bg-muted);
+    border: 1px dashed var(--turbo-border-default);
+    border-radius: var(--radius-md);
+  }
+
+  .empty-state p {
+    color: var(--turbo-text-secondary);
+    margin-bottom: var(--space-md);
+  }
+
+  .empty-cta {
+    font-family: var(--font-display);
+    color: var(--grail-gold);
   }
 </style>

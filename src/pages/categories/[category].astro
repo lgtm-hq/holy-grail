@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import GuideCard from '../../components/GuideCard.astro';
 import CategoryNav from '../../components/CategoryNav.astro';
 import { getCollection } from 'astro:content';
-import { CATEGORIES, getCategory } from '../../lib/categories';
+import { CATEGORIES, getCategory, getCategorySlug } from '../../lib/categories';
 import { withBase } from '../../lib/paths';
 
 // Guide data shape for standalone type checking
@@ -36,12 +36,14 @@ const allGuides = await getCollection('guides');
 const categoryGuides = allGuides
   .filter((guide) => {
     const guideData = guide.data as GuideData;
-    return guideData.category.toLowerCase() === category;
+    return getCategorySlug(guideData.category) === category;
   })
   .sort((a, b) => {
     const aData = a.data as GuideData;
     const bData = b.data as GuideData;
-    return (aData.order || 0) - (bData.order || 0);
+    const aOrder = aData.order ?? Number.POSITIVE_INFINITY;
+    const bOrder = bData.order ?? Number.POSITIVE_INFINITY;
+    return aOrder - bOrder;
   });
 ---
 

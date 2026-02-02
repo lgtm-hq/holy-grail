@@ -7,7 +7,7 @@ import TableOfContents from '../../components/TableOfContents.astro';
 import ReadingProgress from '../../components/ReadingProgress.astro';
 import BackToTop from '../../components/BackToTop.astro';
 import { getCollection, render } from 'astro:content';
-import { getCategoryIcon, getCategoryColor } from '../../lib/categories';
+import { getCategoryIcon, getCategoryColor, getCategorySlug } from '../../lib/categories';
 import { getDifficulty } from '../../lib/difficulties';
 import { withBase } from '../../lib/paths';
 
@@ -41,11 +41,17 @@ const icon = getCategoryIcon(guideData.category);
 const categoryColor = getCategoryColor(guideData.category);
 const base = withBase;
 
-// Get related guides if specified
+// Build dynamic guide URL for sharing/display
+const guideUrl = Astro.site
+  ? new URL(`${import.meta.env.BASE_URL}guides/${guide.id}/`, Astro.site).href.replace(/([^:]\/)\/+/g, '$1')
+  : `guides/${guide.id}/`;
+
+// Get related guides if specified, preserving frontmatter order
 const allGuides = await getCollection('guides');
-const relatedGuides = guideData.relatedGuides
-  ? allGuides.filter(g => guideData.relatedGuides?.includes(g.id))
-  : [];
+const allGuidesById = new Map(allGuides.map((g) => [g.id, g]));
+const relatedGuides = (guideData.relatedGuides ?? [])
+  .map((id) => allGuidesById.get(id))
+  .filter((g): g is (typeof allGuides)[number] => Boolean(g));
 
 // Get difficulty config from centralized module
 const difficulty = guideData.difficulty ? getDifficulty(guideData.difficulty) : null;
@@ -64,7 +70,7 @@ const difficulty = guideData.difficulty ? getDifficulty(guideData.difficulty) : 
     <div class="print-meta">
       <span>{guideData.category}</span>
       <span>•</span>
-      <span>holygrail.dev/guides/{guide.id}</span>
+      <span>{guideUrl}</span>
     </div>
   </div>
 
@@ -76,7 +82,7 @@ const difficulty = guideData.difficulty ? getDifficulty(guideData.difficulty) : 
           <li><a href={base('')}>Home</a></li>
           <li><a href={base('guides/')}>Guides</a></li>
           <li>
-            <a href={base(`categories/${guideData.category.toLowerCase()}/`)}>
+            <a href={base(`categories/${getCategorySlug(guideData.category)}/`)}>
               {guideData.category}
             </a>
           </li>
@@ -159,7 +165,7 @@ const difficulty = guideData.difficulty ? getDifficulty(guideData.difficulty) : 
             <span class="nav-direction">← Back to</span>
             <span class="nav-title">All Guides</span>
           </a>
-          <a href={base(`categories/${guideData.category.toLowerCase()}/`)} class="nav-link next">
+          <a href={base(`categories/${getCategorySlug(guideData.category)}/`)} class="nav-link next">
             <span class="nav-direction">More in</span>
             <span class="nav-title">{guideData.category} →</span>
           </a>
