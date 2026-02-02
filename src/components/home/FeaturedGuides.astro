@@ -6,6 +6,16 @@ import GuideCard from '../GuideCard.astro';
 import { withBase } from '../../lib/paths';
 import type { CollectionEntry } from 'astro:content';
 
+// Guide data shape for standalone type checking
+interface GuideData {
+  title: string;
+  description: string;
+  category: string;
+  order?: number;
+  tags?: string[];
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+}
+
 interface Props {
   guides: CollectionEntry<'guides'>[];
 }
@@ -28,18 +38,21 @@ const base = withBase;
       </div>
 
       <div class="guides-grid">
-        {guides.map((guide) => (
-          <GuideCard
-            title={guide.data.title}
-            description={guide.data.description}
-            href={base(`guides/${guide.id}/`)}
-            category={guide.data.category}
-            tags={guide.data.tags}
-            order={guide.data.order}
-            slug={guide.id}
-            difficulty={guide.data.difficulty}
-          />
-        ))}
+        {guides.map((guide) => {
+          const guideData = guide.data as GuideData;
+          return (
+            <GuideCard
+              title={guideData.title}
+              description={guideData.description}
+              href={base(`guides/${guide.id}/`)}
+              category={guideData.category}
+              tags={guideData.tags}
+              order={guideData.order}
+              slug={guide.id}
+              difficulty={guideData.difficulty}
+            />
+          );
+        })}
       </div>
     </div>
   </section>

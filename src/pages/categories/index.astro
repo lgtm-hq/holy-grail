@@ -6,6 +6,11 @@ import { getCollection } from 'astro:content';
 import { getAllCategories } from '../../lib/categories';
 import { withBase } from '../../lib/paths';
 
+// Guide data shape for standalone type checking
+interface GuideData {
+  category: string;
+}
+
 const allGuides = await getCollection('guides');
 const base = withBase;
 
@@ -15,7 +20,7 @@ const categories = getAllCategories().filter(c => c.slug !== 'tools');
 // Count guides per category
 const categoryCounts = categories.map((cat) => ({
   ...cat,
-  count: allGuides.filter((g) => g.data.category.toLowerCase() === cat.slug).length,
+  count: allGuides.filter((g) => (g.data as GuideData).category.toLowerCase() === cat.slug).length,
 }));
 ---
 

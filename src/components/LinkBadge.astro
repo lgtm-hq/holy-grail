@@ -14,6 +14,12 @@ import { getCategoryColor } from '../lib/categories';
 import { withBase, extractGuideSlug, isGuideHref } from '../lib/paths';
 import { logger } from '../lib/logger';
 
+// Guide data shape for standalone type checking
+interface GuideData {
+  title: string;
+  category: string;
+}
+
 interface Props {
   href: string;
   title?: string;
@@ -41,8 +47,9 @@ if (isGuideLink && !providedTitle) {
     const guides = await getCollection('guides');
     const guide = guides.find(g => g.id === slug);
     if (guide) {
-      title = guide.data.title;
-      category = guide.data.category.toLowerCase();
+      const guideData = guide.data as GuideData;
+      title = guideData.title;
+      category = guideData.category.toLowerCase();
     } else {
       logger.warn('LinkBadge', `Guide not found for slug: ${slug}`);
     }

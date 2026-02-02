@@ -8,6 +8,15 @@ import { getCollection } from 'astro:content';
 import { CATEGORIES, getCategory } from '../../lib/categories';
 import { withBase } from '../../lib/paths';
 
+// Guide data shape for standalone type checking
+interface GuideData {
+  title: string;
+  description: string;
+  category: string;
+  order?: number;
+  tags?: string[];
+}
+
 export async function getStaticPaths() {
   const categories = Object.keys(CATEGORIES);
   return categories.map((category) => ({
@@ -25,8 +34,15 @@ const base = withBase;
 
 const allGuides = await getCollection('guides');
 const categoryGuides = allGuides
-  .filter((guide) => guide.data.category.toLowerCase() === category)
-  .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
+  .filter((guide) => {
+    const guideData = guide.data as GuideData;
+    return guideData.category.toLowerCase() === category;
+  })
+  .sort((a, b) => {
+    const aData = a.data as GuideData;
+    const bData = b.data as GuideData;
+    return (aData.order || 0) - (bData.order || 0);
+  });
 ---
 
 <BaseLayout title={info.name} description={info.description}>
@@ -57,17 +73,20 @@ const categoryGuides = allGuides
 
       {categoryGuides.length > 0 ? (
         <div class="guides-grid">
-          {categoryGuides.map((guide) => (
-            <GuideCard
-              title={guide.data.title}
-              description={guide.data.description}
-              href={base(`guides/${guide.id}/`)}
-              category={guide.data.category}
-              tags={guide.data.tags}
-              order={guide.data.order}
-              slug={guide.id}
-            />
-          ))}
+          {categoryGuides.map((guide) => {
+            const guideData = guide.data as GuideData;
+            return (
+              <GuideCard
+                title={guideData.title}
+                description={guideData.description}
+                href={base(`guides/${guide.id}/`)}
+                category={guideData.category}
+                tags={guideData.tags}
+                order={guideData.order}
+                slug={guide.id}
+              />
+            );
+          })}
         </div>
       ) : (
         <div class="empty-state">

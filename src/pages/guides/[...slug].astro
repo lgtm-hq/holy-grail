@@ -11,6 +11,18 @@ import { getCategoryIcon, getCategoryColor } from '../../lib/categories';
 import { getDifficulty } from '../../lib/difficulties';
 import { withBase } from '../../lib/paths';
 
+// Guide data shape for standalone type checking
+interface GuideData {
+  title: string;
+  description: string;
+  category: string;
+  order?: number;
+  tags?: string[];
+  difficulty?: string;
+  estimatedMinutes?: number;
+  relatedGuides?: string[];
+}
+
 export async function getStaticPaths() {
   const guides = await getCollection('guides');
   return guides.map((guide) => ({
@@ -22,21 +34,24 @@ export async function getStaticPaths() {
 const { guide } = Astro.props;
 const { Content, headings } = await render(guide);
 
-const icon = getCategoryIcon(guide.data.category);
-const categoryColor = getCategoryColor(guide.data.category);
+// Cast for standalone type checking (Astro provides proper types at runtime)
+const guideData = guide.data as GuideData;
+
+const icon = getCategoryIcon(guideData.category);
+const categoryColor = getCategoryColor(guideData.category);
 const base = withBase;
 
 // Get related guides if specified
 const allGuides = await getCollection('guides');
-const relatedGuides = guide.data.relatedGuides
-  ? allGuides.filter(g => guide.data.relatedGuides?.includes(g.id))
+const relatedGuides = guideData.relatedGuides
+  ? allGuides.filter(g => guideData.relatedGuides?.includes(g.id))
   : [];
 
 // Get difficulty config from centralized module
-const difficulty = guide.data.difficulty ? getDifficulty(guide.data.difficulty) : null;
+const difficulty = guideData.difficulty ? getDifficulty(guideData.difficulty) : null;
 ---
 
-<BaseLayout title={guide.data.title} description={guide.data.description} type="article">
+<BaseLayout title={guideData.title} description={guideData.description} type="article">
   <Header slot="header" />
   <ReadingProgress />
 
@@ -44,10 +59,10 @@ const difficulty = guide.data.difficulty ? getDifficulty(guide.data.difficulty) 
   <div class="print-header">
     <div class="print-header-content">
       <span class="print-logo">⚔️ Holy Grail</span>
-      <span class="print-title">{guide.data.title}</span>
+      <span class="print-title">{guideData.title}</span>
     </div>
     <div class="print-meta">
-      <span>{guide.data.category}</span>
+      <span>{guideData.category}</span>
       <span>•</span>
       <span>holygrail.dev/guides/{guide.id}</span>
     </div>
@@ -61,11 +76,11 @@ const difficulty = guide.data.difficulty ? getDifficulty(guide.data.difficulty) 
           <li><a href={base('')}>Home</a></li>
           <li><a href={base('guides/')}>Guides</a></li>
           <li>
-            <a href={base(`categories/${guide.data.category.toLowerCase()}/`)}>
-              {guide.data.category}
+            <a href={base(`categories/${guideData.category.toLowerCase()}/`)}>
+              {guideData.category}
             </a>
           </li>
-          <li aria-current="page">{guide.data.title}</li>
+          <li aria-current="page">{guideData.title}</li>
         </ol>
       </nav>
 
@@ -73,10 +88,10 @@ const difficulty = guide.data.difficulty ? getDifficulty(guide.data.difficulty) 
         <div class="guide-meta">
           <span class="category-badge" style={`--category-color: ${categoryColor};`}>
             <span class="category-icon" aria-hidden="true">{icon}</span>
-            {guide.data.category}
+            {guideData.category}
           </span>
-          {guide.data.order && (
-            <span class="quest-number">Quest #{guide.data.order}</span>
+          {guideData.order && (
+            <span class="quest-number">Quest #{guideData.order}</span>
           )}
           {difficulty && (
             <span class="difficulty-badge" style={`--difficulty-color: ${difficulty.color};`}>
@@ -84,26 +99,26 @@ const difficulty = guide.data.difficulty ? getDifficulty(guide.data.difficulty) 
               {difficulty.label}
             </span>
           )}
-          {guide.data.estimatedMinutes && (
+          {guideData.estimatedMinutes && (
             <span class="time-estimate">
               <span aria-hidden="true">⏱️</span>
-              ~{guide.data.estimatedMinutes} min
+              ~{guideData.estimatedMinutes} min
             </span>
           )}
         </div>
 
-        <h1 class="guide-title">{guide.data.title}</h1>
-        <p class="guide-description">{guide.data.description}</p>
+        <h1 class="guide-title">{guideData.title}</h1>
+        <p class="guide-description">{guideData.description}</p>
 
-        {guide.data.tags && guide.data.tags.length > 0 && (
+        {guideData.tags && guideData.tags.length > 0 && (
           <div class="guide-tags">
-            {guide.data.tags.map((tag: string) => (
+            {guideData.tags.map((tag: string) => (
               <span class="tag">{tag}</span>
             ))}
           </div>
         )}
 
-        <DownloadButtons slug={guide.id} title={guide.data.title} />
+        <DownloadButtons slug={guide.id} title={guideData.title} />
       </header>
 
       <div class="guide-layout">
@@ -122,15 +137,18 @@ const difficulty = guide.data.difficulty ? getDifficulty(guide.data.difficulty) 
         <section class="related-guides">
           <h2 class="related-title">Continue Your Quest</h2>
           <div class="related-grid">
-            {relatedGuides.map((related) => (
-              <a href={base(`guides/${related.id}/`)} class="related-card">
-                <span class="related-icon" aria-hidden="true">{getCategoryIcon(related.data.category)}</span>
-                <div class="related-content">
-                  <span class="related-name">{related.data.title}</span>
-                  <span class="related-desc">{related.data.description}</span>
-                </div>
-              </a>
-            ))}
+            {relatedGuides.map((related) => {
+              const relatedData = related.data as GuideData;
+              return (
+                <a href={base(`guides/${related.id}/`)} class="related-card">
+                  <span class="related-icon" aria-hidden="true">{getCategoryIcon(relatedData.category)}</span>
+                  <div class="related-content">
+                    <span class="related-name">{relatedData.title}</span>
+                    <span class="related-desc">{relatedData.description}</span>
+                  </div>
+                </a>
+              );
+            })}
           </div>
         </section>
       )}
@@ -141,9 +159,9 @@ const difficulty = guide.data.difficulty ? getDifficulty(guide.data.difficulty) 
             <span class="nav-direction">← Back to</span>
             <span class="nav-title">All Guides</span>
           </a>
-          <a href={base(`categories/${guide.data.category.toLowerCase()}/`)} class="nav-link next">
+          <a href={base(`categories/${guideData.category.toLowerCase()}/`)} class="nav-link next">
             <span class="nav-direction">More in</span>
-            <span class="nav-title">{guide.data.category} →</span>
+            <span class="nav-title">{guideData.category} →</span>
           </a>
         </div>
       </footer>

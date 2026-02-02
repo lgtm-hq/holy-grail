@@ -14,6 +14,13 @@ import { getCategoryColor, getCategoryCardIcon } from '../lib/categories';
 import { withBase, extractGuideSlug, isGuideHref } from '../lib/paths';
 import { logger } from '../lib/logger';
 
+// Guide data shape for standalone type checking
+interface GuideData {
+  title: string;
+  description: string;
+  category?: string;
+}
+
 interface Props {
   href: string;
   title?: string;
@@ -43,9 +50,10 @@ if (isGuideLink && (!providedTitle || !providedDesc)) {
   if (slug) {
     const guide = await getEntry('guides', slug);
     if (guide) {
-      title = providedTitle || guide.data.title;
-      description = providedDesc || guide.data.description;
-      category = guide.data.category?.toLowerCase() || '';
+      const guideData = guide.data as GuideData;
+      title = providedTitle || guideData.title;
+      description = providedDesc || guideData.description;
+      category = guideData.category?.toLowerCase() || '';
     } else {
       logger.warn('LinkCard', `Guide not found for slug: ${slug}`);
     }
