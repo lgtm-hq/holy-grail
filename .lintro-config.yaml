@@ -102,15 +102,8 @@ tools:
     enabled: true
 
   # TypeScript compiler for type checking
-  # Exclude Astro-specific files that use virtual modules (astro:content)
-  # and import.meta.env - these are type-checked by `astro check` in CI
   tsc:
     enabled: true
-    exclude:
-      - '**/content.config.ts'
-      - '**/pages/**/*.ts'
-      - '**/lib/logger.ts'
-      - '**/lib/paths.ts'
 
   # Shellcheck - Shell script linter
   shellcheck:
