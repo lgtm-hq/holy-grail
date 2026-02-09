@@ -7,7 +7,7 @@ import CategoryNav from '../../components/CategoryNav.astro';
 import { getCollection } from 'astro:content';
 import { withBase } from '../../lib/paths';
 
-// Guide data shape for standalone type checking
+// Guide data shape for type assertions (matches content.config.ts schema)
 interface GuideData {
   title: string;
   description: string;

@@ -49,8 +49,11 @@ export type Category = (typeof CATEGORIES)[CategoryKey];
  * Get category configuration by key (case-insensitive)
  */
 export function getCategory(key: string): Category | undefined {
-  const normalizedKey = key.toLowerCase() as CategoryKey;
-  return CATEGORIES[normalizedKey];
+  const normalizedKey = key.toLowerCase();
+  if (Object.prototype.hasOwnProperty.call(CATEGORIES, normalizedKey)) {
+    return CATEGORIES[normalizedKey as CategoryKey];
+  }
+  return undefined;
 }
 
 /**

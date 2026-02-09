@@ -11,7 +11,7 @@ import { getCategoryIcon, getCategoryColor, getCategorySlug } from '../../lib/ca
 import { getDifficulty } from '../../lib/difficulties';
 import { withBase } from '../../lib/paths';
 
-// Guide data shape for standalone type checking
+// Guide data shape for type assertions (matches content.config.ts schema)
 interface GuideData {
   title: string;
   description: string;
@@ -96,7 +96,7 @@ const difficulty = guideData.difficulty ? getDifficulty(guideData.difficulty) : 
             <span class="category-icon" aria-hidden="true">{icon}</span>
             {guideData.category}
           </span>
-          {guideData.order && (
+          {typeof guideData.order === 'number' && (
             <span class="quest-number">Quest #{guideData.order}</span>
           )}
           {difficulty && (

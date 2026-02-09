@@ -14,11 +14,11 @@ import { getCategoryColor, getCategoryCardIcon } from '../lib/categories';
 import { withBase, extractGuideSlug, isGuideHref } from '../lib/paths';
 import { logger } from '../lib/logger';
 
-// Guide data shape for standalone type checking
+// Guide data shape for type assertions (matches content.config.ts schema)
 interface GuideData {
   title: string;
   description: string;
-  category?: string;
+  category: string;
 }
 
 interface Props {
@@ -63,7 +63,9 @@ if (isGuideLink && (!providedTitle || !providedDesc)) {
 // For external links, extract domain
 if (isExternal) {
   try {
-    const url = new URL(href);
+    // Normalize protocol-relative URLs (e.g., //example.com) before parsing
+    const normalizedHref = href.startsWith('//') ? `https:${href}` : href;
+    const url = new URL(normalizedHref);
     domain = url.hostname.replace('www.', '');
     if (!title) title = domain;
   } catch {
