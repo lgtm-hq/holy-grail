@@ -65,11 +65,10 @@ self.addEventListener("fetch", (event) => {
           }
           return response;
         })
-        .catch(() => {
+        .catch(async () => {
           // Try cache first, then offline page
-          return caches.match(event.request).then((cached) => {
-            return cached || caches.match(OFFLINE_URL);
-          });
+          const cached = await caches.match(event.request);
+          return cached || caches.match(OFFLINE_URL);
         }),
     );
     return;
