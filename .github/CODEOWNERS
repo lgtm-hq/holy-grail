@@ -2,12 +2,12 @@
 # https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
 # Default owners for everything
-* @eiteldagnin
+* @TurboCoder13
 
 # CI/CD workflows
-.github/ @eiteldagnin
+.github/ @TurboCoder13
 
 # Documentation
-**/*.md @eiteldagnin
-docs/ @eiteldagnin
-src/content/ @eiteldagnin
+**/*.md @TurboCoder13
+docs/ @TurboCoder13
+src/content/ @TurboCoder13
