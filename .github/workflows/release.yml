@@ -1,9 +1,10 @@
 ---
 name: Release
 
+# Disabled: lgtm-ci does not yet have reusable-release.yml
+# Re-enable push trigger once lgtm-ci publishes the reusable workflow
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: release-${{ github.repository }}
