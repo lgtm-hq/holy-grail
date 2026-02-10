@@ -27,10 +27,10 @@ jobs:
         id: lintro
         env:
           # py-lintro image pinned to specific digest for reproducibility
-          LINTRO_IMAGE: ghcr.io/lgtm-hq/py-lintro@sha256:9bb71828b136b74b160d53b4338467e4047d81ee6f2fa2f5f3d65cfb9d49ff7a
+          LINTRO_IMAGE: ghcr.io/lgtm-hq/py-lintro@sha256:a9cc2ac66f4ca216a82dc0c2196e289dfc6ee4e1f4a78db02cad29f97060d10c
         run: |
           set +e
-          docker run --rm -v "${{ github.workspace }}:/code" \
+          docker run --rm --user "$(id -u):$(id -g)" -v "${{ github.workspace }}:/code" \
             "$LINTRO_IMAGE" check --output-format grid 2>&1 | tee chk-output.txt
           exit_code=${PIPESTATUS[0]}
           echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
