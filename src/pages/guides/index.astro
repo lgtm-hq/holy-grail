@@ -25,11 +25,10 @@ const sortedGuides = allGuides.sort((a, b) => {
   const bOrder = bData.order ?? Number.POSITIVE_INFINITY;
   return aOrder - bOrder;
 });
-const base = withBase;
 ---
 
 <BaseLayout title="All Guides" description="Browse all installation and setup guides">
-  <Header slot="header" currentPath={base('guides/')} />
+  <Header slot="header" currentPath={withBase('guides/')} />
 
   <section class="guides-page" data-pagefind-ignore="all">
     <div class="container">
@@ -52,7 +51,7 @@ const base = withBase;
               <GuideCard
                 title={guideData.title}
                 description={guideData.description}
-                href={base(`guides/${guide.id}/`)}
+                href={withBase(`guides/${guide.id}/`)}
                 category={guideData.category}
                 tags={guideData.tags}
                 order={guideData.order}

@@ -97,8 +97,8 @@ self.addEventListener("fetch", (event) => {
       // Otherwise fetch from network
       return fetch(event.request)
         .then((response) => {
-          // Cache successful responses
-          if (response.ok && response.status === 200) {
+          // Cache only exact 200 responses (exclude 204/partial content)
+          if (response.status === 200) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseClone);

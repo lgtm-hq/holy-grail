@@ -36,7 +36,8 @@ const allGuides = await getCollection('guides');
 const categoryGuides = allGuides
   .filter((guide) => {
     const guideData = guide.data as GuideData;
-    return getCategorySlug(guideData.category) === category;
+    const slug = getCategorySlug(guideData.category);
+    return slug !== undefined && slug === category;
   })
   .sort((a, b) => {
     const aData = a.data as GuideData;

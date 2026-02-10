@@ -82,9 +82,13 @@ const difficulty = guideData.difficulty ? getDifficulty(guideData.difficulty) : 
           <li><a href={base('')}>Home</a></li>
           <li><a href={base('guides/')}>Guides</a></li>
           <li>
-            <a href={base(`categories/${getCategorySlug(guideData.category)}/`)}>
-              {guideData.category}
-            </a>
+            {getCategorySlug(guideData.category) ? (
+              <a href={base(`categories/${getCategorySlug(guideData.category)}/`)}>
+                {guideData.category}
+              </a>
+            ) : (
+              <span>{guideData.category}</span>
+            )}
           </li>
           <li aria-current="page">{guideData.title}</li>
         </ol>
@@ -165,10 +169,17 @@ const difficulty = guideData.difficulty ? getDifficulty(guideData.difficulty) : 
             <span class="nav-direction">← Back to</span>
             <span class="nav-title">All Guides</span>
           </a>
-          <a href={base(`categories/${getCategorySlug(guideData.category)}/`)} class="nav-link next">
-            <span class="nav-direction">More in</span>
-            <span class="nav-title">{guideData.category} →</span>
-          </a>
+          {getCategorySlug(guideData.category) ? (
+            <a href={base(`categories/${getCategorySlug(guideData.category)}/`)} class="nav-link next">
+              <span class="nav-direction">More in</span>
+              <span class="nav-title">{guideData.category} →</span>
+            </a>
+          ) : (
+            <a href={base('categories/')} class="nav-link next">
+              <span class="nav-direction">Browse</span>
+              <span class="nav-title">Categories →</span>
+            </a>
+          )}
         </div>
       </footer>
     </div>

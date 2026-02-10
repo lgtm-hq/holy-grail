@@ -99,7 +99,7 @@ export function isValidCategory(key: string): key is CategoryKey {
  * Get canonical category slug from display name or slug
  * Handles both slug (e.g., "ides") and display name (e.g., "IDEs")
  */
-export function getCategorySlug(category: string): string {
+export function getCategorySlug(category: string): string | undefined {
   const normalized = category.toLowerCase();
   // Direct match on slug
   if (Object.prototype.hasOwnProperty.call(CATEGORIES, normalized)) {
@@ -111,6 +111,5 @@ export function getCategorySlug(category: string): string {
       return slug;
     }
   }
-  // Fallback to normalized input
-  return normalized;
+  return undefined;
 }
