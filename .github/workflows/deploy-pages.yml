@@ -2,9 +2,7 @@
 name: Deploy to GitHub Pages
 
 on:
-  workflow_run:
-    workflows: [Quality CI]
-    types: [completed]
+  push:
     branches: [main]
   workflow_dispatch:
 
@@ -19,10 +17,6 @@ concurrency:
 
 jobs:
   deploy:
-    # Only deploy if Quality CI succeeded, or manual trigger on main branch
-    if: >-
-      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-      github.event.workflow_run.conclusion == 'success'
     # yamllint disable-line rule:line-length
     uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-deploy-pages.yml@aa293579a6680b0264333447ddad4752244ebdb0 # v0.4.0
     with:

@@ -1,0 +1,67 @@
+---
+name: Setup Node.js
+description: >-
+  Set up Bun and Node.js with dependency caching. Pin bun-version to a specific version
+  for reproducible builds.
+
+inputs:
+  node-version:
+    description: Node.js version to use
+    required: false
+    default: '22'
+  bun-version:
+    description: >-
+      Bun version to use. Pin to a specific version (e.g. '1.3.8') for reproducible
+      builds. Avoid 'latest' as it can cause stale caches and non-deterministic CI.
+    required: false
+    default: '1.3.8'
+  frozen-lockfile:
+    description: Enforce frozen lockfile
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2
+      with:
+        bun-version: ${{ inputs.bun-version }}
+
+    - name: Resolve Bun version
+      id: bun-version
+      shell: bash
+      run: echo "resolved=$(bun --version)" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Bun dependencies
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+      with:
+        path: |
+          ~/.bun/install/cache
+          node_modules
+        key: >-
+          ${{ runner.os }}-bun-${{ steps.bun-version.outputs.resolved }}-node-${{
+          inputs.node-version }}-${{ hashFiles('bun.lock', 'bun.lockb') }}
+        restore-keys: |
+          ${{ runner.os }}-bun-${{ steps.bun-version.outputs.resolved }}-node-${{ inputs.node-version }}-
+          ${{ runner.os }}-bun-${{ steps.bun-version.outputs.resolved }}-
+          ${{ runner.os }}-bun-
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        if [[ "${{ inputs.frozen-lockfile }}" == "true" ]]; then
+          if [[ -f "bun.lock" ]] || [[ -f "bun.lockb" ]]; then
+            bun install --frozen-lockfile
+          else
+            echo "::error::frozen-lockfile requested but no bun.lock or bun.lockb found"
+            exit 1
+          fi
+        else
+          bun install
+        fi
