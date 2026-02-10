@@ -15,6 +15,7 @@ PR Created
 
 Push to main
 ├── quality-ci.yml ──success──→ deploy-pages.yml
+├── release.yml             → Automated versioning & GitHub Releases
 └── security-codeql.yml     → CodeQL security scanning
 
 Weekly (Sunday 00:00 UTC)
@@ -36,6 +37,12 @@ Weekly (Sunday 00:00 UTC)
 | ------------------ | ---------------- | ------------------ |
 | `deploy-pages.yml` | After CI, manual | Deploy to GH Pages |
 
+### Release
+
+| Workflow      | Trigger      | Purpose                              |
+| ------------- | ------------ | ------------------------------------ |
+| `release.yml` | Push to main | Semantic versioning & GitHub Release |
+
 ### PR Management
 
 | Workflow                | Trigger           | Purpose             |
@@ -51,7 +58,17 @@ Weekly (Sunday 00:00 UTC)
 | `security-dependency-review.yml` | PRs               | Scan deps         |
 | `validate-action-pinning.yml`    | PRs on workflows  | Check SHA pinning |
 
-## Reusable Actions
+## Reusable Workflows (from lgtm-ci)
+
+The following workflows delegate to [lgtm-ci](https://github.com/lgtm-hq/lgtm-ci)
+reusable workflows:
+
+| Workflow           | Reusable Workflow           |
+| ------------------ | --------------------------- |
+| `release.yml`      | `reusable-release.yml`      |
+| `deploy-pages.yml` | `reusable-deploy-pages.yml` |
+
+## Local Actions
 
 ### `actions/setup-env`
 
@@ -86,6 +103,7 @@ Posts or updates a PR comment with marker-based deduplication.
 | `labeler.yml`              | Rules for auto-labeling   |
 | `CODEOWNERS`               | Code ownership for review |
 | `pull_request_template.md` | PR description template   |
+| `renovate.json`            | Renovate dependency bot   |
 
 ## Scripts
 

@@ -1,0 +1,23 @@
+---
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-release.yml@aa293579a6680b0264333447ddad4752244ebdb0 # v0.4.0
+    with:
+      max-bump: minor
+      floating-tag: true
+    permissions:
+      contents: write
