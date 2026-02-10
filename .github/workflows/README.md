@@ -6,6 +6,7 @@ This directory contains GitHub Actions workflows for the holy-grail project.
 
 ```text
 PR Created
+├── pr-auto-assign.yml      → Auto-assigns CODEOWNER to PR
 ├── pr-labeler.yml          → Auto-labels based on changed files
 ├── semantic-pr-title.yml   → Validates Conventional Commits format
 ├── security-dependency-review.yml → Scans for vulnerable deps
@@ -47,6 +48,7 @@ Weekly (Sunday 00:00 UTC)
 
 | Workflow                | Trigger           | Purpose             |
 | ----------------------- | ----------------- | ------------------- |
+| `pr-auto-assign.yml`    | PR opened         | Assign CODEOWNER    |
 | `pr-labeler.yml`        | PR opened/updated | Auto-label by files |
 | `semantic-pr-title.yml` | PR opened/edited  | Validate title      |
 
