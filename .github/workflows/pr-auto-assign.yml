@@ -25,6 +25,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
+          ref: ${{ github.event.pull_request.base.ref }}
           sparse-checkout: .github/CODEOWNERS
           sparse-checkout-cone-mode: false
 
