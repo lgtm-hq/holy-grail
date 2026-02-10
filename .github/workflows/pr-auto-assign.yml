@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
   pull-requests: write
 
 jobs:
@@ -35,9 +36,10 @@ jobs:
         run: |
           set -o pipefail
 
-          # Extract usernames from CODEOWNERS, filter out team entries (@org/team)
+          # Extract usernames from active CODEOWNERS lines, filter out team entries (@org/team)
           owners=""
-          pipeline_output=$(grep -oE '@[a-zA-Z0-9_/-]+' .github/CODEOWNERS \
+          pipeline_output=$(grep -v '^\s*#' .github/CODEOWNERS \
+            | grep -oE '@[a-zA-Z0-9_/-]+' \
             | sort -u | tr -d '@' | grep -E '^[A-Za-z0-9_-]+$') \
             && exit_code=0 || exit_code=$?
 
