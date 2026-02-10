@@ -81,6 +81,9 @@ if (!title) {
 
 const accentColor = getCategoryColor(category);
 const icon = category ? getCategoryCardIcon(category) : (isExternal ? '🔗' : '📄');
+const faviconUrl = isExternal && domain
+  ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+  : '';
 ---
 
 <a
@@ -92,7 +95,20 @@ const icon = category ? getCategoryCardIcon(category) : (isExternal ? '🔗' : '
   title={isExternal ? `Visit ${title} (opens in new tab)` : undefined}
 >
   <div class="card-icon-wrapper">
-    <span class="card-icon">{icon}</span>
+    {faviconUrl ? (
+      <img
+        class="card-favicon"
+        src={faviconUrl}
+        alt=""
+        width="24"
+        height="24"
+        loading="lazy"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='block';"
+      />
+      <span class="card-icon card-icon-fallback">🔗</span>
+    ) : (
+      <span class="card-icon">{icon}</span>
+    )}
   </div>
 
   <div class="card-content">
@@ -159,6 +175,17 @@ const icon = category ? getCategoryCardIcon(category) : (isExternal ? '🔗' : '
 
   .card-icon {
     font-size: 1.25rem;
+  }
+
+  .card-favicon {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.25rem;
+    object-fit: contain;
+  }
+
+  .card-icon-fallback {
+    display: none;
   }
 
   .card-content {
