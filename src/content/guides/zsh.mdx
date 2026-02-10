@@ -1,0 +1,215 @@
+---
+title: ZSH / Oh My ZSH!
+description:
+  Configure ZSH as your default shell with Oh My Zsh for an enhanced terminal experience
+  with themes and plugins
+category: Foundation
+order: 2
+tags: [shell, terminal, zsh, oh-my-zsh, foundation]
+difficulty: beginner
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is ZSH?
+
+`zsh` is short for **Z shell**.
+
+> It is an interactive login shell initially designed in the 1990s for the Unix
+> operating system. The Z shell is **built on top of Bash** and hence inherits all the
+> original features and functions of the Bash shell and also has many other features of
+> its own.
+
+It is the default shell on macOS and that is why we will focus on getting it set up on
+your Mac machine.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/homebrew/" />
+</div>
+
+## Installation
+
+By default, macOS ships with zsh located in `/bin/zsh`.
+
+**Install zsh through Homebrew:**
+
+```bash
+brew install zsh
+```
+
+**Install Oh My Zsh:**
+
+Oh My Zsh runs on top of the default zsh shell to provide additional features within the
+`~/.zshrc` config file:
+
+```bash
+sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+```
+
+Close your terminal session after installation.
+
+## Verify Your Installation
+
+Open a new terminal session and confirm your installation:
+
+```bash
+zsh --version
+```
+
+Close your terminal session, then remember to finish your
+
+<LinkBadge href="/guides/homebrew/" /> setup.
+
+## Good to Know
+
+### Upgrade Oh My Zsh
+
+```bash
+omz update
+```
+
+### Themes for Your Shell
+
+Oh My Zsh comes bundled with a lot of themes. The default theme is `robbyrussell`, but
+you can change it to any theme of your choice.
+
+For a list of available themes, have a look at the
+[Themes wiki](https://github.com/ohmyzsh/ohmyzsh/wiki/Themes).
+
+1. Open your `~/.zshrc` config file (use an IDE like Visual Studio Code)
+2. Look for the line `ZSH_THEME="robbyrussell"`
+3. Change to a theme of your choice and save the changes
+4. In terminal, activate the changes by running:
+
+```bash
+source ~/.zshrc
+```
+
+### Fonts for Your Shell
+
+Have a look at [powerline/fonts](https://github.com/powerline/fonts) for available fonts
+to find one that you like.
+
+```bash
+# Clone the fonts repository
+git clone https://github.com/powerline/fonts.git --depth=1
+
+# Install the fonts
+cd fonts
+./install.sh
+
+# Clean up
+cd ..
+rm -rf fonts
+```
+
+Choose your desired font in Terminal preferences: **Terminal > Preferences > Profiles >
+Text > Change Font**
+
+### Plugins for Your Shell
+
+Oh My Zsh comes preloaded with a Git plugin. To add more, clone the relevant repos:
+
+**zsh-docker:**
+
+```bash
+git clone https://github.com/zsh-users/zsh-docker.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-docker
+```
+
+**zsh-autosuggestions:**
+
+```bash
+git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+```
+
+**zsh-syntax-highlighting:**
+
+```bash
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+```
+
+**Add your plugins to ~/.zshrc:**
+
+Open your `~/.zshrc` config file and look for the plugins section:
+
+```bash
+plugins=(git)
+```
+
+Add your additional plugins:
+
+```bash
+# too many plugins slow down shell startup
+plugins=(
+    git
+    docker
+    zsh-syntax-highlighting
+    zsh-autosuggestions
+)
+```
+
+### Aliases for Your Shell
+
+Aliases are shortcuts used to reduce the time spent on typing commands. Instead of
+typing the same command every time you use the terminal, you can set up an alias.
+
+The following command reloads your terminal session:
+
+```bash
+eval exec zsh -l
+```
+
+Since this could be a frequent command, create an alias for it in your `~/.zshrc` config
+file:
+
+```bash
+alias reload_session="eval exec zsh -l"
+```
+
+In terminal, simply run `reload_session` and it will execute the command for you.
+
+> Aliases are loaded in your shell environment and will be auto-detected once you've
+> typed a portion of the alias and hit `tab`.
+
+## Troubleshooting
+
+### zshrc is Damaged
+
+Verify if the file has a quarantine flag:
+
+```bash
+xattr <path_to_the_document>
+
+# output:
+com.apple.quarantine
+```
+
+Remove the quarantine flag:
+
+```bash
+xattr -r -d com.apple.quarantine <path_to_the_document>
+```
+
+Terminal will ask you to enter your admin/login password. Verify that the flag is
+removed by re-running the former command.
+
+## Resources
+
+<LinkCard
+  href="https://www.freecodecamp.org/news/how-to-configure-your-macos-terminal-with-zsh-like-a-pro-c0ab3f3c1156/"
+  title="Configure macOS Terminal with Zsh"
+  description="Comprehensive guide to setting up a professional ZSH environment"
+/>
+<LinkCard
+  href="https://github.com/ohmyzsh/ohmyzsh/wiki/Themes"
+  title="Oh My Zsh Themes"
+  description="Browse the complete collection of Oh My Zsh themes"
+/>
+<LinkCard
+  href="https://github.com/ohmyzsh/ohmyzsh/wiki/Plugins"
+  title="Oh My Zsh Plugins"
+  description="Explore available plugins to enhance your shell experience"
+/>

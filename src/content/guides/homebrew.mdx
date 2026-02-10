@@ -1,0 +1,175 @@
+---
+title: Homebrew
+description:
+  Install and configure Homebrew, the essential package manager for macOS that
+  simplifies software installation
+category: Foundation
+order: 1
+tags: [macos, package-manager, foundation, essential]
+difficulty: beginner
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is Homebrew?
+
+[Homebrew](https://brew.sh/) installs the stuff you need that Apple (or your Linux
+system) didn't.
+
+> Homebrew installs packages to their own directory and then symlinks their files into
+> `/usr/local` (on macOS Intel). Homebrew won't install files outside its prefix and you
+> can place a Homebrew installation wherever you like.
+
+Essentially, this is a package manager that enables you to install a vast amount of
+different packages without leaving fragmented files all across your system.
+
+## Installation
+
+Open a new terminal session and run:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+After installation completes, close your terminal session.
+
+> Before you continue, set up your <LinkBadge href="/guides/zsh/" /> shell, then add
+> Homebrew to your `~/.zshrc` or `~/.bashrc` config file.
+
+## Installing Packages
+
+Open a new terminal session.
+
+**Install the latest version:**
+
+```bash
+brew install <package>
+```
+
+**Install a specific version:**
+
+```bash
+brew install <package>@<version>
+```
+
+## Uninstalling Packages
+
+```bash
+brew uninstall <package>
+```
+
+## Good to Know
+
+### Listing Available Packages
+
+To see if the package you need is available through Homebrew:
+
+```bash
+brew search <package>
+```
+
+### Switch Global Versions
+
+```bash
+# List installed versions of a package
+brew list --versions <package>
+
+# Unlink current version
+brew unlink <package>
+
+# Link specific version
+brew link <package>@<version>
+
+# Verify the switch worked
+brew doctor
+```
+
+> **Note:** The `brew switch` command was deprecated in Homebrew 2.6.0 (December 2020).
+> Use `unlink` + `link` instead.
+
+### Check Your Current Version
+
+Check which version of a package is being used:
+
+```bash
+brew info <package>
+```
+
+### API Rate Limit
+
+Frequent requests to Homebrew may cause API rate limit timeout. Consider adding a GitHub
+API token to prevent this:
+
+1. Go to [GitHub Personal Tokens](https://github.com/settings/tokens)
+2. Login with your GitHub account
+3. Set how long you want the token to be valid for (3 months, 6 months, etc.)
+4. Create your API token
+5. Add to your `~/.zshrc` or `~/.bashrc` config file:
+
+```bash
+export HOMEBREW_GITHUB_API_TOKEN=<your_token_here>
+```
+
+### Installed Packages
+
+To know what packages you have installed with Homebrew:
+
+```bash
+brew deps --tree --installed
+```
+
+To view details of installed packages:
+
+```bash
+brew info <package-name>
+```
+
+> This will also give you the location that the package is installed at.
+
+### Update Homebrew and Packages
+
+```bash
+brew update && brew upgrade
+```
+
+If you want, you can make this an alias in your `.zshrc` file:
+
+```bash
+alias update_homebrew='brew update && brew upgrade'
+```
+
+- `brew update` updates the downloaded git repository with the latest code from GitHub
+- `brew upgrade` updates the actual packages to match the versions in the updated local
+  git repository
+
+## Troubleshooting
+
+### Symlink Issues
+
+If you had installed other packages prior to installing Homebrew (such as Python from
+python.org), you may have some symlink issues.
+
+> Symbolic link (symlink) is a term for any file that contains a reference to another
+> file or directory in the form of an absolute or relative path and that affects
+> pathname resolution.
+
+To fix these issues, you can run the below command and specify the package whose symlink
+you want to fix:
+
+```bash
+brew link --overwrite <package_name>
+```
+
+## Resources
+
+<LinkCard
+  href="https://docs.brew.sh/"
+  title="Homebrew Documentation"
+  description="Official Homebrew documentation with installation guides and FAQ"
+/>
+<LinkCard
+  href="https://formulae.brew.sh/"
+  title="Homebrew Formulae"
+  description="Search for available packages and casks in the Homebrew ecosystem"
+/>
