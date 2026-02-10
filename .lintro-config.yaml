@@ -55,13 +55,9 @@ defaults:
     ignore_missing_imports: true
 
 # Tool enable/disable settings.
-# Full tool configs are in native files (pyproject.toml, biome.json, etc.)
+# Full tool configs are in native files (pyproject.toml, etc.)
 # or in the defaults section above.
 tools:
-  # Biome - JS/TS linter and formatter (config in biome.json)
-  biome:
-    enabled: true
-
   # Ruff - Python linter and formatter (config in pyproject.toml [tool.ruff])
   ruff:
     enabled: true
@@ -71,16 +67,8 @@ tools:
     enabled: true
 
   # Prettier - Multi-language formatter (defaults above or .prettierrc)
-  # Note: JS/TS files are handled by Biome, so exclude them from Prettier
   prettier:
     enabled: true
-    exclude:
-      - '**/*.ts'
-      - '**/*.tsx'
-      - '**/*.js'
-      - '**/*.jsx'
-      - '**/*.mjs'
-      - '**/*.cjs'
 
   # Markdownlint - Markdown linter (defaults above or .markdownlint.yaml)
   markdownlint:

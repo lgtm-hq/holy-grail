@@ -1,0 +1,131 @@
+---
+/**
+ * BackToTop - Floating button to scroll to top
+ *
+ * Usage in guide pages:
+ *   <BackToTop />
+ *
+ * The button appears after scrolling down 400px.
+ */
+---
+
+<button
+  class="back-to-top"
+  aria-label="Back to top"
+  type="button"
+  hidden
+>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <polyline points="18 15 12 9 6 15"></polyline>
+  </svg>
+</button>
+
+<script>
+  // Store handler and element references for cleanup
+  declare global {
+    interface Window {
+      __backToTop?: {
+        scrollHandler: () => void;
+        clickHandler: () => void;
+        button: HTMLButtonElement;
+      };
+    }
+  }
+
+  function initBackToTop() {
+    // Remove previous listeners if they exist (before any early returns)
+    if (window.__backToTop) {
+      window.removeEventListener('scroll', window.__backToTop.scrollHandler);
+      window.__backToTop.button.removeEventListener('click', window.__backToTop.clickHandler);
+      delete window.__backToTop;
+    }
+
+    const button = document.querySelector('.back-to-top') as HTMLButtonElement;
+    if (!button) return;
+
+    function toggleVisibility() {
+      const shouldShow = window.scrollY > 400;
+      button.hidden = !shouldShow;
+    }
+
+    function handleClick() {
+      // Respect prefers-reduced-motion accessibility setting
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'instant' : 'smooth' });
+    }
+
+    // Store handler and element references for cleanup
+    window.__backToTop = {
+      scrollHandler: toggleVisibility,
+      clickHandler: handleClick,
+      button: button,
+    };
+
+    button.addEventListener('click', handleClick);
+    window.addEventListener('scroll', toggleVisibility, { passive: true });
+    toggleVisibility();
+  }
+
+  // Initialize on page load (handle case where DOM is already ready)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBackToTop);
+  } else {
+    initBackToTop();
+  }
+
+  // Re-initialize after Astro page transitions
+  document.addEventListener('astro:after-swap', initBackToTop);
+</script>
+
+<style>
+  .back-to-top {
+    position: fixed;
+    bottom: var(--space-xl);
+    right: var(--space-xl);
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--turbo-bg-surface);
+    border: 1px solid var(--turbo-border-default);
+    border-radius: var(--radius-full, 50%);
+    color: var(--turbo-text-secondary);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all var(--transition-fast);
+    z-index: 100;
+  }
+
+  .back-to-top:hover {
+    background: var(--grail-gold);
+    color: var(--turbo-bg-base);
+    border-color: var(--grail-gold);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--grail-gold) 40%, transparent);
+  }
+
+  .back-to-top:focus {
+    outline: 2px solid var(--grail-gold);
+    outline-offset: 2px;
+  }
+
+  .back-to-top[hidden] {
+    display: none;
+  }
+
+  @media (max-width: 640px) {
+    .back-to-top {
+      bottom: var(--space-md);
+      right: var(--space-md);
+      width: 44px;
+      height: 44px;
+    }
+  }
+
+  @media print {
+    .back-to-top {
+      display: none !important;
+    }
+  }
+</style>

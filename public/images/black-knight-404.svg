@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <!-- Background circle -->
+  <circle cx="200" cy="200" r="180" fill="#1e1e2e" stroke="#f9e2af" stroke-width="3"/>
+
+  <!-- Black Knight Body (torso) -->
+  <rect x="160" y="160" width="80" height="100" rx="5" fill="#181825"/>
+
+  <!-- Helmet -->
+  <rect x="155" y="100" width="90" height="70" rx="10" fill="#313244"/>
+  <!-- Helmet visor slit -->
+  <rect x="170" y="125" width="60" height="8" rx="2" fill="#11111b"/>
+  <!-- Helmet top -->
+  <rect x="175" y="90" width="50" height="15" rx="3" fill="#313244"/>
+  <!-- Helmet plume -->
+  <ellipse cx="200" cy="85" rx="15" ry="20" fill="#f38ba8"/>
+
+  <!-- Eyes glowing through visor -->
+  <circle cx="185" cy="129" r="4" fill="#f38ba8">
+    <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="215" cy="129" r="4" fill="#f38ba8">
+    <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Left arm (detached, floating) -->
+  <g transform="translate(-50, 20) rotate(-15)">
+    <rect x="100" y="170" width="50" height="20" rx="5" fill="#181825"/>
+    <!-- Gauntlet -->
+    <rect x="85" y="168" width="20" height="25" rx="3" fill="#45475a"/>
+  </g>
+
+  <!-- Right arm (detached, floating) -->
+  <g transform="translate(50, -10) rotate(20)">
+    <rect x="250" y="180" width="50" height="20" rx="5" fill="#181825"/>
+    <!-- Gauntlet with sword -->
+    <rect x="295" y="178" width="20" height="25" rx="3" fill="#45475a"/>
+    <!-- Sword -->
+    <rect x="308" y="150" width="6" height="60" fill="#9399b2"/>
+    <rect x="300" y="145" width="22" height="8" rx="2" fill="#f9e2af"/>
+  </g>
+
+  <!-- Legs (detached) -->
+  <!-- Left leg -->
+  <g transform="translate(-30, 30) rotate(-10)">
+    <rect x="160" y="270" width="30" height="60" rx="5" fill="#181825"/>
+    <rect x="155" y="325" width="40" height="20" rx="5" fill="#45475a"/>
+  </g>
+
+  <!-- Right leg -->
+  <g transform="translate(40, 20) rotate(15)">
+    <rect x="210" y="270" width="30" height="60" rx="5" fill="#181825"/>
+    <rect x="205" y="325" width="40" height="20" rx="5" fill="#45475a"/>
+  </g>
+
+  <!-- Blood splatter marks (stylized) -->
+  <circle cx="140" cy="180" r="5" fill="#f38ba8" opacity="0.7"/>
+  <circle cx="260" cy="175" r="4" fill="#f38ba8" opacity="0.7"/>
+  <circle cx="175" cy="265" r="6" fill="#f38ba8" opacity="0.7"/>
+  <circle cx="225" cy="260" r="5" fill="#f38ba8" opacity="0.7"/>
+
+  <!-- Speech bubble -->
+  <path d="M 270 60 Q 350 60 350 100 Q 350 140 270 140 L 250 140 L 240 160 L 245 140 Q 190 140 190 100 Q 190 60 270 60" fill="#cdd6f4" stroke="#6c7086" stroke-width="2"/>
+
+  <!-- Text in bubble -->
+  <text x="270" y="95" text-anchor="middle" font-family="serif" font-size="12" font-weight="bold" fill="#1e1e2e">'TIS BUT A</text>
+  <text x="270" y="115" text-anchor="middle" font-family="serif" font-size="12" font-weight="bold" fill="#1e1e2e">SCRATCH!</text>
+
+  <!-- 404 at bottom -->
+  <text x="200" y="380" text-anchor="middle" font-family="serif" font-size="24" font-weight="bold" fill="#f9e2af" opacity="0.5">404</text>
+</svg>

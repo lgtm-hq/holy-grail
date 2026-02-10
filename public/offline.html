@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offline | Holy Grail</title>
+    <style>
+      :root {
+        --bg: #1e1e2e;
+        --text: #cdd6f4;
+        --text-muted: #6c7086;
+        --gold: #f9e2af;
+        --surface: #313244;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        text-align: center;
+      }
+
+      .container {
+        max-width: 500px;
+      }
+
+      .icon {
+        font-size: 5rem;
+        margin-bottom: 1.5rem;
+        animation: float 3s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      h1 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: var(--gold);
+      }
+
+      p {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: var(--gold);
+        color: var(--bg);
+        border: none;
+        border-radius: 2rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(249, 226, 175, 0.3);
+      }
+
+      .status {
+        margin-top: 2rem;
+        padding: 1rem;
+        background: var(--surface);
+        border-radius: 0.5rem;
+        font-size: 0.9rem;
+      }
+
+      .status-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #f38ba8;
+        margin-right: 0.5rem;
+      }
+
+      .status-indicator.online {
+        background: #a6e3a1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="icon">⚔️</div>
+      <h1>Ye Art Offline</h1>
+      <p>
+        The connection to the digital realm hath been severed.
+        <br />
+        Fear not, brave knight! Thy cached pages remain accessible.
+      </p>
+      <button class="btn" onclick="window.location.reload()">🔄 Try Again</button>
+      <div class="status">
+        <span class="status-indicator" id="status-dot"></span>
+        <span id="status-text">Checking connection...</span>
+      </div>
+    </div>
+
+    <script>
+      function updateStatus() {
+        const dot = document.getElementById('status-dot');
+        const text = document.getElementById('status-text');
+
+        if (navigator.onLine) {
+          dot.classList.add('online');
+          text.textContent = 'Connection restored — page will reload automatically';
+        } else {
+          dot.classList.remove('online');
+          text.textContent = 'Currently offline';
+        }
+      }
+
+      // Check status on load
+      updateStatus();
+
+      // Listen for online/offline events
+      window.addEventListener('online', updateStatus);
+      window.addEventListener('offline', updateStatus);
+
+      // Auto-reload when back online
+      window.addEventListener('online', () => {
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,202 @@
+---
+/**
+ * MobileMenu - Mobile navigation toggle and dropdown menu
+ */
+import { withBase } from '../../lib/paths';
+
+interface Category {
+  slug: string;
+  label: string;
+  icon: string;
+}
+
+interface Props {
+  categories: Category[];
+}
+
+const { categories } = Astro.props;
+const base = withBase;
+
+const navItems = [
+  { href: base(''), label: 'Home', icon: '🏰' },
+  { href: base('guides/'), label: 'Guides', icon: '📜' },
+  { href: base('categories/'), label: 'Categories', icon: '⚔️' },
+  { href: base('search/'), label: 'Search', icon: '🔍' },
+];
+---
+
+<button
+  class="mobile-menu-toggle"
+  aria-expanded="false"
+  aria-controls="mobile-menu"
+  aria-label="Toggle menu"
+>
+  <span class="hamburger"></span>
+</button>
+
+<div id="mobile-menu" class="mobile-menu" hidden>
+  <nav aria-label="Mobile navigation">
+    <ul class="mobile-nav-list">
+      {navItems.map((item) => (
+        <li>
+          <a href={item.href} class="mobile-nav-link">
+            <span class="nav-icon">{item.icon}</span>
+            {item.label}
+          </a>
+        </li>
+      ))}
+      <li class="mobile-categories">
+        <span class="mobile-section-title">Categories</span>
+        <ul>
+          {categories.map((cat) => (
+            <li>
+              <a href={base(`categories/${cat.slug}/`)} class="mobile-nav-link">
+                <span class="nav-icon">{cat.icon}</span>
+                {cat.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+<script>
+  function initMobileMenu() {
+    const toggle = document.querySelector('.mobile-menu-toggle') as HTMLButtonElement;
+    const menu = document.getElementById('mobile-menu');
+
+    // Prevent duplicate event listeners on re-initialization
+    if (!toggle || toggle.dataset.bound === 'true') return;
+    toggle.dataset.bound = 'true';
+
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      menu?.toggleAttribute('hidden');
+    });
+  }
+
+  // Initialize on page load (handle case where DOM is already ready)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobileMenu);
+  } else {
+    initMobileMenu();
+  }
+
+  // Re-initialize after Astro page transitions
+  document.addEventListener('astro:after-swap', initMobileMenu);
+</script>
+
+<style>
+  .mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  @media (min-width: 768px) {
+    .mobile-menu-toggle {
+      display: none;
+    }
+  }
+
+  .hamburger {
+    position: relative;
+    width: 20px;
+    height: 2px;
+    background: var(--turbo-text-primary);
+    transition: background var(--transition-fast);
+  }
+
+  .hamburger::before,
+  .hamburger::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--turbo-text-primary);
+    transition: transform var(--transition-fast);
+  }
+
+  .hamburger::before {
+    top: -6px;
+  }
+
+  .hamburger::after {
+    top: 6px;
+  }
+
+  .mobile-menu-toggle[aria-expanded='true'] .hamburger {
+    background: transparent;
+  }
+
+  .mobile-menu-toggle[aria-expanded='true'] .hamburger::before {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .mobile-menu-toggle[aria-expanded='true'] .hamburger::after {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  .mobile-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--turbo-bg-surface);
+    border-bottom: var(--border-manuscript);
+    padding: var(--space-lg);
+  }
+
+  .mobile-nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .mobile-nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) 0;
+    color: var(--turbo-text-primary);
+    text-decoration: none;
+    font-family: var(--font-display);
+  }
+
+  .mobile-nav-link::after {
+    display: none;
+  }
+
+  .mobile-section-title {
+    display: block;
+    margin-top: var(--space-md);
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--turbo-border-default);
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--turbo-text-secondary);
+  }
+
+  .mobile-categories ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    padding-left: var(--space-md);
+  }
+
+  .nav-icon {
+    font-size: 1.1rem;
+  }
+</style>

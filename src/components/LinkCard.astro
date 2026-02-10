@@ -1,0 +1,243 @@
+---
+/**
+ * LinkCard - Rich card style link with title, description, and metadata
+ *
+ * For internal guide links: auto-fetches all metadata
+ * For external links: displays with provided or extracted info
+ *
+ * Usage:
+ *   <LinkCard href="/guides/java/" />
+ *   <LinkCard href="https://appium.io" title="Appium" description="Mobile automation framework" />
+ */
+import { getEntry } from 'astro:content';
+import { getCategoryColor, getCategoryCardIcon } from '../lib/categories';
+import { withBase, extractGuideSlug, isGuideHref } from '../lib/paths';
+import { logger } from '../lib/logger';
+
+// Guide data shape for type assertions (matches content.config.ts schema)
+interface GuideData {
+  title: string;
+  description: string;
+  category: string;
+}
+
+interface Props {
+  href: string;
+  title?: string;
+  description?: string;
+  external?: boolean;
+}
+
+const { href, title: providedTitle, description: providedDesc, external: forceExternal } = Astro.props;
+
+// Determine if this is an internal guide link
+const isGuideLink = isGuideHref(href) && !forceExternal;
+let title = providedTitle || '';
+let description = providedDesc || '';
+let category = '';
+let isExternal = forceExternal || href.startsWith('http') || href.startsWith('//');
+let domain = '';
+
+// Resolve the href - auto-prepend base for internal paths
+let resolvedHref = href;
+if (!isExternal && href.startsWith('/') && !href.startsWith(import.meta.env.BASE_URL)) {
+  // Strip leading slash and prepend base
+  resolvedHref = withBase(href.slice(1));
+}
+
+if (isGuideLink && (!providedTitle || !providedDesc)) {
+  const slug = extractGuideSlug(href);
+  if (slug) {
+    const guide = await getEntry('guides', slug);
+    if (guide) {
+      const guideData = guide.data as GuideData;
+      title = providedTitle || guideData.title;
+      description = providedDesc || guideData.description;
+      category = guideData.category?.toLowerCase() || '';
+    } else {
+      logger.warn('LinkCard', `Guide not found for slug: ${slug}`);
+    }
+  }
+}
+
+// For external links, extract domain
+if (isExternal) {
+  try {
+    // Normalize protocol-relative URLs (e.g., //example.com) before parsing
+    const normalizedHref = href.startsWith('//') ? `https:${href}` : href;
+    const url = new URL(normalizedHref);
+    domain = url.hostname.replace('www.', '');
+    if (!title) title = domain;
+  } catch {
+    domain = '';
+    if (!title) title = href;
+  }
+}
+
+// Fallback title
+if (!title) {
+  title = href.split('/').filter(Boolean).pop() || href;
+}
+
+const accentColor = getCategoryColor(category);
+const icon = category ? getCategoryCardIcon(category) : (isExternal ? '🔗' : '📄');
+---
+
+<a
+  href={resolvedHref}
+  class:list={['link-card', { external: isExternal, [`category-${category}`]: category }]}
+  style={`--card-accent: ${accentColor};`}
+  target={isExternal ? '_blank' : undefined}
+  rel={isExternal ? 'noopener noreferrer' : undefined}
+  title={isExternal ? `Visit ${title} (opens in new tab)` : undefined}
+>
+  <div class="card-icon-wrapper">
+    <span class="card-icon">{icon}</span>
+  </div>
+
+  <div class="card-content">
+    <div class="card-header">
+      <span class="card-title">{title}</span>
+      {category && <span class="card-category">{category}</span>}
+      {isExternal && domain && <span class="card-domain">{domain}</span>}
+    </div>
+
+    {description && <p class="card-description">{description}</p>}
+  </div>
+
+  <div class="card-arrow">
+    {isExternal ? (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+        <polyline points="15 3 21 3 21 9"></polyline>
+        <line x1="10" y1="14" x2="21" y2="3"></line>
+      </svg>
+    ) : (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+      </svg>
+    )}
+  </div>
+</a>
+
+<style>
+  .link-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--turbo-bg-muted);
+    border: 1px solid var(--turbo-border-default);
+    border-left: 3px solid var(--card-accent);
+    border-radius: 0.5rem;
+    text-decoration: none;
+    color: var(--turbo-text);
+    transition: all 0.25s ease;
+    margin: 0.75rem 0;
+  }
+
+  .link-card:hover {
+    background: color-mix(in srgb, var(--card-accent) 10%, var(--turbo-bg-muted));
+    border-color: color-mix(in srgb, var(--card-accent) 50%, var(--turbo-border-default));
+    transform: translateX(4px);
+    box-shadow:
+      0 4px 12px color-mix(in srgb, var(--card-accent) 20%, transparent),
+      -4px 0 0 var(--card-accent);
+  }
+
+  .card-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: color-mix(in srgb, var(--card-accent) 20%, transparent);
+    border-radius: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .card-icon {
+    font-size: 1.25rem;
+  }
+
+  .card-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--turbo-heading);
+  }
+
+  .card-category,
+  .card-domain {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 1rem;
+    font-weight: 600;
+  }
+
+  .card-category {
+    background: color-mix(in srgb, var(--card-accent) 25%, transparent);
+    color: var(--card-accent);
+  }
+
+  .card-domain {
+    background: var(--turbo-bg);
+    color: var(--turbo-text-muted);
+    border: 1px solid var(--turbo-border-default);
+  }
+
+  .card-description {
+    margin: 0.35rem 0 0;
+    font-size: 0.85rem;
+    color: var(--turbo-text-muted);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-arrow {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--turbo-text-muted);
+    transition: all 0.25s ease;
+  }
+
+  .card-arrow svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .link-card:hover .card-arrow {
+    color: var(--card-accent);
+    transform: translateX(3px);
+  }
+
+  /* Stack layout on small screens */
+  @media (max-width: 480px) {
+    .link-card {
+      flex-wrap: wrap;
+    }
+
+    .card-arrow {
+      display: none;
+    }
+  }
+</style>

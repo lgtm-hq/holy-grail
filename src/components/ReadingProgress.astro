@@ -1,0 +1,112 @@
+---
+/**
+ * ReadingProgress - Shows reading progress bar at top of page
+ *
+ * Usage in guide pages:
+ *   <ReadingProgress />
+ *
+ * The component automatically tracks scroll progress through the article content.
+ */
+---
+
+<div class="reading-progress" aria-hidden="true">
+  <div class="reading-progress-bar"></div>
+</div>
+
+<script>
+  // Store handler references for cleanup
+  declare global {
+    interface Window {
+      __readingProgress?: {
+        scrollHandler: () => void;
+        resizeHandler: () => void;
+      };
+    }
+  }
+
+  function initReadingProgress() {
+    // Remove previous listeners if they exist (before any early returns)
+    if (window.__readingProgress) {
+      window.removeEventListener('scroll', window.__readingProgress.scrollHandler);
+      window.removeEventListener('resize', window.__readingProgress.resizeHandler);
+      delete window.__readingProgress;
+    }
+
+    const bar = document.querySelector('.reading-progress-bar') as HTMLElement;
+    if (!bar) return;
+
+    const article = document.querySelector('.guide-content') ||
+                    document.querySelector('article') ||
+                    document.querySelector('main');
+
+    if (!article) {
+      bar.parentElement?.remove();
+      return;
+    }
+
+    function updateProgress() {
+      const articleRect = article!.getBoundingClientRect();
+      const articleTop = articleRect.top + window.scrollY;
+      const articleHeight = articleRect.height;
+      const windowHeight = window.innerHeight;
+      const scrollY = window.scrollY;
+
+      // Calculate progress through the article
+      const start = articleTop - windowHeight;
+      const end = articleTop + articleHeight - windowHeight;
+      const range = end - start;
+
+      // Guard against division by zero
+      const progress = range === 0 ? 0 : Math.min(Math.max((scrollY - start) / range, 0), 1);
+
+      bar.style.transform = `scaleX(${progress})`;
+    }
+
+    // Store handler references for cleanup
+    window.__readingProgress = {
+      scrollHandler: updateProgress,
+      resizeHandler: updateProgress,
+    };
+
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('resize', updateProgress, { passive: true });
+    updateProgress();
+  }
+
+  // Initialize on page load (handle case where DOM is already ready)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initReadingProgress);
+  } else {
+    initReadingProgress();
+  }
+
+  // Re-initialize after Astro page transitions
+  document.addEventListener('astro:after-swap', initReadingProgress);
+</script>
+
+<style>
+  .reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 1000;
+    background: transparent;
+    pointer-events: none;
+  }
+
+  .reading-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--grail-gold), var(--grail-gold-light));
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform 0.1s ease-out;
+  }
+
+  @media print {
+    .reading-progress {
+      display: none !important;
+    }
+  }
+</style>

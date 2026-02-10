@@ -1,0 +1,60 @@
+---
+/**
+ * Header - Main site header composed from sub-components
+ */
+import { getAllCategories } from '../lib/categories';
+import HeaderLogo from './header/HeaderLogo.astro';
+import HeaderNav from './header/HeaderNav.astro';
+import SearchTrigger from './header/SearchTrigger.astro';
+import ThemeSelector from './header/ThemeSelector.astro';
+import GitHubLink from './header/GitHubLink.astro';
+import MobileMenu from './header/MobileMenu.astro';
+
+interface Props {
+  currentPath?: string;
+}
+
+const { currentPath = '' } = Astro.props;
+
+const categories = getAllCategories()
+  .filter((c) => c.slug !== 'tools')
+  .map((c) => ({ slug: c.slug, label: c.name, icon: c.icon }));
+---
+
+<header class="site-header">
+  <div class="header-inner container">
+    <HeaderLogo />
+    <HeaderNav currentPath={currentPath} />
+    <div class="header-actions">
+      <SearchTrigger />
+      <ThemeSelector />
+      <GitHubLink />
+      <MobileMenu categories={categories} />
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: color-mix(in srgb, var(--turbo-bg-base) 95%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: var(--border-manuscript);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-lg);
+    padding-block: var(--space-md);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+</style>

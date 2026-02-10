@@ -27,7 +27,7 @@ jobs:
         id: lintro
         env:
           # py-lintro image pinned to specific digest for reproducibility
-          LINTRO_IMAGE: ghcr.io/lgtm-hq/py-lintro@sha256:db35d507b7106db73f4c51b789143d59d8294bb6c347afd038cd609dcad4ee95
+          LINTRO_IMAGE: ghcr.io/lgtm-hq/py-lintro@sha256:e714dfce0564c57fde82bcc6496697d14a3e9e533ef153d45630e58fd31f9ea8
         run: |
           set +e
           docker run --rm -v "${{ github.workspace }}:/code" \
@@ -58,6 +58,8 @@ jobs:
   build:
     name: Build & Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout

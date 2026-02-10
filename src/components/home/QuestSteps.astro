@@ -1,0 +1,105 @@
+---
+/**
+ * QuestSteps - Shows the four-step guide journey
+ */
+const questSteps = [
+  { icon: '🗺️', title: 'Choose Your Path', description: 'Browse categories or search for specific tools' },
+  { icon: '📖', title: 'Follow the Guide', description: 'Step-by-step instructions with code examples' },
+  { icon: '⚔️', title: 'Conquer Setup', description: 'Copy commands and configure with confidence' },
+  { icon: '🏆', title: 'Claim Victory', description: 'Download guides for offline reference' },
+];
+---
+
+<section class="quest-section">
+  <div class="container">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-subtitle">Your journey to development mastery in four simple steps</p>
+
+    <div class="quest-steps">
+      {questSteps.map((step, index) => (
+        <div class="quest-step" style={`--delay: ${index * 0.1}s`}>
+          <div class="step-number">{index + 1}</div>
+          <div class="step-icon">{step.icon}</div>
+          <h3 class="step-title">{step.title}</h3>
+          <p class="step-description">{step.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .quest-section {
+    padding: var(--space-4xl) 0;
+    background: var(--turbo-bg-surface);
+  }
+
+  .section-title {
+    text-align: center;
+    margin-bottom: var(--space-sm);
+  }
+
+  .section-subtitle {
+    text-align: center;
+    color: var(--turbo-text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: var(--space-2xl);
+  }
+
+  .quest-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--space-xl);
+  }
+
+  .quest-step {
+    position: relative;
+    text-align: center;
+    padding: var(--space-xl);
+    background: var(--turbo-bg-base);
+    border: 1px solid var(--turbo-border-default);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-normal);
+  }
+
+  .quest-step:hover {
+    transform: translateY(-4px);
+    border-color: var(--grail-gold);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .step-number {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--grail-gold);
+    color: var(--turbo-bg-base);
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: var(--radius-full);
+  }
+
+  .step-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--space-md);
+  }
+
+  .step-title {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    margin-bottom: var(--space-sm);
+  }
+
+  .step-description {
+    font-size: 0.9rem;
+    color: var(--turbo-text-secondary);
+    margin: 0;
+  }
+</style>

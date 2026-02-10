@@ -1,0 +1,135 @@
+---
+/**
+ * CategoriesGrid - Grid of category cards for homepage
+ */
+import { getAllCategories } from '../../lib/categories';
+import { withBase } from '../../lib/paths';
+
+const categories = getAllCategories().filter(c => c.slug !== 'tools');
+---
+
+<section id="categories" class="categories-section">
+  <div class="container">
+    <h2 class="section-title">Choose Your Quest</h2>
+    <p class="section-subtitle">Select a category to begin your journey</p>
+
+    <div class="categories-grid">
+      {categories.map((category) => (
+        <a
+          href={withBase(`categories/${category.slug}/`)}
+          class={`category-card category-${category.slug}`}
+          style={`--category-accent: ${category.color}`}
+        >
+          <div class="category-icon">{category.icon}</div>
+          <h3 class="category-name">{category.name}</h3>
+          <p class="category-description">{category.description}</p>
+          <span class="category-cta">
+            Begin Quest →
+          </span>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .categories-section {
+    padding: var(--space-4xl) 0;
+  }
+
+  .section-title {
+    text-align: center;
+    margin-bottom: var(--space-sm);
+  }
+
+  .section-subtitle {
+    text-align: center;
+    color: var(--turbo-text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: var(--space-2xl);
+  }
+
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--space-lg);
+  }
+
+  .category-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--space-2xl) var(--space-xl);
+    background: var(--turbo-bg-surface);
+    border: 2px solid var(--turbo-border-default);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--turbo-text-primary);
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .category-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at 50% 0%,
+      color-mix(in srgb, var(--category-accent) 10%, transparent) 0%,
+      transparent 60%
+    );
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+  }
+
+  .category-card::after {
+    display: none;
+  }
+
+  .category-card:hover {
+    border-color: var(--category-accent);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px color-mix(in srgb, var(--category-accent) 20%, transparent);
+  }
+
+  .category-card:hover::before {
+    opacity: 1;
+  }
+
+  .category-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-md);
+    transition: transform var(--transition-normal);
+  }
+
+  .category-card:hover .category-icon {
+    transform: scale(1.15) rotate(-5deg);
+  }
+
+  .category-name {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    margin-bottom: var(--space-sm);
+    color: var(--category-accent);
+  }
+
+  .category-description {
+    font-size: 0.95rem;
+    color: var(--turbo-text-secondary);
+    margin-bottom: var(--space-md);
+    flex: 1;
+  }
+
+  .category-cta {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    color: var(--turbo-text-secondary);
+    transition: color var(--transition-fast);
+  }
+
+  .category-card:hover .category-cta {
+    color: var(--category-accent);
+  }
+</style>

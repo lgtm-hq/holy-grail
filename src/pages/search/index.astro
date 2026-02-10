@@ -1,0 +1,170 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { withBase } from '../../lib/paths';
+---
+
+<BaseLayout title="Search" description="Search all guides and documentation">
+  <Header slot="header" />
+
+  <section class="search-page" data-pagefind-ignore="all">
+    <div class="container">
+      <div class="page-header">
+        <h1>Search Guides</h1>
+        <p class="page-description">
+          Find the installation guide you're looking for
+        </p>
+      </div>
+
+      <div id="search" class="search-wrapper"></div>
+
+      <div class="search-tips">
+        <h2>Search Tips</h2>
+        <ul>
+          <li>Search for tool names like "Python", "Java", or "Appium"</li>
+          <li>Search for categories like "Foundation" or "Testing"</li>
+          <li>Use specific terms like "install", "configure", or "troubleshoot"</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</BaseLayout>
+
+<link href={withBase('pagefind/pagefind-ui.css')} rel="stylesheet" />
+
+<script is:inline define:vars={{ base: withBase(''), pagefindJsPath: withBase('pagefind/pagefind-ui.js') }}>
+  window.addEventListener('DOMContentLoaded', async () => {
+    const searchContainer = document.getElementById('search');
+    if (!searchContainer) return;
+
+    try {
+      const module = await import(/* @vite-ignore */ pagefindJsPath);
+      const { PagefindUI } = module;
+
+      new PagefindUI({
+        element: '#search',
+        showSubResults: true,
+        showImages: false,
+        excerptLength: 20,
+        resetStyles: false,
+        baseUrl: base,
+      });
+    } catch (e) {
+      searchContainer.innerHTML = `
+        <div class="search-error">
+          <p>Search index not found. Run <code>bun run build</code> to generate it.</p>
+        </div>
+      `;
+      console.error('Failed to load Pagefind:', e);
+    }
+  });
+</script>
+
+<style>
+  .search-page {
+    padding: var(--space-3xl) 0;
+    min-height: 60vh;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+  }
+
+  .page-header h1 {
+    margin-bottom: var(--space-md);
+  }
+
+  .page-description {
+    font-size: 1.1rem;
+    color: var(--turbo-text-secondary);
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .search-wrapper {
+    max-width: 700px;
+    margin: 0 auto var(--space-3xl);
+  }
+
+  .search-tips {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: var(--space-xl);
+    background: var(--turbo-bg-surface);
+    border: 1px solid var(--turbo-border-default);
+    border-radius: var(--radius-lg);
+  }
+
+  .search-tips h2 {
+    font-size: 1rem;
+    margin-bottom: var(--space-md);
+  }
+
+  .search-tips ul {
+    margin: 0;
+    padding-left: var(--space-lg);
+  }
+
+  .search-tips li {
+    color: var(--turbo-text-secondary);
+    margin-bottom: var(--space-sm);
+  }
+
+  .search-error {
+    text-align: center;
+    padding: var(--space-xl);
+    background: var(--turbo-bg-surface);
+    border: 1px solid var(--turbo-border-default);
+    border-radius: var(--radius-md);
+    color: var(--turbo-text-secondary);
+  }
+
+  .search-error code {
+    background: var(--turbo-bg-overlay);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-size: 0.9em;
+  }
+
+  /* Pagefind UI Customization */
+  :global(.pagefind-ui) {
+    --pagefind-ui-scale: 1;
+    --pagefind-ui-primary: var(--grail-gold);
+    --pagefind-ui-text: var(--turbo-text-primary);
+    --pagefind-ui-background: var(--turbo-bg-base);
+    --pagefind-ui-border: var(--turbo-border-default);
+    --pagefind-ui-tag: var(--turbo-bg-overlay);
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: 8px;
+    --pagefind-ui-font: var(--font-body);
+  }
+
+  :global(.pagefind-ui__search-input) {
+    font-size: 1.1rem !important;
+    padding: var(--space-md) var(--space-lg) !important;
+  }
+
+  :global(.pagefind-ui__result) {
+    padding: var(--space-md) !important;
+    margin-top: var(--space-sm) !important;
+  }
+
+  :global(.pagefind-ui__result-link) {
+    font-family: var(--font-display) !important;
+    font-weight: 600 !important;
+  }
+
+  :global(.pagefind-ui__result-excerpt) {
+    margin-top: var(--space-xs) !important;
+    line-height: 1.5 !important;
+  }
+
+  :global(.pagefind-ui mark) {
+    background: color-mix(in srgb, var(--grail-gold) 30%, transparent) !important;
+    color: inherit !important;
+  }
+</style>

@@ -1,0 +1,87 @@
+---
+/**
+ * SearchTrigger - Search button that opens the search modal
+ *
+ * Renders a button with search icon and keyboard shortcut hint.
+ * Click triggers the SearchModal component via data-search-trigger attribute.
+ *
+ * @example
+ * <SearchTrigger />
+ */
+---
+
+<button
+  class="search-trigger"
+  data-search-trigger
+  aria-label="Search guides (Cmd+K)"
+  type="button"
+>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+  <span class="search-text">Search</span>
+  <kbd class="search-kbd">
+    <span class="kbd-symbol"></span>K
+  </kbd>
+</button>
+
+<style>
+  .search-trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-md);
+    background: var(--turbo-bg-surface);
+    border: 1px solid var(--turbo-border-default);
+    border-radius: var(--radius-md);
+    color: var(--turbo-text-secondary);
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .search-trigger:hover {
+    border-color: var(--grail-gold);
+    color: var(--turbo-text-primary);
+  }
+
+  .search-trigger:focus {
+    outline: 2px solid var(--grail-gold);
+    outline-offset: 2px;
+  }
+
+  .search-text {
+    display: none;
+  }
+
+  @media (min-width: 640px) {
+    .search-text {
+      display: inline;
+    }
+  }
+
+  .search-kbd {
+    display: none;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 6px;
+    background: var(--turbo-bg-base);
+    border: 1px solid var(--turbo-border-default);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--turbo-text-secondary);
+  }
+
+  @media (min-width: 640px) {
+    .search-kbd {
+      display: inline-flex;
+    }
+  }
+
+  .kbd-symbol::before {
+    content: '\2318'; /* Mac command symbol */
+  }
+</style>

@@ -1,0 +1,54 @@
+---
+/**
+ * HeaderLogo - Site logo and branding
+ */
+import { withBase } from '../../lib/paths';
+
+const base = withBase;
+---
+
+<a href={base('')} class="logo">
+  <span class="logo-icon">🏆</span>
+  <span class="logo-text">Holy Grail</span>
+</a>
+
+<style>
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    text-decoration: none;
+    color: var(--turbo-text-primary);
+    transition: transform var(--transition-fast);
+  }
+
+  .logo:hover {
+    transform: scale(1.02);
+  }
+
+  .logo::after {
+    display: none;
+  }
+
+  .logo-icon {
+    font-size: 1.75rem;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .logo-text {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(
+      135deg,
+      var(--grail-gold) 0%,
+      var(--grail-gold-light) 50%,
+      var(--grail-gold) 100%
+    );
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s linear infinite;
+  }
+</style>

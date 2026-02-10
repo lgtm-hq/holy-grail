@@ -1,0 +1,177 @@
+---
+import '@lgtm-hq/turbo-themes/css';
+import '../styles/global.css';
+import { withBase } from '../lib/paths';
+import { DEFAULT_DARK_THEME, DEFAULT_LIGHT_THEME } from '../lib/themes';
+import SearchModal from '../components/SearchModal.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  publishedDate?: string;
+}
+
+const {
+  title,
+  description = 'The quest for the perfect dev environment',
+  image = 'og-default.svg',
+  type = 'website',
+  publishedDate,
+} = Astro.props;
+
+const fullTitle = title === 'Holy Grail' ? title : `${title} | Holy Grail`;
+const faviconPath = withBase('favicon.svg');
+
+// Build canonical URL - use Astro.url directly to preserve base path
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || Astro.url.origin);
+const imageURL = new URL(withBase(image), Astro.site || Astro.url.origin);
+---
+
+<!doctype html>
+<html lang="en" data-base={import.meta.env.BASE_URL}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- OpenGraph -->
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={imageURL} />
+    <meta property="og:site_name" content="Holy Grail" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageURL} />
+
+    <!-- Article specific -->
+    {type === 'article' && publishedDate && (
+      <meta property="article:published_time" content={publishedDate} />
+    )}
+
+    <link rel="icon" type="image/svg+xml" href={faviconPath} />
+
+    <!-- Font optimization: preconnect and preload critical fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=Fira+Code:wght@400;500&display=swap"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;1,400&family=Fira+Code:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <title>{fullTitle}</title>
+
+    <!-- Prevent FOUC -->
+    <script is:inline define:vars={{ darkTheme: DEFAULT_DARK_THEME, lightTheme: DEFAULT_LIGHT_THEME }}>
+      (function() {
+        const stored = localStorage.getItem('turbo-theme');
+        if (stored) {
+          document.documentElement.setAttribute('data-theme', stored);
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.setAttribute('data-theme', darkTheme);
+        } else {
+          document.documentElement.setAttribute('data-theme', lightTheme);
+        }
+      })();
+    </script>
+
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div class="site-wrapper">
+      <slot name="header" />
+      <main id="main-content">
+        <slot />
+      </main>
+      <slot name="footer" />
+    </div>
+    <SearchModal />
+
+    <script>
+      import '../scripts/theme-switcher';
+      import '../scripts/code-copy';
+    </script>
+  </body>
+</html>
+
+<style>
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    padding: 8px 16px;
+    background: var(--grail-gold);
+    color: var(--turbo-bg-base);
+    font-weight: 600;
+    z-index: 1000;
+    text-decoration: none;
+    border-radius: 0 0 var(--radius-md) 0;
+    transition: top 0.2s ease;
+  }
+
+  .skip-link:focus {
+    top: 0;
+  }
+
+  .site-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  main {
+    flex: 1;
+  }
+
+  /* Code block copy button */
+  :global(.code-block-wrapper) {
+    position: relative;
+  }
+
+  :global(.copy-button) {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 6px;
+    background: var(--turbo-bg-surface);
+    border: 1px solid var(--turbo-border-default);
+    border-radius: var(--radius-sm);
+    color: var(--turbo-text-secondary);
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s ease;
+    z-index: 10;
+  }
+
+  :global(.code-block-wrapper:hover .copy-button) {
+    opacity: 1;
+  }
+
+  :global(.copy-button:hover) {
+    background: var(--turbo-bg-overlay);
+    color: var(--turbo-text-primary);
+    border-color: var(--grail-gold);
+  }
+
+  :global(.copy-button.copied) {
+    color: var(--category-foundation, #a6e3a1);
+    border-color: var(--category-foundation, #a6e3a1);
+  }
+
+  :global(.copy-button svg) {
+    display: block;
+  }
+</style>

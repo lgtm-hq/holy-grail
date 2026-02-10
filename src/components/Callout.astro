@@ -1,0 +1,95 @@
+---
+/**
+ * Callout - Styled callout/admonition component for guides
+ *
+ * Usage:
+ *   <Callout type="info" title="Note">Content here</Callout>
+ *   <Callout type="warning">Warning content</Callout>
+ *   <Callout type="danger" title="Important">Critical info</Callout>
+ *   <Callout type="tip">Helpful tip</Callout>
+ */
+
+interface Props {
+  type: 'info' | 'warning' | 'danger' | 'tip';
+  title?: string;
+}
+
+const { type: rawType, title } = Astro.props;
+
+const config = {
+  info: { icon: 'ℹ️', label: 'Info', color: '#89b4fa' },
+  warning: { icon: '⚠️', label: 'Warning', color: '#f9e2af' },
+  danger: { icon: '🚨', label: 'Danger', color: '#f38ba8' },
+  tip: { icon: '💡', label: 'Tip', color: '#a6e3a1' },
+};
+
+// Validate type and fall back to 'info' if invalid
+const type = rawType && rawType in config ? rawType : 'info';
+const { icon, label, color } = config[type];
+const displayTitle = title || label;
+---
+
+<aside class={`callout callout-${type}`} style={`--callout-color: ${color};`} role="note" aria-label={displayTitle}>
+  <div class="callout-header">
+    <span class="callout-icon" aria-hidden="true">{icon}</span>
+    <strong class="callout-title">{displayTitle}</strong>
+  </div>
+  <div class="callout-content">
+    <slot />
+  </div>
+</aside>
+
+<style>
+  .callout {
+    margin: var(--space-lg) 0;
+    padding: var(--space-md) var(--space-lg);
+    background: color-mix(in srgb, var(--callout-color) 10%, var(--turbo-bg-surface));
+    border: 1px solid color-mix(in srgb, var(--callout-color) 40%, transparent);
+    border-left: 4px solid var(--callout-color);
+    border-radius: var(--radius-md);
+  }
+
+  .callout-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+  }
+
+  .callout-icon {
+    font-size: 1.1rem;
+  }
+
+  .callout-title {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--callout-color);
+  }
+
+  .callout-content {
+    font-size: 0.95rem;
+    color: var(--turbo-text-secondary);
+    line-height: 1.6;
+  }
+
+  .callout-content :global(p) {
+    margin: 0;
+  }
+
+  .callout-content :global(p + p) {
+    margin-top: var(--space-sm);
+  }
+
+  .callout-content :global(code) {
+    background: var(--turbo-bg-overlay);
+    padding: 0.1em 0.3em;
+    border-radius: var(--radius-sm);
+    font-size: 0.9em;
+  }
+
+  .callout-content :global(a) {
+    color: var(--callout-color);
+  }
+</style>

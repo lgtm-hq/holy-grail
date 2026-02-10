@@ -1,0 +1,46 @@
+---
+/**
+ * ToolIcon - Renders the appropriate icon for a tool
+ * Uses SVG files when available, falls back to category emoji
+ */
+import { getToolIcon } from '../lib/toolIcons';
+import { withBase } from '../lib/paths';
+
+interface Props {
+  slug: string;
+  category?: string;
+  size?: number;
+  class?: string;
+}
+
+const { slug, category, size = 32, class: className = '' } = Astro.props;
+const icon = getToolIcon(slug, category);
+const iconPath = icon.type === 'svg' ? withBase(icon.value) : null;
+---
+
+{icon.type === 'svg' ? (
+  <img
+    src={iconPath}
+    alt={icon.alt || slug}
+    width={size}
+    height={size}
+    class:list={['tool-icon', className]}
+    loading="lazy"
+  />
+) : (
+  <span class:list={['tool-icon', 'tool-icon-emoji', className]} style={`font-size: ${size}px;`} aria-hidden="true">
+    {icon.value}
+  </span>
+)}
+
+<style>
+  .tool-icon {
+    display: inline-block;
+    object-fit: contain;
+  }
+
+  .tool-icon-emoji {
+    font-size: inherit;
+    line-height: 1;
+  }
+</style>
