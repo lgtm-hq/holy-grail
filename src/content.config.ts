@@ -13,6 +13,7 @@ const guides = defineCollection({
     difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional(),
     estimatedMinutes: z.number().optional(),
     relatedGuides: z.array(z.string()).optional().default([]),
+    heroImage: z.string().optional(),
   }),
 });
 

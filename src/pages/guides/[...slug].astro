@@ -10,6 +10,7 @@ import { getCollection, render } from 'astro:content';
 import { getCategoryIcon, getCategoryColor, getCategorySlug } from '../../lib/categories';
 import { getDifficulty } from '../../lib/difficulties';
 import { withBase } from '../../lib/paths';
+import { getToolIcon } from '../../lib/toolIcons';
 
 // Guide data shape for type assertions (matches content.config.ts schema)
 interface GuideData {
@@ -21,6 +22,7 @@ interface GuideData {
   difficulty?: string;
   estimatedMinutes?: number;
   relatedGuides?: string[];
+  heroImage?: string;
 }
 
 export async function getStaticPaths() {
@@ -55,6 +57,12 @@ const relatedGuides = (guideData.relatedGuides ?? [])
 
 // Get difficulty config from centralized module
 const difficulty = guideData.difficulty ? getDifficulty(guideData.difficulty) : null;
+
+// Hero image: use frontmatter heroImage, or fall back to tool icon SVG
+const toolIcon = getToolIcon(guide.id, guideData.category);
+const heroImage = guideData.heroImage
+  || (toolIcon.type === 'svg' ? toolIcon.value : '');
+const heroAlt = toolIcon.alt || guideData.title;
 ---
 
 <BaseLayout title={guideData.title} description={guideData.description} type="article">
@@ -93,6 +101,23 @@ const difficulty = guideData.difficulty ? getDifficulty(guideData.difficulty) : 
           <li aria-current="page">{guideData.title}</li>
         </ol>
       </nav>
+
+      {heroImage && (
+        <div class="guide-hero" style={`--hero-accent: ${categoryColor};`}>
+          <div class="hero-glow" aria-hidden="true"></div>
+          <img
+            src={base(heroImage)}
+            alt={heroAlt}
+            class="hero-icon"
+            width="80"
+            height="80"
+          />
+          <div class="hero-text">
+            <span class="hero-title">{guideData.title}</span>
+            <span class="hero-tagline">{guideData.description}</span>
+          </div>
+        </div>
+      )}
 
       <header class="guide-header">
         <div class="guide-meta">
@@ -233,9 +258,87 @@ const difficulty = guideData.difficulty ? getDifficulty(guideData.difficulty) : 
     font-weight: 500;
   }
 
+  /* Guide Hero Banner */
+  .guide-hero {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xl);
+    padding: var(--space-xl) var(--space-2xl);
+    margin-bottom: var(--space-2xl);
+    background: var(--turbo-bg-surface);
+    border: 1px solid var(--turbo-border-default);
+    border-left: 4px solid var(--hero-accent);
+    border-radius: var(--radius-lg);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--hero-accent) 12%, transparent) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+
+  .hero-icon {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--hero-accent) 30%, transparent));
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--turbo-heading);
+    letter-spacing: -0.01em;
+  }
+
+  .hero-tagline {
+    font-size: 0.95rem;
+    color: var(--turbo-text-secondary);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 640px) {
+    .guide-hero {
+      flex-direction: column;
+      text-align: center;
+      padding: var(--space-lg);
+    }
+
+    .hero-icon {
+      width: 60px;
+      height: 60px;
+    }
+
+    .hero-title {
+      font-size: 1.35rem;
+    }
+  }
+
   /* Guide Header */
   .guide-header {
-    max-width: 72ch;
+    max-width: 85ch;
     margin-bottom: var(--space-3xl);
     padding-bottom: var(--space-2xl);
     border-bottom: var(--border-manuscript);
@@ -326,7 +429,7 @@ const difficulty = guideData.difficulty ? getDifficulty(guideData.difficulty) : 
 
   /* Guide Content */
   .guide-content {
-    max-width: 72ch;
+    max-width: 85ch;
     min-width: 0;
   }
 
@@ -377,7 +480,7 @@ const difficulty = guideData.difficulty ? getDifficulty(guideData.difficulty) : 
 
   /* Guide Footer */
   .guide-footer {
-    max-width: 72ch;
+    max-width: 85ch;
     margin-top: var(--space-3xl);
     padding-top: var(--space-2xl);
     border-top: var(--border-manuscript);
@@ -453,7 +556,7 @@ const difficulty = guideData.difficulty ? getDifficulty(guideData.difficulty) : 
 
   /* Related Guides */
   .related-guides {
-    max-width: 72ch;
+    max-width: 85ch;
     margin-top: var(--space-3xl);
     padding-top: var(--space-2xl);
     border-top: var(--border-manuscript);
