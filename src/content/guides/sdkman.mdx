@@ -1,0 +1,314 @@
+---
+title: SDKMAN!
+description:
+  Manage parallel versions of multiple Software Development Kits with SDKMAN!, the SDK
+  manager for JVM-based languages
+category: Foundation
+order: 3
+tags: [sdk, java, groovy, kotlin, foundation]
+difficulty: beginner
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is SDKMAN!?
+
+[SDKMAN!](https://sdkman.io/) is a tool for managing parallel versions of multiple
+Software Development Kits on most Unix-based systems. It provides a convenient Command
+Line Interface (CLI) and API for installing, switching, removing, and listing
+Candidates.
+
+> Formerly known as GVM (the Groovy enVironment Manager), it was inspired by the very
+> useful [RVM](https://rvm.io/) and [rbenv](https://github.com/rbenv/rbenv) tools, used
+> at large by the Ruby community.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/homebrew/" />
+  <LinkBadge href="/guides/zsh/" />
+</div>
+
+## Installation
+
+Open a new terminal session:
+
+```bash
+curl -s "https://get.sdkman.io" | bash
+```
+
+Close your terminal session after installation.
+
+## Verify Your Installation
+
+Open a new terminal session:
+
+```bash
+sdk version
+```
+
+You should see output similar to:
+
+```text
+SDKMAN!
+script: 5.18.1
+native: 0.2.2
+```
+
+## Installing SDKs
+
+### Install from SDKMAN
+
+**Install the latest version of an SDK:**
+
+```bash
+sdk install <sdk-name>
+```
+
+**Install a specific version of an SDK:**
+
+```bash
+sdk install <sdk-name> <version>
+```
+
+> When installing multiple versions of an SDK, you may be prompted to set the newly
+> installed SDK as the default version.
+
+### Install from Local SDKs (Direct Downloads)
+
+```bash
+sdk install <sdk-name> <version> </path/to/sdk/file>
+```
+
+> The local version name `<version>` must be a unique name which is not already in the
+> list of available version names.
+
+## Uninstalling SDKs
+
+**Uninstall a specific version of an SDK:**
+
+```bash
+sdk uninstall <sdk-name> <version>
+```
+
+> To remove all versions of an SDK, run this command for each
+> installed version.
+
+## Good to Know
+
+### Listing Available SDKs
+
+**Get a list of all SDKs available through SDKMAN!:**
+
+```bash
+sdk list
+```
+
+This will render a searchable alphabetic list with name, current stable default version,
+website URL, description, and easy install command for each Candidate. The output is
+piped to `less` so standard keyboard shortcuts may be used with `q` to exit.
+
+**Get a list of versions for a specific SDK:**
+
+```bash
+sdk list <sdk-name>
+```
+
+Legend:
+
+- `+` - local version
+- `*` - installed
+- `>` - currently in use
+
+### Version Switching
+
+**Switch global versions:**
+
+> This means that every new project or reference to the specified SDK will use whatever
+> version you set.
+
+```bash
+sdk default <sdk-name> <version>
+```
+
+**Switch versions per project:**
+
+In your project directory:
+
+```bash
+sdk env init
+```
+
+This will create a `.sdkmanrc` file which will remember the SDK version to be used
+within this project:
+
+```bash
+# Enable auto-env through the sdkman_auto_env config
+# Add key=value pairs of SDKs to use below
+<sdk-name>=<version>
+```
+
+To use the `.sdkmanrc` file when you open your project:
+
+```bash
+sdk env
+```
+
+> Add `sdkman_auto_env=true` to the global SDKMAN config at
+> `~/.sdkman/etc/config` to automatically switch to the versions
+> specified in `.sdkmanrc` when you enter a project directory.
+> The `.sdkmanrc` file itself is only for per-project version
+> mappings (e.g., `java=21.0.4-tem`).
+
+### Check Your Current Default Version
+
+**Check the current version of a specific SDK:**
+
+```bash
+sdk current <sdk-name>
+```
+
+**Check the current version of all SDKs:**
+
+```bash
+sdk current
+```
+
+### Using sdk env
+
+**Reset the SDKs to their default version:**
+
+```bash
+sdk env clear
+```
+
+**Using a project with an existing .sdkmanrc file may require you to install the SDK:**
+
+```bash
+sdk env install
+```
+
+### SDK & SDKMAN! Updates & Upgrades
+
+**Updating SDKMAN!:**
+
+```bash
+# option 1
+sdk selfupdate
+
+# option 2
+sdk selfupdate force
+```
+
+> If no new version is available, an appropriate message will be displayed. Automatic
+> daily checks are done for available updates.
+
+**Check what needs to be upgraded:**
+
+```bash
+sdk upgrade
+```
+
+**Upgrade a specific SDK:**
+
+```bash
+sdk upgrade java
+```
+
+### Get Location of SDK
+
+```bash
+sdk home <sdk-name> <version>
+# Output: /home/myuser/.sdkman/candidates/<sdk-name>/<version>
+```
+
+## Troubleshooting
+
+### "sdk: command not found"
+
+1. Verify SDKMAN! is installed:
+
+   ```bash
+   ls ~/.sdkman
+   ```
+
+2. Add initialization to your shell config (`~/.zshrc`):
+
+   ```bash
+   export SDKMAN_DIR="$HOME/.sdkman"
+   [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+   ```
+
+3. Re-source your shell:
+
+   ```bash
+   source ~/.zshrc
+   ```
+
+### Version Not Switching
+
+If `sdk use` or `sdk default` doesn't change versions:
+
+1. Check for conflicting version managers:
+
+   ```bash
+   which java  # Should be ~/.sdkman/candidates/java/current/bin/java
+   ```
+
+2. Ensure SDKMAN! directories are in PATH before system directories
+
+3. Check for `.sdkmanrc` files overriding global settings:
+
+   ```bash
+   find . -name ".sdkmanrc" 2>/dev/null
+   ```
+
+### Offline Mode
+
+If you're offline or have network issues:
+
+```bash
+# Enable offline mode
+sdk offline enable
+
+# List only installed SDKs (marked with *)
+sdk list java | grep -E '^\s*\*'
+```
+
+### Corrupted Installation
+
+If SDKMAN! behaves unexpectedly:
+
+```bash
+# Reinstall without losing installed SDKs
+rm -rf ~/.sdkman/tmp
+sdk selfupdate force
+
+# Or completely reinstall (loses all SDKs)
+rm -rf ~/.sdkman
+curl -s "https://get.sdkman.io" | bash
+```
+
+### Slow Performance
+
+SDKMAN! makes network calls. For faster performance:
+
+```bash
+# Disable auto-updates in ~/.sdkman/etc/config
+sdkman_auto_selfupdate=false
+sdkman_auto_update=false
+```
+
+## Resources
+
+<LinkCard
+  href="https://sdkman.io/usage"
+  title="SDKMAN! Usage Documentation"
+  description="Official documentation for all SDKMAN! commands and features"
+/>
+<LinkCard
+  href="https://sdkman.io/install"
+  title="SDKMAN! Installation"
+  description="Installation instructions and requirements"
+/>

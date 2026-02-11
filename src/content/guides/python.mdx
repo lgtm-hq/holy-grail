@@ -1,0 +1,250 @@
+---
+title: Python
+description:
+  Set up Python development environment with pyenv for version management and proper
+  configuration on macOS
+category: Languages
+order: 4
+tags: [python, pyenv, programming, languages]
+difficulty: beginner
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is Python?
+
+[Python](https://www.python.org/) is an interpreted, object-oriented, high-level
+programming language with dynamic semantics. Its high-level built-in data structures,
+combined with dynamic typing and dynamic binding, make it very attractive for Rapid
+Application Development, as well as for use as a scripting or glue language to connect
+existing components together.
+
+> Python's simple, easy-to-learn syntax emphasizes readability and therefore reduces the
+> cost of program maintenance. Python supports modules and packages, which encourages
+> program modularity and code reuse.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/homebrew/" />
+  <LinkBadge href="/guides/zsh/" />
+</div>
+
+## Install Pyenv
+
+[Pyenv](https://github.com/pyenv/pyenv) intercepts Python commands using shim
+executables injected into your PATH, determines which Python version has been specified
+by your application, and passes your commands along to the correct Python installation.
+
+**Why use pyenv?**
+
+- Isolate Python versions
+- Change the global Python version on a per-user basis
+- Support for per-project Python versions
+- Override the Python version with an environment variable
+
+**Install dependencies:**
+
+```bash
+brew install openssl readline sqlite3 xz zlib tcl-tk
+```
+
+**Install pyenv:**
+
+```bash
+brew install pyenv
+```
+
+Close your terminal session and add pyenv to your `~/.zshrc` or `~/.bashrc` config file.
+
+## Install Python
+
+> **Apple Silicon Note:** Homebrew automatically installs to `/opt/homebrew` on Apple
+> Silicon Macs. In most cases, no manual migration is needed - pyenv and other tools
+> will work correctly out of the box.
+
+<details>
+<summary>**Legacy Intel Migration (rarely needed)**</summary>
+
+If you previously had an Intel Mac with packages in `/usr/local/bin` and are
+experiencing conflicts, first verify what's there:
+
+```bash
+# Check what's in /usr/local/bin before making changes
+ls -la /usr/local/bin
+```
+
+Only proceed if you understand what files are present. **Do not blindly move or delete
+system directories** - this can break macOS utilities and other software. Instead,
+reinstall conflicting tools via Homebrew:
+
+```bash
+# Reinstall specific tools via Homebrew (preferred approach)
+brew reinstall <package-name>
+```
+
+</details>
+
+**List all available versions:**
+
+```bash
+pyenv install --list
+```
+
+**List versions by base version (e.g., v3):**
+
+```bash
+pyenv install --list | grep -E " 3\.([6-9]|1[0-9])"
+```
+
+**Install a specific version:**
+
+```bash
+pyenv install <version>
+```
+
+Close your terminal session and add Python exports to your `~/.zshrc` or `~/.bashrc`
+config file.
+
+> The order of the exports to the `$PATH` is important. From the bottom-up of the
+> `.zshrc` file: SDKMAN! (BOTTOM), Python exports (ABOVE SDKMAN!).
+
+## Good to Know
+
+### Check Versions
+
+**List installed versions:**
+
+```bash
+ls ~/.pyenv/versions/
+```
+
+**Check which version is being used:**
+
+```bash
+pyenv versions
+```
+
+The version with the `*` next to it is the currently used version.
+
+**List the current version:**
+
+```bash
+python -V
+```
+
+### Switch Versions
+
+```bash
+pyenv global <version>
+```
+
+> If your Python version is not changing after setting it using pyenv:
+>
+> 1. Update pyenv: `brew update && brew upgrade pyenv`
+> 2. Check for a `.python-version` file in your home directory and delete it:
+>    `cd ~ && rm .python-version`
+
+### Find Install Location
+
+```bash
+pyenv which python
+# Output: /Users/<user>/.pyenv/versions/<version>/bin/python
+
+which python
+# Output: /Users/<user>/.pyenv/shims/python
+```
+
+## Troubleshooting
+
+### "pyenv: command not found"
+
+1. Ensure pyenv is initialized in your shell config (`~/.zshrc`):
+
+   ```bash
+   export PYENV_ROOT="$HOME/.pyenv"
+   export PATH="$PYENV_ROOT/bin:$PATH"
+   eval "$(pyenv init -)"
+   ```
+
+2. Re-source your shell:
+
+   ```bash
+   source ~/.zshrc
+   ```
+
+### Python Version Not Changing
+
+1. Update pyenv:
+
+   ```bash
+   brew update && brew upgrade pyenv
+   ```
+
+2. Check for local override files:
+
+   ```bash
+   # Remove any .python-version file in home directory
+   rm ~/.python-version
+   ```
+
+3. Verify shims are first in PATH:
+
+   ```bash
+   echo $PATH | tr ':' '\n' | grep pyenv
+   ```
+
+### Build Errors During Installation
+
+Missing dependencies can cause build failures:
+
+```bash
+# Install all required dependencies
+brew install openssl readline sqlite3 xz zlib tcl-tk
+
+# Set compiler flags for Apple Silicon
+export LDFLAGS="-L$(brew --prefix openssl)/lib"
+export CPPFLAGS="-I$(brew --prefix openssl)/include"
+
+# Retry installation
+pyenv install <version>
+```
+
+### "pip: command not found"
+
+pip should be included with Python. If missing:
+
+```bash
+# Reinstall Python with pyenv
+pyenv uninstall <version>
+pyenv install <version>
+
+# Or install pip manually
+python -m ensurepip --upgrade
+```
+
+### Virtual Environment Issues
+
+Use Python's built-in `venv` module to create isolated environments:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+For more advanced dependency management, consider
+[pipenv](https://pipenv.pypa.io/) or [Poetry](https://python-poetry.org/).
+
+## Resources
+
+<LinkCard
+  href="https://realpython.com/intro-to-pyenv/"
+  title="Managing Multiple Python Versions With pyenv"
+  description="Comprehensive Real Python guide to using pyenv effectively"
+/>
+<LinkCard
+  href="https://github.com/pyenv/pyenv"
+  title="pyenv on GitHub"
+  description="Official pyenv repository with documentation and installation instructions"
+/>

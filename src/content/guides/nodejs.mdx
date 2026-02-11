@@ -1,0 +1,234 @@
+---
+title: Node.js
+description:
+  Install and manage Node.js versions using nvm (Node Version Manager) for JavaScript
+  development
+category: Languages
+order: 6
+tags: [nodejs, nvm, javascript, programming, languages]
+difficulty: beginner
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is Node.js?
+
+[Node.js](https://nodejs.org/) is an asynchronous event-driven JavaScript runtime
+designed to build scalable network applications.
+
+> As an asynchronous event-driven JavaScript runtime, Node.js is designed to build
+> scalable network applications, in contrast to today's more common concurrency model,
+> in which OS threads are employed. Thread-based networking is relatively inefficient
+> and very difficult to use. Node.js is free from worries of dead-locking the process,
+> since there are no locks.
+
+Node.js is required for many development tools, including
+<LinkBadge href="/guides/appium/" /> for mobile automation testing.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/homebrew/" />
+  <LinkBadge href="/guides/zsh/" />
+</div>
+
+## Install nvm (Node Version Manager)
+
+[nvm](https://github.com/nvm-sh/nvm) is a version manager for Node.js, designed to be
+installed per-user, and invoked per-shell. nvm works on any POSIX-compliant shell (sh,
+dash, ksh, zsh, bash) on unix, macOS, and Windows Subsystem for Linux.
+
+**Install nvm:**
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+```
+
+Close your terminal session.
+
+The installation script should automatically add nvm to your `~/.zshrc` or `~/.bashrc`
+config file. If not, add manually:
+
+```bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+```
+
+## Verify Your Installation
+
+Open a new terminal session:
+
+```bash
+nvm -v
+# or
+nvm --version
+```
+
+## Install Node.js
+
+**Install the latest LTS version:**
+
+```bash
+nvm install --lts
+```
+
+**Install a specific version:**
+
+```bash
+nvm install <version>
+```
+
+**Install the latest version:**
+
+```bash
+nvm install node
+```
+
+## Managing Node.js Versions
+
+**List installed versions:**
+
+```bash
+nvm ls
+```
+
+**List available versions:**
+
+```bash
+nvm ls-remote
+```
+
+**Use a specific version:**
+
+```bash
+nvm use <version>
+```
+
+**Set default version:**
+
+```bash
+nvm alias default <version>
+```
+
+**Check current version:**
+
+```bash
+node -v
+```
+
+## Uninstall nvm
+
+To remove, delete, or uninstall nvm, just remove the `~/.nvm` directory:
+
+```bash
+rm -rf ~/.nvm
+```
+
+Also remove the nvm lines from your `~/.zshrc` or `~/.bashrc` file.
+
+## Troubleshooting
+
+### "nvm: command not found"
+
+1. Verify nvm is installed:
+
+   ```bash
+   ls ~/.nvm
+   ```
+
+2. Check your shell config has nvm initialization:
+
+   ```bash
+   grep -A 3 'NVM_DIR' ~/.zshrc
+   ```
+
+3. Re-source your shell:
+
+   ```bash
+   source ~/.zshrc
+   ```
+
+### "node: command not found" After Installing
+
+Set a default Node version:
+
+```bash
+nvm alias default <version>
+# or
+nvm alias default lts/*
+```
+
+### Permission Errors with npm
+
+Never use `sudo` with npm. Fix permissions:
+
+```bash
+# Create a directory for global packages
+mkdir ~/.npm-global
+npm config set prefix "$HOME/.npm-global"
+
+# Add to PATH in ~/.zshrc
+export PATH="$HOME/.npm-global/bin:$PATH"
+```
+
+### nvm Slowing Down Shell Startup
+
+nvm can slow down shell initialization. For faster startup, use lazy loading in
+`~/.zshrc`:
+
+```bash
+# Lazy load nvm
+nvm() {
+  unset -f nvm node npm npx
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  nvm "$@"
+}
+```
+
+### Different Node Version in Different Terminals
+
+Use `.nvmrc` file in your project:
+
+```bash
+echo "18" > .nvmrc
+nvm use
+```
+
+Add to shell config for automatic switching:
+
+```bash
+# Add to ~/.zshrc
+autoload -U add-zsh-hook
+load-nvmrc() {
+  local nvmrc_path="$(nvm_find_nvmrc)"
+  if [ -n "$nvmrc_path" ]; then
+    local nvmrc_node_version=$(nvm version "$(cat "$nvmrc_path")")
+    if [ "$nvmrc_node_version" = "N/A" ]; then
+      nvm install
+    elif [ "$nvmrc_node_version" != "$(nvm version)" ]; then
+      nvm use --silent
+    fi
+  elif [ -n "$(PWD=$OLDPWD nvm_find_nvmrc)" ] \
+    && [ "$(nvm version)" != "$(nvm version default)" ]; then
+    nvm use default --silent
+  fi
+}
+add-zsh-hook chpwd load-nvmrc
+load-nvmrc
+```
+
+## Resources
+
+<LinkCard
+  href="https://nodejs.org/en/about"
+  title="About Node.js"
+  description="Official introduction to Node.js and its architecture"
+/>
+<LinkCard
+  href="https://github.com/nvm-sh/nvm"
+  title="nvm on GitHub"
+  description="Node Version Manager - manage multiple Node.js versions"
+/>

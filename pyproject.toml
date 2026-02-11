@@ -1,0 +1,8 @@
+[project]
+name = "holy-grail"
+version = "0.1.0"
+description = "The Holy Grail documentation site"
+requires-python = ">=3.11"
+
+[dependency-groups]
+dev = ["lintro>=0.51.2"]
