@@ -1,0 +1,177 @@
+---
+title: Java
+description:
+  Install and manage Java JDK versions using SDKMAN! for development and testing tools
+category: Languages
+order: 5
+tags: [java, jdk, sdkman, programming, languages]
+difficulty: beginner
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is Java?
+
+[Java](https://www.java.com/) is a high-level, class-based, object-oriented programming
+language that is designed to have as few implementation dependencies as possible.
+
+> Java is a programming language and computing platform first released by Sun
+> Microsystems in 1995. It has evolved from humble beginnings to power a large share of
+> today's digital world, by providing the reliable platform upon which many services and
+> applications are built.
+
+Some of the tools used for testing mobile devices require Java, which you can download
+using SDKMAN!.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/zsh/" />
+  <LinkBadge href="/guides/sdkman/" />
+</div>
+
+## Install Java Using SDKMAN! (Preferred)
+
+**Install the latest version of Java SE:**
+
+```bash
+sdk install java
+```
+
+This will install the latest version based on Eclipse Temurin.
+
+**List all Java versions available:**
+
+```bash
+sdk list java
+```
+
+This shows a table with:
+
+- **Vendor** - The JDK provider (Corretto, GraalVM, Java.net, Liberica, Temurin, etc.)
+- **Use** - Indicates if this version is in use
+- **Version** - The Java version number
+- **Dist** - Distribution identifier
+- **Status** - Installation status
+- **Identifier** - The identifier to use when installing
+
+**Install a specific version:**
+
+> Use the `Identifier` column from the `sdk list java` output to specify
+> the version you want. Eclipse Temurin is a popular choice for JDK.
+
+```bash
+sdk install java <identifier>
+```
+
+Close your terminal session and add Java exports to your `~/.zshrc` or `~/.bashrc`
+config file.
+
+## Switching JDK Versions
+
+**Set global version:**
+
+```bash
+sdk default java <identifier>
+```
+
+**Use version in current shell only:**
+
+```bash
+sdk use java <identifier>
+```
+
+**Check current version:**
+
+```bash
+sdk current java
+```
+
+**List installed versions:**
+
+```bash
+sdk list java | grep "\*"
+```
+
+For more details on SDK version management, refer to the
+<LinkBadge href="/guides/sdkman/" /> guide.
+
+## Troubleshooting
+
+### "java: command not found"
+
+1. Verify SDKMAN! is initialized:
+
+   ```bash
+   sdk version
+   ```
+
+2. Check Java is installed:
+
+   ```bash
+   sdk list java | grep installed
+   ```
+
+3. Set a default version:
+
+   ```bash
+   sdk default java <identifier>
+   ```
+
+### JAVA_HOME Not Set
+
+Add to your `~/.zshrc`:
+
+```bash
+export JAVA_HOME=$HOME/.sdkman/candidates/java/current
+```
+
+Then verify:
+
+```bash
+source ~/.zshrc
+echo $JAVA_HOME
+```
+
+### Wrong Java Version Being Used
+
+Check what's controlling your Java:
+
+```bash
+# Which java is being used
+which java
+
+# Is there a .java-version or .sdkmanrc file?
+ls -la .java-version .sdkmanrc 2>/dev/null
+```
+
+If a local file is overriding your global version, remove it or update it.
+
+### Certificate/SSL Issues
+
+Some corporate networks require custom certificates. If you see SSL errors:
+
+```bash
+# Import certificate to Java keystore
+keytool -import -trustcacerts -keystore $JAVA_HOME/lib/security/cacerts \
+  -storepass changeit -alias your-cert -file certificate.crt
+```
+
+## Resources
+
+<LinkCard
+  href="https://www.java.com/en/download/help/whatis_java.html"
+  title="What is Java?"
+  description="Official introduction to Java from Oracle"
+/>
+<LinkCard
+  href="https://sdkman.io/usage"
+  title="SDKMAN! Usage Documentation"
+  description="Learn how to manage Java versions with SDKMAN!"
+/>
+<LinkCard
+  href="https://adoptium.net/temurin/"
+  title="Eclipse Temurin"
+  description="Recommended open-source JDK distribution"
+/>
