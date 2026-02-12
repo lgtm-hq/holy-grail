@@ -2,9 +2,9 @@
 title: Maven
 description:
   Install Apache Maven, the build automation tool for Java projects, using SDKMAN!
-category: Languages
+category: Build Tools
 order: 7
-tags: [java, maven, build-tools, sdkman]
+tags: [maven, build-tools, java]
 difficulty: intermediate
 ---
 
@@ -147,7 +147,14 @@ Add this to your `~/.zshrc` to make it permanent.
 
 ### Dependency resolution failures
 
-Clear the local repository cache:
+First, try removing only the specific problematic artifact:
+
+```bash
+rm -rf ~/.m2/repository/com/example/problematic-artifact
+mvn clean install
+```
+
+If that doesn't resolve the issue, as a **last resort** you can clear the entire local repository cache. This will force Maven to re-download **all** dependencies:
 
 ```bash
 rm -rf ~/.m2/repository
@@ -156,13 +163,25 @@ mvn clean install
 
 ### SSL certificate issues
 
-If you encounter SSL errors when downloading dependencies:
+If you encounter SSL errors when downloading dependencies, first download and import the repository's certificate into your JVM keystore:
+
+```bash
+# Download the certificate from the repository host
+openssl s_client -connect repo.example.com:443 </dev/null 2>/dev/null | openssl x509 -outform PEM > repo-cert.pem
+
+# Import the certificate into the JVM keystore
+keytool -import -alias repo-cert -keystore "$JAVA_HOME/lib/security/cacerts" -file repo-cert.pem -storepass changeit -noprompt
+```
+
+Replace `repo.example.com` with the actual repository hostname from the error message.
+
+As a **last-resort debugging option**, you can bypass SSL verification:
 
 ```bash
 mvn clean install -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true
 ```
 
-> **Note:** Only use this for debugging. Fix the underlying certificate issue for production use.
+> **"For debugging only — do not use in production. Fix the underlying certificate issue."**
 
 ## Resources
 
