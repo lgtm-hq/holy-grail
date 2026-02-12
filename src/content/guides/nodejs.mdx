@@ -160,6 +160,9 @@ npm --version
 
 ## Uninstall Node.js
 
+> If you get an error: `nvm: Cannot uninstall currently-active node version` when
+> uninstalling any currently-active version, run `nvm deactivate` first.
+
 **Uninstall a specific version:**
 
 ```bash
@@ -171,9 +174,6 @@ nvm uninstall <node_version>
 ```bash
 nvm uninstall node
 ```
-
-> If you get an error: `nvm: Cannot uninstall currently-active node version`, you need
-> to first run `nvm deactivate` before uninstalling.
 
 **Uninstall the latest LTS version:**
 
