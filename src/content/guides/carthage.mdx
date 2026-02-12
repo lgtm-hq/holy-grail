@@ -147,6 +147,12 @@ If <LinkBadge href="/guides/appium/" /> requires building WebDriverAgent with Ca
    cd ~/.appium/node_modules/appium-xcuitest-driver/node_modules/appium-webdriveragent
    ```
 
+   > **Note:** The exact path to `appium-webdriveragent` may vary depending on your
+   > installation method (global vs. local, npm vs. other package managers). To locate
+   > the correct directory, search for `appium-webdriveragent` in your global or
+   > project-local `node_modules`, or run `npm ls -g appium-xcuitest-driver` to confirm
+   > the install location.
+
 2. Bootstrap dependencies:
    ```bash
    ./Scripts/bootstrap.sh
