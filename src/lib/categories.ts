@@ -40,6 +40,13 @@ export const CATEGORIES = {
     cardIcon: "⚒️",
     description: "Maven, Gradle, and build automation tools",
   },
+  "ios-tools": {
+    name: "iOS Tools",
+    color: "#94e2d5",
+    icon: "📱",
+    cardIcon: "📲",
+    description: "Carthage, ios-deploy, ideviceinstaller, and iOS device utilities",
+  },
   tools: {
     name: "Tools",
     color: "#cba6f7",

@@ -37,8 +37,8 @@ Click to install the Xcode developer tools when prompted.
 
 1. Open Xcode
 2. Click on **Xcode** in the top left corner
-3. Click on **Preferences** (or **Settings** in newer versions)
-4. Click on **Platforms**
+3. Click on **Preferences** (Xcode 13 and earlier) or **Settings** (Xcode 14+)
+4. Select the **Platforms** tab
 5. Select the simulators you want to have installed
 6. Click on the **GET** button next to the name of the simulator
 
@@ -48,7 +48,7 @@ Click to install the Xcode developer tools when prompted.
 
 1. Open Xcode
 2. Click on **Xcode** in the top left corner
-3. Click on **Preferences**
+3. Click on **Preferences** (Xcode 13 and earlier) or **Settings** (Xcode 14+)
 4. Click on **Locations**
 5. Check that the **Command Line Tools** dropdown is **not empty**
    - It should show something like `Xcode <version>`
@@ -98,7 +98,7 @@ xcode-select --install
 
 ### Simulator Not Appearing
 
-1. Open Xcode > Preferences > Platforms
+1. Open Xcode > Preferences (Xcode 13 and earlier) or Settings (Xcode 14+) > Platforms
 2. Download the required simulator runtime
 3. Verify it appears:
    ```bash
@@ -122,7 +122,7 @@ xcrun simctl erase <device-udid>
 For iOS real device testing:
 
 1. Open Xcode
-2. Go to Preferences > Accounts
+2. Go to Preferences (Xcode 13 and earlier) or Settings (Xcode 14+) > Accounts
 3. Add your Apple ID
 4. Download manual provisioning profiles or enable automatic signing
 

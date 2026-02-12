@@ -91,6 +91,10 @@ adb install -r app.apk
 adb install -s app.apk
 ```
 
+> **Note:** The `-s` flag is deprecated and unsupported on Android 9+ (API 28+).
+> Most modern devices ignore it. On newer devices, omit the flag entirely or use
+> `adb push` to transfer the APK and install it manually.
+
 ### Uninstall an App
 
 ```bash

@@ -175,11 +175,14 @@ adb start-server
 
 ### Use Hardware Acceleration
 
-Ensure HAXM (Intel) or Hypervisor Framework (Apple Silicon) is enabled.
+Ensure Hypervisor Framework (HVF) is enabled on macOS. HVF is available on
+macOS 10.10+ and is the only supported accelerator for the Android Emulator on
+macOS. HAXM was removed from Android Emulator 36.2.x and is not supported on
+macOS 11+.
 
-**Check on macOS:**
+**Verify acceleration on macOS:**
 ```bash
-kextstat | grep intel
+$ANDROID_HOME/emulator/emulator -accel-check
 ```
 
 ### Recommended Settings

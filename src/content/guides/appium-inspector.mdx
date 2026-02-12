@@ -150,8 +150,8 @@ adb shell dumpsys activity activities | grep mResumedActivity
 ### Finding Bundle ID (iOS)
 
 ```bash
-# List installed apps on simulator
-xcrun simctl listapps booted | grep CFBundleIdentifier
+# List installed app bundle IDs on simulator
+xcrun simctl listapps booted | plutil -convert json -o - - | jq -r 'keys[]'
 ```
 
 ### Appium Inspector vs Appium Desktop

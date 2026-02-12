@@ -96,9 +96,10 @@ Appium Doctor uses symbols to indicate status:
 Add to your `~/.zshrc` or `~/.bashrc`:
 
 ```bash
-export ANDROID_HOME=$HOME/Library/Android/sdk
-export PATH=$PATH:$ANDROID_HOME/platform-tools
-export PATH=$PATH:$ANDROID_HOME/emulator
+export ANDROID_SDK_ROOT=$HOME/Library/Android/sdk
+export ANDROID_HOME=$ANDROID_SDK_ROOT  # legacy alias
+export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
+export PATH=$PATH:$ANDROID_SDK_ROOT/emulator
 ```
 
 ### JAVA_HOME Not Set
