@@ -155,9 +155,15 @@ except ValidationError as e:
 import requests
 from marshmallow import ValidationError
 
+payload = {
+    "firstName": "User FName",
+    "lastName": "User LName",
+    "emailAddress": "new_user@example.com"
+}
+
 response = requests.post(
     url="https://api.example.com/users",
-    json=data
+    json=payload
 )
 
 response_data = response.json()

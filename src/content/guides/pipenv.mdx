@@ -155,9 +155,10 @@ pipenv install
 pipenv install --ignore-pipfile
 ```
 
-> If you did not have a `Pipfile`, a new virtual environment will be created but
-> there will not be any dependencies installed. It will install dependencies from a
-> `requirements.txt` if it exists.
+> The `--ignore-pipfile` flag tells Pipenv to install strictly from an existing
+> `Pipfile.lock`, ignoring the `Pipfile` entirely. If no `Pipfile.lock` is present,
+> a virtual environment will be created but no dependencies will be installed.
+> Pipenv does **not** fall back to `requirements.txt`.
 
 **Specify a Python version:**
 

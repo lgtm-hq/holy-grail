@@ -336,12 +336,20 @@ which python3
 **Look in common installation directories:**
 
 ```bash
-ls -1 /usr/bin/python* | grep '.*[2-3]\(.[0-9]\+\)\?$'
+ls -1 /usr/local/bin/python* 2>/dev/null
 ls -l /usr/local/bin | grep '../Library/Frameworks/Python.framework'
 ```
 
-**Use the output of the commands above to locate where Python is installed, then run
-`rm -rf` to remove the directories.**
+> **Do not remove system Python from `/usr/bin`.** On macOS, `/usr/bin` is protected
+> by System Integrity Protection (SIP) and is read-only. Only remove **third-party**
+> Python installations found in locations such as `/usr/local`, `/opt`,
+> `/Library/Frameworks/Python.framework`, or pyenv/venv directories. Use the output
+> of the commands above to identify non-system paths, then remove them:
+>
+> ```bash
+> # Example: remove a third-party Python in /usr/local
+> sudo rm -rf /usr/local/bin/python3 /Library/Frameworks/Python.framework
+> ```
 
 > Remove any code or aliases in your `~/.zshrc` file that reference Python.
 

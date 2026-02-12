@@ -68,6 +68,11 @@ Validate data **after** receiving an API response:
 
 ```python
 import requests
+from pydantic import BaseModel, ValidationError
+
+class UserResponse(BaseModel):
+    id: int
+    name: str
 
 response = requests.get("https://api.example.com/users/1")
 response_data = response.json()
