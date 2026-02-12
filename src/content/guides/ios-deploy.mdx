@@ -123,7 +123,11 @@ device UDID.
 
 ### Permission Denied
 
-If you encounter permission issues:
+If you encounter permission issues, try reinstalling Xcode or the Command Line Tools
+first, as this usually resolves permissions without modifying the Xcode bundle.
+
+> **Caution:** Recursively changing permissions on Xcode app contents can interfere
+> with future Xcode updates and code signing. Use this as a last resort only.
 
 ```bash
 sudo chmod -R 755 /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/DeviceSupport

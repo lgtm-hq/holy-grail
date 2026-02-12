@@ -95,25 +95,17 @@ ios_webkit_debug_proxy -c null:9221,:9222-9322
 For Appium testing with web views, you can either start the proxy manually or let
 Appium manage it automatically.
 
-**Option 1: Let Appium start the proxy automatically:**
+> **Note:** Automatic ios-webkit-debug-proxy management via the `startIWDP`
+> capability is deprecated in Appium 2.x. Start the proxy manually before running
+> your tests instead.
+
+Start the proxy before your tests. Appium will automatically use it for web context
+switching. Use W3C-compliant namespaced capabilities:
 
 ```json
 {
-  "webviewConnectTimeout": 90000,
-  "nativeWebTap": true,
-  "startIWDP": true
-}
-```
-
-**Option 2: Start the proxy manually before tests:**
-
-Ensure the proxy is running before starting your tests. Appium will automatically
-use it for web context switching.
-
-```json
-{
-  "webviewConnectTimeout": 90000,
-  "nativeWebTap": true
+  "appium:webviewConnectTimeout": 90000,
+  "appium:nativeWebTap": true
 }
 ```
 
