@@ -171,9 +171,11 @@ If you encounter SSL errors when downloading dependencies, first download and im
 # Download the certificate from the repository host
 openssl s_client -connect repo.example.com:443 </dev/null 2>/dev/null | openssl x509 -outform PEM > repo-cert.pem
 
-# Import the certificate into the JVM keystore
-keytool -import -alias repo-cert -keystore "$JAVA_HOME/lib/security/cacerts" -file repo-cert.pem -storepass changeit -noprompt
+# Import the certificate into the JVM keystore (requires elevated privileges)
+sudo keytool -import -alias repo-cert -keystore "$JAVA_HOME/lib/security/cacerts" -file repo-cert.pem -storepass changeit -noprompt
 ```
+
+> Writing to the JVM keystore at `$JAVA_HOME/lib/security/cacerts` typically requires elevated privileges. If you see a "permission denied" error, ensure you prefix the `keytool` command with `sudo`.
 
 Replace `repo.example.com` with the actual repository hostname from the error message.
 
