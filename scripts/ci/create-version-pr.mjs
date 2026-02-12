@@ -25,11 +25,7 @@ const COMMIT_TYPE_TO_BUMP = {
   feat: "minor",
   fix: "patch",
   perf: "patch",
-  style: "patch",
   refactor: "patch",
-  test: "patch",
-  build: "patch",
-  ci: "patch",
   revert: "patch",
 };
 
