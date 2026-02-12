@@ -1,37 +1,44 @@
 {
   "branches": ["main"],
   "tagFormat": "v${version}",
-  "commitTypes": {
-    "feat": "minor",
-    "fix": "patch",
-    "perf": "patch",
-    "style": "patch",
-    "refactor": "patch",
-    "test": "patch",
-    "build": "patch",
-    "ci": "patch",
-    "revert": "patch"
-  },
-  "maxBump": "minor",
-  "changelog": {
-    "sections": [
-      { "type": "feat", "heading": "Features" },
-      { "type": "fix", "heading": "Bug Fixes" },
-      { "type": "perf", "heading": "Performance" },
-      { "type": "docs", "heading": "Documentation" },
-      { "type": "refactor", "heading": "Refactoring" },
-      { "type": "build", "heading": "Build System" },
-      { "type": "ci", "heading": "CI/CD" },
-      { "type": "chore", "heading": "Chores" },
-      { "type": "test", "heading": "Tests" },
-      { "type": "style", "heading": "Styles" },
-      { "type": "revert", "heading": "Reverts" }
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "conventionalcommits",
+        "releaseRules": [
+          { "type": "feat", "release": "minor" },
+          { "type": "fix", "release": "patch" },
+          { "type": "perf", "release": "patch" },
+          { "type": "style", "release": "patch" },
+          { "type": "refactor", "release": "patch" },
+          { "type": "test", "release": "patch" },
+          { "type": "build", "release": "patch" },
+          { "type": "ci", "release": "patch" },
+          { "type": "revert", "release": "patch" },
+          { "type": "docs", "release": false },
+          { "type": "chore", "release": false }
+        ]
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits"
+      }
+    ],
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md"
+      }
+    ],
+    ["@semantic-release/github"],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["package.json", "CHANGELOG.md"]
+      }
     ]
-  },
-  "versionPr": {
-    "branch": "release/next",
-    "title": "chore(release): v${version}",
-    "labels": ["release", "automated"],
-    "commitMessage": "chore(release): v${version} [skip ci]"
-  }
+  ]
 }

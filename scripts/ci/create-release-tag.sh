@@ -34,6 +34,10 @@ if [[ -z "$release_notes" ]]; then
 	release_notes="Release ${TAG_NAME}"
 fi
 
+log_info "Configuring git identity for tag creation..."
+git config user.name "${RELEASE_GIT_USER:-${GITHUB_ACTOR}}"
+git config user.email "${RELEASE_GIT_EMAIL:-${GITHUB_ACTOR}@users.noreply.github.com}"
+
 log_info "Creating git tag..."
 git tag -a "$TAG_NAME" -m "Release ${TAG_NAME}"
 git push origin "$TAG_NAME"
