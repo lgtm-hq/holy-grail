@@ -1,0 +1,228 @@
+---
+title: Schema Validation
+description:
+  Understanding API schema validation concepts and approaches for Python applications
+category: Tools
+order: 24
+tags: [python, api, validation, testing, schemas]
+difficulty: intermediate
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is Schema Validation?
+
+Schema validation is the process of verifying that data conforms to a predefined structure. In API development and testing, schemas define the expected format of request and response data.
+
+> An API schema is like a database schema definition but for APIs, making integration between platforms easier for developers.
+
+## Why Use Schema Validation?
+
+- **Request validation**: Verify data before sending API requests
+- **Response validation**: Ensure API responses match expected formats
+- **Contract testing**: Validate that APIs conform to their specifications
+- **Documentation**: Schemas serve as living documentation
+- **Type safety**: Catch data type errors early
+
+## Schema Characteristics
+
+A schema defines:
+
+- **Structure**: The fields a data object should contain
+- **Data types**: The type of each field (string, number, boolean, etc.)
+- **Required fields**: Which fields must be present
+- **Constraints**: Minimum/maximum values, patterns, etc.
+
+## Validation Approaches
+
+### Request Schema Validation
+
+Validate data **before** making an API request:
+
+```python
+from pydantic import BaseModel, ValidationError
+
+class UserCreateRequest(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
+
+# Validate before sending
+data = {
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john@example.com"
+}
+
+try:
+    validated = UserCreateRequest(**data)
+    # Proceed with API request
+except ValidationError as e:
+    print(f"Validation failed: {e}")
+```
+
+### Response Schema Validation
+
+Validate data **after** receiving an API response:
+
+```python
+import requests
+from pydantic import BaseModel, ValidationError
+
+class UserResponse(BaseModel):
+    id: int
+    name: str
+
+response = requests.get("https://api.example.com/users/1")
+response_data = response.json()
+
+try:
+    validated = UserResponse(**response_data)
+except ValidationError as e:
+    raise AssertionError(f"Response schema mismatch: {e}")
+```
+
+## Getting Schemas
+
+### From OpenAPI/Swagger
+
+If your API has OpenAPI specifications (Swagger), you can:
+
+1. Export the schema as JSON or YAML
+2. Use code generators to create Python models
+
+**For FastAPI applications:**
+- Navigate to `/docs` or `/openapi.json`
+- Download the specification
+
+**For SwaggerHub:**
+- Open the API in SwaggerHub Editor
+- Export as YAML or JSON
+
+### Code Generation
+
+Generate Python models from OpenAPI specs:
+
+**Using Pydantic:**
+```bash
+pip install datamodel-code-generator
+datamodel-codegen --input openapi.json --input-file-type openapi --output models.py
+```
+
+**Using Marshmallow:**
+```bash
+pip install swagger-marshmallow-codegen
+swagger-marshmallow-codegen openapi.json models.py
+```
+
+### Manual Definition
+
+For simple cases, define schemas directly:
+
+```python
+from pydantic import BaseModel
+from typing import Optional
+
+class User(BaseModel):
+    id: int
+    name: str
+    email: str
+    is_active: bool = True
+    age: Optional[int] = None
+```
+
+## Python Libraries
+
+Two popular libraries for schema validation in Python:
+
+<div class="badge-group">
+  <LinkBadge href="/guides/marshmallow/" />
+  <LinkBadge href="/guides/pydantic/" />
+</div>
+
+| Feature | Pydantic | Marshmallow |
+|---------|----------|-------------|
+| Type hints | Native | Via plugins |
+| Performance | Faster (Rust core) | Good |
+| JSON Schema | Built-in export | Via extension |
+| ORM Integration | SQLModel | SQLAlchemy |
+
+## Best Practices
+
+1. **Version your schemas**: Keep schemas in sync with API versions
+2. **Use strict mode**: Fail on unexpected fields
+3. **Test schema changes**: Breaking changes should be caught in CI
+4. **Generate from source**: Prefer generating schemas from API specs over manual definition
+5. **Validate at boundaries**: Validate incoming data as early as possible
+
+## Troubleshooting
+
+### Validation Errors with Nested Objects
+
+Ensure nested schemas are properly defined:
+
+```python
+# Wrong - won't validate nested structure
+class User(BaseModel):
+    address: dict  # Too loose
+
+# Right - properly typed
+class Address(BaseModel):
+    street: str
+    city: str
+
+class User(BaseModel):
+    address: Address
+```
+
+### Schema Drift Between Code and API
+
+Keep schemas in sync with API specs:
+
+1. **Regenerate schemas** when API changes
+2. **Run schema tests in CI** to catch drift
+3. **Use OpenAPI specs** as the source of truth
+
+```bash
+# Regenerate models
+datamodel-codegen --input openapi.json --output models.py
+```
+
+### Performance Issues with Large Payloads
+
+For large JSON documents:
+
+- Use streaming validation where possible
+- Validate only required fields for quick checks
+- Consider Pydantic v2 (Rust-based, much faster)
+
+### Type Coercion Issues
+
+Pydantic coerces types by default. For strict validation:
+
+```python
+from pydantic import BaseModel, ConfigDict
+
+class StrictModel(BaseModel):
+    model_config = ConfigDict(strict=True)
+    count: int  # Won't accept "123" string
+```
+
+## Resources
+
+<LinkCard
+  href="https://json-schema.org/"
+  title="JSON Schema"
+  description="The standard for JSON data validation"
+/>
+<LinkCard
+  href="https://swagger.io/specification/"
+  title="OpenAPI Specification"
+  description="Standard for describing RESTful APIs"
+/>
+<LinkCard
+  href="https://yeahub.com/python-libraries-for-data-validation/"
+  title="Python Validation Libraries"
+  description="Comparison of Python data validation libraries"
+/>

@@ -233,8 +233,140 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-For more advanced dependency management, consider
-[pipenv](https://pipenv.pypa.io/) or [Poetry](https://python-poetry.org/).
+For more advanced dependency management, consider using
+<LinkBadge href="/guides/pipenv/" /> or [Poetry](https://python-poetry.org/).
+
+## Uninstalling Python
+
+### Uninstall via Pyenv
+
+Open a new terminal session.
+
+**List installed versions:**
+
+```bash
+pyenv versions
+```
+
+**Uninstall a specific version:**
+
+```bash
+pyenv uninstall --force <version>
+```
+
+> Remove any code or aliases in your `~/.zshrc` file that reference the uninstalled
+> Python version.
+
+### Uninstall via Homebrew
+
+Open a new terminal session.
+
+**Check which Python packages are installed:**
+
+```bash
+brew list | grep python
+```
+
+**Uninstall Python and run diagnostics:**
+
+```bash
+brew uninstall python
+brew doctor
+```
+
+> To uninstall a specific version, use `brew uninstall python@<version>` (e.g.,
+> `brew uninstall python@3.12`).
+
+**Delete broken symlinks:**
+
+```bash
+brew cleanup --prune-prefix
+```
+
+> Search for items with the name of Python in the following locations and remove any
+> leftover files:
+>
+> - `/Library`
+> - `/Library/Caches`
+> - `/Library/Preferences`
+> - `/Library/ApplicationSupport`
+> - `/Library/LaunchAgents`
+> - `/Library/LaunchDaemons`
+> - `/Library/PreferencePanes`
+> - `/Library/StartupItems`
+
+**Remove remaining Python framework and binaries:**
+
+```bash
+sudo rm -rf "/Applications/Python"
+sudo rm -rf /Library/Frameworks/Python.framework
+sudo rm -rf /usr/local/bin/python
+```
+
+> Remove any references in your `~/.zshrc` or `~/.bashrc` files to Python. If you
+> encounter permission issues with leftover files in `/usr/local/bin`, fix ownership
+> only for specific Python-related files:
+>
+> ```bash
+> # Only change ownership for specific Python files, not everything in /usr/local/bin
+> sudo chown $USER /usr/local/bin/python*
+> sudo chown $USER /usr/local/bin/pip*
+> ```
+>
+> Alternatively, reinstall Python via Homebrew or use a virtual environment to avoid
+> permission issues entirely.
+
+### Direct Install Removal
+
+If Python is directly installed on your machine (without pyenv or Homebrew):
+
+Open a new terminal session.
+
+**Uninstall all pip packages:**
+
+```bash
+# Works in any shell (sh, bash, zsh, fish, etc.)
+pip3 freeze | xargs pip3 uninstall -y
+```
+
+**Get the location of your Python installation:**
+
+```bash
+which python3
+# Output: /usr/local/bin/python3
+```
+
+**Look in common installation directories:**
+
+```bash
+ls -1 /usr/local/bin/python* 2>/dev/null
+ls -l /usr/local/bin | grep '../Library/Frameworks/Python.framework'
+```
+
+> **Do not remove system Python from `/usr/bin`.** On macOS, `/usr/bin` is protected
+> by System Integrity Protection (SIP) and is read-only. Only remove **third-party**
+> Python installations found in locations such as `/usr/local`, `/opt`,
+> `/Library/Frameworks/Python.framework`, or pyenv/venv directories. Use the output
+> of the commands above to identify non-system paths, then remove them:
+>
+> ```bash
+> # Example: remove a third-party Python in /usr/local
+> sudo rm -rf /usr/local/bin/python3 /Library/Frameworks/Python.framework
+> ```
+
+> Remove any code or aliases in your `~/.zshrc` file that reference Python.
+
+### Clearing pip Cache
+
+```bash
+rm -rf ~/Library/Caches/pip
+```
+
+**Uninstall pip itself:**
+
+```bash
+pip3 uninstall pip
+```
 
 ## Resources
 
