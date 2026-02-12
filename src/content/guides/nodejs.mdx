@@ -86,6 +86,12 @@ nvm install <version>
 nvm install node
 ```
 
+**Install the latest npm release only:**
+
+```bash
+nvm install-latest-npm
+```
+
 ## Managing Node.js Versions
 
 **List installed versions:**
@@ -106,16 +112,73 @@ nvm ls-remote
 nvm use <version>
 ```
 
+**Switch to the latest LTS version:**
+
+```bash
+nvm use --lts
+```
+
 **Set default version:**
 
 ```bash
 nvm alias default <version>
 ```
 
-**Check current version:**
+**Create a custom alias:**
+
+```bash
+nvm alias <alias_name> <version>
+```
+
+**Delete an alias:**
+
+```bash
+nvm unalias <alias_name>
+```
+
+**Find the path to a Node executable:**
+
+```bash
+nvm which <installed_node_version>
+```
+
+**Check current Node version:**
 
 ```bash
 node -v
+# or
+node --version
+```
+
+**Check current npm version:**
+
+```bash
+npm -v
+# or
+npm --version
+```
+
+## Uninstall Node.js
+
+**Uninstall a specific version:**
+
+```bash
+nvm uninstall <node_version>
+```
+
+**Uninstall the latest version:**
+
+```bash
+nvm uninstall node
+```
+
+> If you get an error: `nvm: Cannot uninstall currently-active node version`, you need
+> to first run `nvm deactivate` before uninstalling.
+
+**Uninstall the latest LTS version:**
+
+```bash
+nvm uninstall --lts
 ```
 
 ## Uninstall nvm
