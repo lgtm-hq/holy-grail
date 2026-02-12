@@ -270,9 +270,12 @@ brew list | grep python
 **Uninstall Python and run diagnostics:**
 
 ```bash
-brew uninstall python3
+brew uninstall python
 brew doctor
 ```
+
+> To uninstall a specific version, use `brew uninstall python@<version>` (e.g.,
+> `brew uninstall python@3.12`).
 
 **Delete broken symlinks:**
 
