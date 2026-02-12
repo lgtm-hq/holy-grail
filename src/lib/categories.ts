@@ -33,6 +33,13 @@ export const CATEGORIES = {
     cardIcon: "🛡️",
     description: "Appium, UI Testing frameworks",
   },
+  "build-tools": {
+    name: "Build Tools",
+    color: "#fab387",
+    icon: "🔨",
+    cardIcon: "⚒️",
+    description: "Maven, Gradle, and build automation tools",
+  },
   tools: {
     name: "Tools",
     color: "#cba6f7",
