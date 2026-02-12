@@ -1,0 +1,4 @@
+# Allow following sourced files
+external-sources=true
+# Resolve source= relative to the script's directory
+source-path=SCRIPTDIR

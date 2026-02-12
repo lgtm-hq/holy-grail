@@ -1,0 +1,52 @@
+---
+name: Release Auto Tag
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+concurrency:
+  group: release-auto-tag-${{ github.repository }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  auto-tag:
+    name: Auto Tag Release
+    runs-on: ubuntu-latest
+    # Only run when a PR is merged (not just closed), it's from the release branch,
+    # and it's not from a fork
+    if: >-
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'release/') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check version change
+        id: check
+        run: ./scripts/ci/check-version-change.sh
+
+      - name: Create release tag
+        if: steps.check.outputs.version_changed == 'true'
+        id: tag
+        env:
+          NEW_VERSION: ${{ steps.check.outputs.new_version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./scripts/ci/create-release-tag.sh
+
+      - name: Generate summary
+        if: always()
+        env:
+          TAG_NAME: ${{ steps.tag.outputs.tag_name }}
+          TAG_CREATED: ${{ steps.tag.outputs.tag_created }}
+          NEW_VERSION: ${{ steps.check.outputs.new_version }}
+        run: ./scripts/ci/generate-auto-tag-summary.sh
