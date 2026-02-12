@@ -1,0 +1,215 @@
+---
+title: libimobiledevice
+description:
+  Install libimobiledevice for communicating with iOS devices from the command
+  line
+category: iOS Tools
+order: 13
+tags: [ios, mobile, testing, devices, debugging]
+difficulty: advanced
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is libimobiledevice?
+
+[libimobiledevice](https://libimobiledevice.org/) is a cross-platform library for
+communicating with iOS devices. It provides command-line tools for interacting with
+iPhones and iPads without requiring iTunes or Xcode.
+
+> libimobiledevice is used by Appium for device communication, particularly for
+> real device testing.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/homebrew/" />
+</div>
+
+## Installation
+
+The following `brew` command is for macOS. Linux and Windows users should consult
+the [official libimobiledevice documentation](https://libimobiledevice.org/) or
+their distribution's package manager for platform-specific installation instructions.
+
+```bash
+brew install libimobiledevice
+```
+
+This installs several command-line utilities:
+
+- `idevice_id` - List attached devices
+- `ideviceinfo` - Get device information
+- `idevicename` - Get or set device name
+- `idevicesyslog` - View device system logs
+- `idevicescreenshot` - Capture screenshots
+- `idevicepair` - Manage device pairing
+
+> **Note:** `ideviceinstaller` is **not** included with libimobiledevice. It is a
+> separate Homebrew formula and must be installed separately with
+> `brew install ideviceinstaller`. See the
+> <LinkBadge href="/guides/ideviceinstaller/" /> guide for details.
+
+## Verify Your Installation
+
+```bash
+idevice_id --version
+```
+
+## List Connected Devices
+
+```bash
+idevice_id -l
+```
+
+## Get Device Information
+
+### Full Device Info
+
+```bash
+ideviceinfo
+```
+
+### Specific Information
+
+```bash
+# Device name
+ideviceinfo -k DeviceName
+
+# iOS version
+ideviceinfo -k ProductVersion
+
+# Device model
+ideviceinfo -k ProductType
+
+# Serial number
+ideviceinfo -k SerialNumber
+```
+
+### Human-Readable Format
+
+```bash
+ideviceinfo -s
+```
+
+## Device Pairing
+
+### Trust a Device
+
+When you first connect a device, you need to pair it:
+
+```bash
+idevicepair pair
+```
+
+Tap "Trust" on the iOS device when prompted.
+
+### Verify Pairing
+
+```bash
+idevicepair validate
+```
+
+### List Paired Devices
+
+```bash
+idevicepair list
+```
+
+### Unpair a Device
+
+```bash
+idevicepair unpair
+```
+
+## View Device Logs
+
+Stream system logs in real-time:
+
+```bash
+idevicesyslog
+```
+
+### Filter by Process
+
+```bash
+idevicesyslog | grep -i "MyApp"
+```
+
+### Save to File
+
+```bash
+idevicesyslog > device.log
+```
+
+## Take Screenshots
+
+```bash
+idevicescreenshot screenshot.png
+```
+
+## Install/Uninstall Apps
+
+> **Note:** `ideviceinstaller` is not included by default with libimobiledevice — see the
+> [Installation section](#installation) above for how to install it separately.
+
+### Install an IPA
+
+```bash
+ideviceinstaller -i /path/to/app.ipa
+```
+
+### List Installed Apps
+
+```bash
+ideviceinstaller -l
+```
+
+### Uninstall an App
+
+```bash
+ideviceinstaller -U com.example.myapp
+```
+
+## Troubleshooting
+
+### "Could not connect to lockdownd"
+
+The device may not be trusted. Unlock the device and run:
+
+```bash
+idevicepair pair
+```
+
+Then tap "Trust" on the device.
+
+### "No device found"
+
+1. Ensure the device is connected via USB
+2. Check USB cable (some cables are charge-only)
+3. Try a different USB port
+4. Restart the device
+
+### "Could not start service"
+
+Ensure the device is unlocked and on the home screen.
+
+### Updating libimobiledevice
+
+```bash
+brew upgrade libimobiledevice
+```
+
+## Resources
+
+<LinkCard
+  href="https://libimobiledevice.org/"
+  title="libimobiledevice.org"
+  description="Official project website with documentation"
+/>
+<LinkCard
+  href="https://github.com/libimobiledevice/libimobiledevice"
+  title="libimobiledevice on GitHub"
+  description="Official repository with source code and issues"
+/>

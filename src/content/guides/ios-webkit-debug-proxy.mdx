@@ -1,0 +1,163 @@
+---
+title: ios-webkit-debug-proxy
+description:
+  Install ios-webkit-debug-proxy for debugging web views on real iOS devices
+category: Testing
+order: 15
+tags: [ios, webkit, debugging, appium, mobile-testing]
+difficulty: advanced
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is ios-webkit-debug-proxy?
+
+[ios-webkit-debug-proxy](https://github.com/google/ios-webkit-debug-proxy) is a
+DevTools proxy that implements the Chrome Remote Debugging Protocol for iOS
+devices. It enables debugging of Safari and web views on real iOS devices using
+Chrome DevTools.
+
+> In **legacy Appium setups (pre-2.x)**, ios-webkit-debug-proxy is required for
+> accessing web views on real iOS devices during mobile automation testing. Appium 2.x
+> with the XCUITest driver uses `appium-ios-device` for real-device Web Inspector
+> access, so ios-webkit-debug-proxy is no longer needed in modern configurations. It
+> remains relevant if you maintain a legacy Appium setup. Consult the
+> [Appium 2.x documentation](https://appium.io/docs/en/latest/) for current guidance
+> on real-device Web Inspector setup.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/homebrew/" />
+</div>
+
+## Installation
+
+```bash
+brew install ios-webkit-debug-proxy
+```
+
+## Verify Installation
+
+```bash
+ios_webkit_debug_proxy --version
+# Expected: ios_webkit_debug_proxy X.X
+```
+
+## Usage
+
+### Start the Proxy
+
+Start the proxy with default settings:
+
+```bash
+ios_webkit_debug_proxy
+```
+
+With a specific port:
+
+```bash
+ios_webkit_debug_proxy -c <device_udid>:9222
+```
+
+### Enable Web Inspector on iOS Device
+
+Before debugging, enable Web Inspector on your iOS device:
+
+1. Go to **Settings > Safari > Advanced**
+2. Enable **Web Inspector**
+
+### Connect Chrome DevTools
+
+1. Start the proxy
+2. Open Chrome and navigate to `chrome://inspect`
+3. Your iOS device should appear under "Remote Target"
+4. Click "inspect" on the web view you want to debug
+
+> **Note:** Chrome DevTools protocol compatibility may vary between iOS versions
+> and Chrome releases. If you experience issues, try using Safari's Web Inspector
+> as an alternative for debugging iOS web views.
+
+## Configuration Options
+
+```bash
+# Specify frontend URL
+ios_webkit_debug_proxy -f chrome-devtools://devtools/bundled/inspector.html
+
+# Use specific device
+ios_webkit_debug_proxy -c <udid>:9222
+
+# Debug mode for verbose output
+ios_webkit_debug_proxy -d
+
+# Specify port range for multiple devices
+ios_webkit_debug_proxy -c null:9221,:9222-9322
+```
+
+## Appium Integration
+
+For Appium testing with web views, you can either start the proxy manually or let
+Appium manage it automatically.
+
+> **Note:** Automatic ios-webkit-debug-proxy management via the `startIWDP`
+> capability is deprecated in Appium 2.x. Start the proxy manually before running
+> your tests instead.
+
+Start the proxy before your tests. Appium will automatically use it for web context
+switching. Use W3C-compliant namespaced capabilities:
+
+```json
+{
+  "appium:webviewConnectTimeout": 90000,
+  "appium:nativeWebTap": true
+}
+```
+
+## Troubleshooting
+
+### "Could not connect to device"
+
+Ensure:
+- Web Inspector is enabled on the device
+- The device is connected via USB and trusted
+- Safari or a web view is open on the device
+
+### Port already in use
+
+Kill existing proxy instances:
+
+```bash
+# Find the process
+lsof -i :9222
+
+# Kill it
+kill -9 <pid>
+```
+
+### No web views detected
+
+1. Make sure a Safari tab or web view is actually open
+2. Check that Web Inspector is enabled in Safari settings
+3. Try restarting the proxy and Safari
+
+### Proxy crashes on connection
+
+Update to the latest version:
+
+```bash
+brew upgrade ios-webkit-debug-proxy
+```
+
+## Resources
+
+<LinkCard
+  href="https://github.com/google/ios-webkit-debug-proxy"
+  title="ios-webkit-debug-proxy on GitHub"
+  description="Source code and documentation"
+/>
+<LinkCard
+  href="https://appium.io/docs/en/writing-running-appium/web/ios-webkit-debug-proxy/"
+  title="Appium iOS WebKit Debug Proxy"
+  description="Appium documentation for web view testing"
+/>

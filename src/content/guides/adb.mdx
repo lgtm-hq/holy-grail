@@ -1,0 +1,336 @@
+---
+title: ADB (Android Debug Bridge)
+description:
+  Master ADB commands for Android device communication and debugging
+category: Testing
+order: 16
+tags: [android, adb, debugging, mobile, testing]
+difficulty: intermediate
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is ADB?
+
+[Android Debug Bridge (ADB)](https://developer.android.com/studio/command-line/adb)
+is a versatile command-line tool that enables communication with Android devices.
+It's essential for Android development, testing, and automation.
+
+> ADB is automatically used by Appium when running tests on Android devices.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/android-studio/" />
+</div>
+
+ADB is included with the Android SDK Platform-Tools.
+
+## Verify Your Installation
+
+```bash
+adb version
+```
+
+If not found, add to your PATH:
+
+```bash
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+```
+
+## Device Connection
+
+### List Connected Devices
+
+```bash
+adb devices
+```
+
+Output states:
+- `device` - Connected and authorized
+- `unauthorized` - Need to accept debugging prompt on device
+- `offline` - Device not responding
+
+### Connect Over Wi-Fi
+
+1. Connect device via USB first:
+   ```bash
+   adb tcpip 5555
+   ```
+
+2. Disconnect USB and connect over Wi-Fi:
+   ```bash
+   adb connect DEVICE_IP:5555
+   ```
+
+3. To disconnect:
+   ```bash
+   adb disconnect DEVICE_IP:5555
+   ```
+
+### Target Specific Device
+
+When multiple devices are connected:
+
+```bash
+adb -s DEVICE_SERIAL shell
+```
+
+## App Management
+
+### Install an APK
+
+```bash
+adb install app.apk
+
+# Replace existing app
+adb install -r app.apk
+
+# Install on SD card
+adb install -s app.apk
+```
+
+> **Note:** The `-s` flag is deprecated and unsupported on Android 9+ (API 28+).
+> Most modern devices ignore it. On newer devices, omit the flag entirely or use
+> `adb push` to transfer the APK and install it manually.
+
+### Uninstall an App
+
+```bash
+adb uninstall com.example.app
+
+# Keep data and cache
+adb uninstall -k com.example.app
+```
+
+### List Installed Packages
+
+```bash
+# All packages
+adb shell pm list packages
+
+# Filter by name
+adb shell pm list packages | grep example
+
+# Third-party apps only
+adb shell pm list packages -3
+```
+
+### Clear App Data
+
+```bash
+adb shell pm clear com.example.app
+```
+
+### Force Stop App
+
+```bash
+adb shell am force-stop com.example.app
+```
+
+## File Transfer
+
+### Push to Device
+
+```bash
+adb push local_file.txt /sdcard/
+adb push local_folder /sdcard/
+```
+
+### Pull from Device
+
+```bash
+adb pull /sdcard/remote_file.txt ./
+adb pull /sdcard/remote_folder ./
+```
+
+## Shell Commands
+
+### Interactive Shell
+
+```bash
+adb shell
+```
+
+### Single Command
+
+```bash
+adb shell ls /sdcard/
+```
+
+### Run as Root (if available)
+
+```bash
+adb root
+adb shell
+```
+
+### Common Shell Commands
+
+```bash
+# List files
+adb shell ls -la /sdcard/
+
+# Check disk space
+adb shell df -h
+
+# Running processes
+adb shell ps
+
+# Device info
+adb shell getprop ro.product.model
+adb shell getprop ro.build.version.release
+```
+
+## Screen Capture
+
+### Screenshot
+
+```bash
+adb shell screencap /sdcard/screen.png
+adb pull /sdcard/screen.png
+```
+
+### One-liner
+
+```bash
+adb exec-out screencap -p > screen.png
+```
+
+### Screen Recording
+
+```bash
+# Start recording (max 3 minutes)
+adb shell screenrecord /sdcard/video.mp4
+
+# Stop with Ctrl+C, then pull
+adb pull /sdcard/video.mp4
+```
+
+## Logging
+
+### View Logs
+
+```bash
+adb logcat
+```
+
+### Filter by Priority
+
+```bash
+# Verbose, Debug, Info, Warning, Error, Fatal
+adb logcat *:E  # Errors only
+adb logcat *:W  # Warnings and above
+```
+
+### Filter by Tag
+
+```bash
+adb logcat -s MyAppTag
+```
+
+### Clear Logs
+
+```bash
+adb logcat -c
+```
+
+### Save to File
+
+```bash
+adb logcat > log.txt
+```
+
+## Intent Commands
+
+### Start an Activity
+
+```bash
+adb shell am start -n com.example.app/.MainActivity
+```
+
+### Start with Action
+
+```bash
+adb shell am start -a android.intent.action.VIEW -d "https://example.com"
+```
+
+### Send Broadcast
+
+```bash
+adb shell am broadcast -a com.example.CUSTOM_ACTION
+```
+
+## Input Simulation
+
+### Tap Screen
+
+```bash
+adb shell input tap 500 500
+```
+
+### Swipe
+
+```bash
+adb shell input swipe 100 500 400 500  # Left to right
+```
+
+### Type Text
+
+```bash
+adb shell input text "Hello"
+```
+
+### Key Events
+
+```bash
+adb shell input keyevent KEYCODE_HOME
+adb shell input keyevent KEYCODE_BACK
+adb shell input keyevent KEYCODE_ENTER
+```
+
+## Troubleshooting
+
+### Restart ADB Server
+
+```bash
+adb kill-server
+adb start-server
+```
+
+### Device Unauthorized
+
+1. Check device for authorization prompt
+2. Revoke authorizations: Settings > Developer options > Revoke USB debugging
+3. Reconnect device
+
+### Device Offline
+
+```bash
+adb kill-server
+adb start-server
+adb devices
+```
+
+### Multiple Devices
+
+Always specify device:
+
+```bash
+adb -s emulator-5554 shell
+adb -s DEVICE_SERIAL install app.apk
+```
+
+## Resources
+
+<LinkCard
+  href="https://developer.android.com/studio/command-line/adb"
+  title="ADB Documentation"
+  description="Official Android Debug Bridge documentation"
+/>
+<LinkCard
+  href="https://adbshell.com/"
+  title="ADB Command Reference"
+  description="Comprehensive ADB command cheat sheet"
+/>

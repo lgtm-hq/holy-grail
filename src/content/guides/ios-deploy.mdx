@@ -1,0 +1,147 @@
+---
+title: ios-deploy
+description:
+  Install ios-deploy for deploying and debugging iOS apps on real devices
+category: iOS Tools
+order: 14
+tags: [ios, mobile, deployment, testing, debugging]
+difficulty: advanced
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is ios-deploy?
+
+[ios-deploy](https://github.com/ios-control/ios-deploy) is a command-line tool that
+allows you to install and debug iOS apps on real devices without using Xcode. It's
+essential for running Appium tests on physical iOS devices.
+
+> ios-deploy is required for Appium testing on real iOS devices. Simulators don't
+> need it.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/homebrew/" />
+  <LinkBadge href="/guides/xcode/" />
+</div>
+
+Plus an Apple Developer account (for real device testing).
+
+## Installation
+
+```bash
+brew install ios-deploy
+```
+
+## Verify Your Installation
+
+```bash
+ios-deploy --version
+```
+
+## Basic Usage
+
+### List Connected Devices
+
+```bash
+ios-deploy --detect
+```
+
+or
+
+```bash
+ios-deploy -c
+```
+
+### Install an App
+
+```bash
+ios-deploy --bundle /path/to/MyApp.app
+```
+
+### Install and Launch
+
+```bash
+ios-deploy --bundle /path/to/MyApp.app --debug
+```
+
+### Uninstall an App
+
+```bash
+ios-deploy --uninstall_only --bundle_id com.example.myapp
+```
+
+### List Installed Apps
+
+```bash
+ios-deploy --list_bundle_id
+```
+
+## Common Options
+
+| Option | Description |
+|--------|-------------|
+| `-c`, `--detect` | List connected devices |
+| `-b`, `--bundle` | Install the specified app bundle |
+| `-d`, `--debug` | Launch app in debug mode after install |
+| `-u`, `--uninstall_only` | Uninstall app by bundle ID |
+| `-L`, `--list_bundle_id` | List installed app bundle IDs |
+| `-W`, `--no-wifi` | Ignore Wi-Fi connected devices |
+| `-i`, `--id` | Target specific device by UDID |
+
+## Targeting Specific Devices
+
+When multiple devices are connected:
+
+```bash
+ios-deploy --id DEVICE_UDID --bundle /path/to/MyApp.app
+```
+
+Get device UDID:
+
+```bash
+ios-deploy --detect
+```
+
+## Troubleshooting
+
+### "Could not find Developer Disk Image"
+
+Your iOS version may be newer than your Xcode version. Update Xcode to the latest
+version.
+
+### "The device is locked"
+
+Unlock your device and trust the connected computer.
+
+### "Could not find matching provisioning profile"
+
+Ensure your app is signed with a valid provisioning profile that includes the
+device UDID.
+
+### Permission Denied
+
+If you encounter permission issues, try reinstalling Xcode or the Command Line Tools
+first, as this usually resolves permissions without modifying the Xcode bundle.
+
+> **Caution:** Recursively changing permissions on Xcode app contents can interfere
+> with future Xcode updates and code signing. Use this as a last resort only.
+
+```bash
+sudo chmod -R 755 /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/DeviceSupport
+```
+
+## Resources
+
+<LinkCard
+  href="https://github.com/ios-control/ios-deploy"
+  title="ios-deploy on GitHub"
+  description="Official repository with documentation and releases"
+/>
+<LinkCard
+  href="https://appium.io/docs/en/latest/guides/real-devices/"
+  title="Appium Real Device Setup"
+  description="Guide for setting up Appium with real iOS devices"
+/>
