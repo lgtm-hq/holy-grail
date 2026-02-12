@@ -17,7 +17,7 @@ pr_json="$(gh pr list \
 	--head "$RELEASE_BRANCH" \
 	--state open \
 	--json number,title,headRefName \
-	--limit 1 2>/dev/null || echo '[]')"
+	--limit 1)"
 
 pr_count="$(echo "$pr_json" | jq 'length')"
 
