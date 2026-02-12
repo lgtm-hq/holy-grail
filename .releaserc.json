@@ -1,0 +1,39 @@
+{
+  "branches": ["main"],
+  "tagFormat": "v${version}",
+  "commitTypes": {
+    "feat": "minor",
+    "fix": "patch",
+    "perf": "patch",
+    "docs": "patch",
+    "style": "patch",
+    "refactor": "patch",
+    "test": "patch",
+    "build": "patch",
+    "ci": "patch",
+    "chore": "patch",
+    "revert": "patch"
+  },
+  "maxBump": "minor",
+  "changelog": {
+    "sections": [
+      { "type": "feat", "heading": "Features" },
+      { "type": "fix", "heading": "Bug Fixes" },
+      { "type": "perf", "heading": "Performance" },
+      { "type": "docs", "heading": "Documentation" },
+      { "type": "refactor", "heading": "Refactoring" },
+      { "type": "build", "heading": "Build System" },
+      { "type": "ci", "heading": "CI/CD" },
+      { "type": "chore", "heading": "Chores" },
+      { "type": "test", "heading": "Tests" },
+      { "type": "style", "heading": "Styles" },
+      { "type": "revert", "heading": "Reverts" }
+    ]
+  },
+  "versionPr": {
+    "branch": "release/next",
+    "title": "chore(release): v${version}",
+    "labels": ["release", "automated"],
+    "commitMessage": "chore(release): v${version} [skip ci]"
+  }
+}
