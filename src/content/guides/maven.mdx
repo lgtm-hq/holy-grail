@@ -1,0 +1,170 @@
+---
+title: Maven
+description:
+  Install Apache Maven, the build automation tool for Java projects, using SDKMAN!
+category: Languages
+order: 7
+tags: [java, maven, build-tools, sdkman]
+difficulty: intermediate
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is Maven?
+
+[Apache Maven](https://maven.apache.org/) is a build automation tool used primarily for Java projects. Maven can also be used to build and manage projects written in C#, Ruby, Scala, and other languages.
+
+> Maven addresses two aspects of building software: how software is built, and its dependencies. It uses a Project Object Model (POM) file to describe the project configuration.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/sdkman/" />
+  <LinkBadge href="/guides/java/" />
+</div>
+
+## Installation
+
+When installing with SDKMAN!, it is **not required** to set the `M2_HOME` environment variable or add Maven to the `PATH` in your `~/.zshrc` or `~/.bashrc` config file.
+
+Open a new terminal session:
+
+```bash
+sdk install maven
+```
+
+Close your terminal session.
+
+## Verify Your Installation
+
+Open a new terminal session:
+
+```bash
+mvn -version
+```
+
+You should see output similar to:
+
+```text
+Apache Maven 3.9.1
+Maven home: ~/.sdkman/candidates/maven/current
+Java version: 17.0.7, vendor: Eclipse Adoptium
+```
+
+## Good to Know
+
+### Find Maven Installation
+
+Maven installed via SDKMAN! is located at:
+
+```bash
+~/.sdkman/candidates/maven/current
+```
+
+### Find settings.xml Configuration
+
+The Maven settings file is located at:
+
+```bash
+~/.m2/settings.xml
+```
+
+This file is used to configure:
+- Repository mirrors
+- Proxy settings
+- Server credentials
+- Build profiles
+
+### Common Maven Commands
+
+```bash
+# Clean build artifacts
+mvn clean
+
+# Compile the project
+mvn compile
+
+# Run tests
+mvn test
+
+# Package the project (create JAR/WAR)
+mvn package
+
+# Install to local repository
+mvn install
+
+# Clean and package in one command
+mvn clean package
+
+# Skip tests during build
+mvn package -DskipTests
+```
+
+### Switch Maven Versions
+
+```bash
+# List available versions
+sdk list maven
+
+# Install a specific version
+sdk install maven 3.8.6
+
+# Use a specific version
+sdk use maven 3.8.6
+
+# Set default version
+sdk default maven 3.9.1
+```
+
+For more details on SDK version management, refer to the
+<LinkBadge href="/guides/sdkman/" /> guide.
+
+## Troubleshooting
+
+### JAVA_HOME not set
+
+If Maven complains about JAVA_HOME:
+
+```bash
+# Check if JAVA_HOME is set
+echo $JAVA_HOME
+
+# If using SDKMAN! for Java, it should be set automatically
+# Verify with:
+sdk current java
+```
+
+### Out of memory errors
+
+For large projects, increase Maven's heap size:
+
+```bash
+export MAVEN_OPTS="-Xmx2048m"
+```
+
+Add this to your `~/.zshrc` to make it permanent.
+
+### Dependency resolution failures
+
+Clear the local repository cache:
+
+```bash
+rm -rf ~/.m2/repository
+mvn clean install
+```
+
+### SSL certificate issues
+
+If you encounter SSL errors when downloading dependencies:
+
+```bash
+mvn clean install -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true
+```
+
+> **Note:** Only use this for debugging. Fix the underlying certificate issue for production use.
+
+## Resources
+
+<LinkCard href="https://maven.apache.org/guides/" title="Maven Documentation" description="Official Apache Maven guides and reference documentation" />
+<LinkCard href="https://maven.apache.org/pom.html" title="POM Reference" description="Complete reference for the Project Object Model (POM) file" />
