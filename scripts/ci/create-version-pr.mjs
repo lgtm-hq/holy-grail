@@ -16,7 +16,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync, appendFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, appendFileSync } from "node:fs";
 
 // --- Configuration ---
 
@@ -158,6 +158,15 @@ function main() {
     console.error("No version field in package.json");
     process.exit(1);
   }
+
+  // Validate that currentVersion is a valid X.Y.Z semver string
+  if (!/^\d+\.\d+\.\d+$/.test(currentVersion)) {
+    console.error(
+      `Invalid semver version in package.json: "${currentVersion}". Expected format: X.Y.Z`,
+    );
+    process.exit(1);
+  }
+
   console.log(`Current version: ${currentVersion}`);
 
   // Find the latest release tag
@@ -286,8 +295,9 @@ function main() {
   console.log("Updated package.json version");
 
   // Update CHANGELOG.md
+  // Use try-catch instead of existsSync to avoid TOCTOU race condition
   const changelogPath = "CHANGELOG.md";
-  if (existsSync(changelogPath)) {
+  try {
     const existing = readFileSync(changelogPath, "utf-8");
     // Insert after the main heading
     const headerMatch = existing.match(/^(# .+\n\n?)/);
@@ -298,8 +308,12 @@ function main() {
     } else {
       writeFileSync(changelogPath, `${changelogEntry}${existing}`);
     }
-  } else {
-    writeFileSync(changelogPath, `# Changelog\n\n${changelogEntry}`);
+  } catch (err) {
+    if (err.code === "ENOENT") {
+      writeFileSync(changelogPath, `# Changelog\n\n${changelogEntry}`);
+    } else {
+      throw err;
+    }
   }
   console.log("Updated CHANGELOG.md");
 

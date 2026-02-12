@@ -24,8 +24,10 @@ fi
 # Extract changelog section for this version
 release_notes=""
 if [[ -f "CHANGELOG.md" ]]; then
-	# Extract the section between the current version header and the next version header
-	release_notes="$(awk "/^## \\[?${VERSION}\\]?/{found=1; next} /^## \\[?[0-9]+\\./{if(found) exit} found{print}" CHANGELOG.md)"
+	# Extract the section between the current version header and the next version header,
+	# then trim leading and trailing blank lines from the extracted content.
+	release_notes="$(awk "/^## \\[?${VERSION}\\]?/{found=1; next} /^## \\[?[0-9]+\\./{if(found) exit} found{print}" CHANGELOG.md |
+		sed '/./,$!d' | sed -e :a -e '/^[[:space:]]*$/{ $d; N; ba; }')"
 fi
 
 if [[ -z "$release_notes" ]]; then
@@ -37,10 +39,15 @@ git tag -a "$TAG_NAME" -m "Release ${TAG_NAME}"
 git push origin "$TAG_NAME"
 
 log_info "Creating GitHub release..."
-gh release create "$TAG_NAME" \
+if ! gh release create "$TAG_NAME" \
 	--title "Release ${TAG_NAME}" \
 	--notes "$release_notes" \
-	--verify-tag
+	--verify-tag; then
+	log_error "Failed to create GitHub release, cleaning up tag..."
+	git push --delete origin "$TAG_NAME"
+	git tag -d "$TAG_NAME"
+	exit 1
+fi
 
 log_success "Created release: $TAG_NAME"
 echo "tag_created=true" >>"$GITHUB_OUTPUT"

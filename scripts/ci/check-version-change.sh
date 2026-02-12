@@ -17,7 +17,13 @@ if [[ -z "$new_version" ]]; then
 	exit 0
 fi
 
-# Get the previous version from the parent commit
+# Get the previous version from the parent commit.
+# HEAD~1 targets the first parent commit, which represents the pre-merge state
+# on the target branch. This is appropriate for typical GitHub PR merges (fast-
+# forward or merge commits) and reliably detects version bumps introduced by the
+# merged release PR. Note: for octopus merges or non-linear/rebased histories,
+# HEAD~1 may not reflect the intended pre-merge baseline. We accept this
+# limitation because the release workflow only triggers on standard PR merges.
 old_version="$(git show HEAD~1:package.json 2>/dev/null | jq -r '.version // empty' || echo "")"
 
 log_info "Old version: ${old_version:-<none>}"

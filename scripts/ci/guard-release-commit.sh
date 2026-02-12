@@ -30,3 +30,4 @@ fi
 
 log_info "Commit is not a release commit, proceeding"
 echo "should_skip=false" >>"$GITHUB_OUTPUT"
+exit 0
