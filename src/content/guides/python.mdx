@@ -233,8 +233,123 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-For more advanced dependency management, consider
-[pipenv](https://pipenv.pypa.io/) or [Poetry](https://python-poetry.org/).
+For more advanced dependency management, consider using
+<LinkBadge href="/guides/pipenv/" /> or [Poetry](https://python-poetry.org/).
+
+## Uninstalling Python
+
+### Uninstall via Pyenv
+
+Open a new terminal session.
+
+**List installed versions:**
+
+```bash
+pyenv versions
+```
+
+**Uninstall a specific version:**
+
+```bash
+pyenv uninstall --force <version>
+```
+
+> Remove any code or aliases in your `~/.zshrc` file that reference the uninstalled
+> Python version.
+
+### Uninstall via Homebrew
+
+Open a new terminal session.
+
+**Check which Python packages are installed:**
+
+```bash
+brew list | grep python
+```
+
+**Uninstall Python and run diagnostics:**
+
+```bash
+brew uninstall python3
+brew doctor
+```
+
+**Delete broken symlinks:**
+
+```bash
+brew cleanup --prune-prefix
+```
+
+> Search for items with the name of Python in the following locations and remove any
+> leftover files:
+>
+> - `/Library`
+> - `/Library/Caches`
+> - `/Library/Preferences`
+> - `/Library/ApplicationSupport`
+> - `/Library/LaunchAgents`
+> - `/Library/LaunchDaemons`
+> - `/Library/PreferencePanes`
+> - `/Library/StartupItems`
+
+**Remove remaining Python framework and binaries:**
+
+```bash
+sudo rm -rf "/Applications/Python"
+sudo rm -rf /Library/Frameworks/Python.framework
+sudo rm -rf /usr/local/bin/python
+```
+
+> Remove any references in your `~/.zshrc` or `~/.bashrc` files to Python. Then fix
+> old package permissions:
+>
+> ```bash
+> sudo chown -R $USER /usr/local/bin/*
+> ```
+
+### Direct Install Removal
+
+If Python is directly installed on your machine (without pyenv or Homebrew):
+
+Open a new terminal session.
+
+**Uninstall all pip packages:**
+
+```bash
+# python3
+pip3 uninstall -y -r <(pip3 freeze)
+```
+
+**Get the location of your Python installation:**
+
+```bash
+which python3
+# Output: /usr/local/bin/python3
+```
+
+**Look in common installation directories:**
+
+```bash
+ls -1 /usr/bin/python* | grep '.*[2-3]\(.[0-9]\+\)\?$'
+ls -l /usr/local/bin | grep '../Library/Frameworks/Python.framework'
+```
+
+**Use the output of the commands above to locate where Python is installed, then run
+`rm -rf` to remove the directories.**
+
+> Remove any code or aliases in your `~/.zshrc` file that reference Python.
+
+### Clearing pip Cache
+
+```bash
+rm -rf ~/Library/Caches/pip
+```
+
+**Uninstall pip itself:**
+
+```bash
+pip3 uninstall pip3
+```
 
 ## Resources
 

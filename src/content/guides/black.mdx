@@ -1,0 +1,173 @@
+---
+title: Black
+description:
+  Set up Black, the uncompromising Python code formatter that ensures consistent code
+  style across projects
+category: Tools
+order: 21
+tags: [python, formatter, linting, code-style]
+difficulty: beginner
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is Black?
+
+[Black](https://github.com/psf/black) is the uncompromising Python code formatter. By using it, you agree to cede control over minutiae of hand-formatting. In return, Black gives you speed, determinism, and freedom from nagging about formatting.
+
+> Blackened code looks the same regardless of the project you're reading. Formatting becomes transparent after a while and you can focus on the content instead.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/homebrew/" />
+  <LinkBadge href="/guides/python/" />
+</div>
+
+## Installation
+
+```bash
+brew install black
+```
+
+## Verify Installation
+
+```bash
+black --version
+# Expected: black, X.X.X
+```
+
+## Using Black
+
+**Format entire directory (all Python files in current directory):**
+
+```bash
+black .
+```
+
+**Format files in a specific folder:**
+
+```bash
+black path/to/specific/folder
+```
+
+**Format a specific file only:**
+
+```bash
+black path/to/specific/file.py
+```
+
+**Check files without modifying (dry run):**
+
+```bash
+black --check .
+```
+
+**Show diff of changes without modifying:**
+
+```bash
+black --diff .
+```
+
+## IDE Integration
+
+### PyCharm / IntelliJ IDEA
+
+Black can auto-format your code on save, removing the hassle of manual formatting.
+
+1. Open **Preferences** (Cmd+,)
+2. Navigate to **Plugins**
+3. Search for "BlackConnect" and install it
+4. Go to **Tools > BlackConnect** to configure:
+   - Enable "Trigger when saving changed files"
+   - Enable "Trigger on code reformat"
+   - Set the path to Black (usually `/opt/homebrew/bin/blackd`)
+   - Click **Start** to ensure the daemon is running
+
+### VS Code
+
+1. Install the "Black Formatter" extension
+2. Add to your `settings.json`:
+
+```json
+{
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true
+  }
+}
+```
+
+## Configuration
+
+Create a `pyproject.toml` in your project root:
+
+```toml
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | build
+  | dist
+)/
+'''
+```
+
+## Troubleshooting
+
+### Failed to start BlackConnect
+
+If you see "Failed to start blackd on localhost:45484":
+
+**Find the process using the port:**
+
+```bash
+lsof -i tcp:45484
+```
+
+**Kill the process:**
+
+```bash
+kill -9 <pid>
+```
+
+### Black conflicts with other formatters
+
+If you're using multiple formatters, ensure Black runs last. In pre-commit hooks, order your hooks so Black runs after other tools like isort.
+
+### Incompatible code style
+
+If Black reformats code in a way you dislike, remember: you've agreed to cede control. However, you can use `# fmt: off` and `# fmt: on` comments to disable formatting for specific blocks:
+
+```python
+# fmt: off
+matrix = [
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+]
+# fmt: on
+```
+
+## Resources
+
+<LinkCard
+  href="https://black.readthedocs.io/"
+  title="Black Documentation"
+  description="Official Black documentation with configuration options and usage guides"
+/>
+<LinkCard
+  href="https://github.com/psf/black"
+  title="Black on GitHub"
+  description="Source code, issues, and community discussions"
+/>
+<LinkCard
+  href="https://plugins.jetbrains.com/plugin/14321-blackconnect"
+  title="BlackConnect Plugin"
+  description="JetBrains IDE plugin for Black integration"
+/>
