@@ -17,10 +17,12 @@ jobs:
   auto-tag:
     name: Auto Tag Release
     runs-on: ubuntu-latest
-    # Only run when a PR is merged (not just closed) and it's from the release branch
+    # Only run when a PR is merged (not just closed), it's from the release branch,
+    # and it's not from a fork
     if: >-
       github.event.pull_request.merged == true &&
-      startsWith(github.event.pull_request.head.ref, 'release/')
+      startsWith(github.event.pull_request.head.ref, 'release/') &&
+      github.event.pull_request.head.repo.full_name == github.repository
 
     steps:
       - name: Checkout

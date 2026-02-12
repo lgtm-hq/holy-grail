@@ -5,13 +5,11 @@
     "feat": "minor",
     "fix": "patch",
     "perf": "patch",
-    "docs": "patch",
     "style": "patch",
     "refactor": "patch",
     "test": "patch",
     "build": "patch",
     "ci": "patch",
-    "chore": "patch",
     "revert": "patch"
   },
   "maxBump": "minor",

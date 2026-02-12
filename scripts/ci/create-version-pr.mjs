@@ -15,7 +15,7 @@
  *   changelog_entry - the changelog entry for this release
  */
 
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync, appendFileSync, existsSync } from "node:fs";
 
 // --- Configuration ---
@@ -25,13 +25,11 @@ const COMMIT_TYPE_TO_BUMP = {
   feat: "minor",
   fix: "patch",
   perf: "patch",
-  docs: "patch",
   style: "patch",
   refactor: "patch",
   test: "patch",
   build: "patch",
   ci: "patch",
-  chore: "patch",
   revert: "patch",
 };
 
@@ -54,8 +52,8 @@ const MAX_BUMP = "minor"; // Never auto-bump major
 
 // --- Helpers ---
 
-function run(cmd) {
-  return execSync(cmd, { encoding: "utf-8" }).trim();
+function run(exe, args) {
+  return execFileSync(exe, args, { encoding: "utf-8" }).trim();
 }
 
 function setOutput(key, value) {
@@ -67,21 +65,26 @@ function setOutput(key, value) {
 }
 
 /**
- * Parse a conventional commit message.
- * @param {string} message
+ * Parse a conventional commit message (subject + optional body/footer).
+ * @param {string} message - Full commit text (subject line, optionally followed by body)
  * @returns {{ type: string, scope: string, breaking: boolean, description: string } | null}
  */
 function parseConventionalCommit(message) {
+  // The first line is the subject; the rest is the body/footer
+  const [subject, ...bodyLines] = message.split("\n");
+  const body = bodyLines.join("\n");
+
   // Match: type(scope)?: description  or  type!: description
-  const match = message.match(
+  const match = subject.match(
     /^(?<type>[a-z]+)(?:\((?<scope>[^)]+)\))?(?<breaking>!)?:\s*(?<description>.+)$/,
   );
   if (!match?.groups) return null;
 
+  const fullText = `${subject}\n${body}`;
   return {
     type: match.groups.type,
     scope: match.groups.scope || "",
-    breaking: match.groups.breaking === "!" || message.includes("BREAKING CHANGE"),
+    breaking: match.groups.breaking === "!" || fullText.includes("BREAKING CHANGE"),
     description: match.groups.description,
   };
 }
@@ -160,7 +163,7 @@ function main() {
   // Find the latest release tag
   let lastTag = "";
   try {
-    lastTag = run("git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || echo ''");
+    lastTag = run("git", ["describe", "--tags", "--abbrev=0", "--match", "v*"]);
   } catch {
     lastTag = "";
   }
@@ -175,10 +178,12 @@ function main() {
     console.log("No previous release tag found, analyzing all commits");
   }
 
-  // Get commit messages (one per line, subject only)
+  // Get full commit messages (subject + body) separated by record separator
+  const RECORD_SEP = "\x1E";
   let rawCommits;
   try {
-    rawCommits = run(`git log ${commitRange} --pretty=format:"%s" --no-merges`);
+    const logArgs = ["log", commitRange, `--pretty=format:%s%n%b${RECORD_SEP}`, "--no-merges"];
+    rawCommits = run("git", logArgs);
   } catch {
     rawCommits = "";
   }
@@ -191,7 +196,10 @@ function main() {
     return;
   }
 
-  const commitMessages = rawCommits.split("\n").filter(Boolean);
+  const commitMessages = rawCommits
+    .split(RECORD_SEP)
+    .map((s) => s.trim())
+    .filter(Boolean);
   console.log(`Found ${commitMessages.length} commit(s) to analyze\n`);
 
   // Parse and categorize commits

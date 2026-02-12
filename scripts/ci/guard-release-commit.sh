@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Guard against release commits triggering new release workflows.
-# Exits 0 (should skip) if the latest commit is a release commit, 1 otherwise.
+# Always exits 0 and communicates whether to skip via the GITHUB_OUTPUT
+# variable (should_skip=true|false). Callers should read the should_skip
+# output to decide whether to skip subsequent workflow steps.
 
 set -euo pipefail
 

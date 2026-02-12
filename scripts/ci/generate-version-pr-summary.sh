@@ -13,6 +13,11 @@ BUMP_TYPE="${BUMP_TYPE:-}"
 PR_URL="${PR_URL:-}"
 PR_ACTION="${PR_ACTION:-created}"
 
+if [[ -z "${GITHUB_STEP_SUMMARY:-}" ]]; then
+	echo "Error: GITHUB_STEP_SUMMARY is not set" >&2
+	exit 1
+fi
+
 {
 	echo "## Version PR Summary"
 	echo ""
