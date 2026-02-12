@@ -1,0 +1,242 @@
+---
+title: Android Emulator
+description:
+  Create and configure Android emulators for development and testing
+category: Testing
+order: 17
+tags: [android, emulator, mobile, testing]
+difficulty: intermediate
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is Android Emulator?
+
+The Android Emulator simulates Android devices on your computer. It allows you to
+develop and test Android apps without physical devices.
+
+> Emulators are essential for Appium testing on Android when physical devices
+> aren't available.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/android-studio/" />
+  <LinkBadge href="/guides/java/" />
+</div>
+
+## Creating an Emulator via Android Studio
+
+1. Open Android Studio
+2. Click **More Actions** > **Virtual Device Manager**
+3. Click **Create Device**
+4. Select a device definition (e.g., Pixel 7)
+5. Select a system image (download if needed)
+6. Configure AVD options and click **Finish**
+
+## Creating an Emulator via Command Line
+
+### List Available System Images
+
+```bash
+sdkmanager --list | grep "system-images"
+```
+
+### Download a System Image
+
+```bash
+sdkmanager "system-images;android-34;google_apis;arm64-v8a"
+```
+
+### Create an AVD (Android Virtual Device)
+
+```bash
+avdmanager create avd \
+  -n Pixel7 \
+  -k "system-images;android-34;google_apis;arm64-v8a" \
+  -d "pixel_7"
+```
+
+Options:
+- `-n` - AVD name
+- `-k` - System image package
+- `-d` - Device definition
+
+### List Device Definitions
+
+```bash
+avdmanager list device
+```
+
+### List Created AVDs
+
+```bash
+avdmanager list avd
+# or
+emulator -list-avds
+```
+
+## Starting an Emulator
+
+### From Command Line
+
+```bash
+emulator -avd Pixel7
+```
+
+### With Options
+
+```bash
+# Start with wiped data
+emulator -avd Pixel7 -wipe-data
+
+# Start headless (no GUI)
+emulator -avd Pixel7 -no-window
+
+# Start with specific memory
+emulator -avd Pixel7 -memory 4096
+
+# Cold boot (skip snapshot)
+emulator -avd Pixel7 -no-snapshot-load
+```
+
+## Managing Emulators
+
+### Delete an AVD
+
+```bash
+avdmanager delete avd -n Pixel7
+```
+
+### Rename an AVD
+
+```bash
+avdmanager move avd -n OldName -r NewName
+```
+
+## Useful ADB Commands
+
+For more ADB commands, see the <LinkBadge href="/guides/adb/" /> guide.
+
+### List Connected Devices
+
+```bash
+adb devices
+```
+
+### Shell into Emulator
+
+```bash
+adb shell
+```
+
+### Install an APK
+
+```bash
+adb install /path/to/app.apk
+```
+
+### Uninstall an App
+
+```bash
+adb uninstall com.example.app
+```
+
+### Take a Screenshot
+
+```bash
+adb shell screencap /sdcard/screen.png
+adb pull /sdcard/screen.png
+```
+
+### Record Screen
+
+```bash
+adb shell screenrecord /sdcard/recording.mp4
+# Press Ctrl+C to stop
+adb pull /sdcard/recording.mp4
+```
+
+### View Logs
+
+```bash
+adb logcat
+```
+
+### Restart ADB Server
+
+```bash
+adb kill-server
+adb start-server
+```
+
+## Performance Tips
+
+### Use Hardware Acceleration
+
+Ensure HAXM (Intel) or Hypervisor Framework (Apple Silicon) is enabled.
+
+**Check on macOS:**
+```bash
+kextstat | grep intel
+```
+
+### Recommended Settings
+
+For testing, configure your AVD with:
+- **RAM:** 2048 MB or more
+- **VM Heap:** 512 MB
+- **Internal Storage:** 2048 MB
+- **SD Card:** 512 MB
+
+### Quick Boot
+
+Enable Quick Boot in AVD settings to save emulator state and reduce startup
+time.
+
+## Troubleshooting
+
+### "PANIC: Missing emulator engine program"
+
+Ensure emulator is in PATH:
+```bash
+export PATH=$PATH:$ANDROID_HOME/emulator
+```
+
+### Emulator is Slow
+
+1. Enable hardware acceleration
+2. Use x86_64 or arm64 images (not x86)
+3. Allocate more RAM
+4. Use SSD storage
+
+### "Device unauthorized"
+
+1. Revoke USB debugging authorizations in Developer options
+2. Restart ADB: `adb kill-server && adb start-server`
+3. Reconnect device
+
+### Reset to Factory
+
+```bash
+emulator -avd Pixel7 -wipe-data
+```
+
+## Resources
+
+<LinkCard
+  href="https://developer.android.com/studio/run/emulator"
+  title="Android Emulator Documentation"
+  description="Official documentation for the Android Emulator"
+/>
+<LinkCard
+  href="https://developer.android.com/studio/run/managing-avds"
+  title="AVD Manager Documentation"
+  description="Learn how to create and manage Android Virtual Devices"
+/>
+<LinkCard
+  href="https://developer.android.com/studio/run/emulator-commandline"
+  title="Emulator Command Line Options"
+  description="Complete reference for emulator command-line flags"
+/>

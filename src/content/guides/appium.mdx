@@ -1,0 +1,192 @@
+---
+title: Appium
+description:
+  Install and configure Appium for mobile automation testing on iOS and Android
+  devices
+category: Testing
+order: 10
+tags: [appium, testing, mobile, automation, ios, android]
+difficulty: intermediate
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is Appium?
+
+[Appium](https://appium.io/) is an open source automation tool for running scripts
+and testing native applications, mobile-web applications, and hybrid applications
+on Android or iOS using a WebDriver.
+
+> Appium will be used for the building and execution of automated UI tests on both
+> Apple and Android devices.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/java/" />
+  <LinkBadge href="/guides/android-studio/" />
+  <LinkBadge href="/guides/xcode/" />
+  <LinkBadge href="/guides/nodejs/" />
+</div>
+
+## Install Appium
+
+```bash
+npm i --location=global appium
+```
+
+> If you run into this error:
+> `Error installing Chromedriver: Cannot find module '@appium/types'`, run:
+> `npm install @appium/types -D`
+
+Close your terminal session after installation.
+
+## Verify Your Installation
+
+Open a new terminal session:
+
+```bash
+appium -v
+```
+
+## Install Appium Drivers
+
+**Check which drivers are available:**
+
+```bash
+appium driver list
+```
+
+**Install the desired drivers:**
+
+```bash
+appium driver install <driver_name>
+```
+
+> At a minimum, it is recommended to install `xcuitest` for iOS and
+> `uiautomator2` for Android:
+
+```bash
+appium driver install xcuitest
+appium driver install uiautomator2
+```
+
+## Start Appium Server
+
+```bash
+appium
+```
+
+The server will start and listen on `http://0.0.0.0:4723` by default.
+
+> **Do not install Appium Desktop** as it is not compatible with Appium 2 and the
+> project is no longer being supported.
+
+## Good to Know
+
+### Update Drivers
+
+```bash
+# List drivers that need to be updated
+appium driver list --updates
+
+# Update a specific driver
+appium driver update <driver_name>
+
+# Update all installed drivers
+appium driver update installed
+```
+
+### Uninstall Drivers
+
+```bash
+appium driver uninstall <driver_name>
+```
+
+### Available Drivers
+
+| Driver | Platform | Description |
+|--------|----------|-------------|
+| `xcuitest` | iOS | Apple's XCUITest framework |
+| `uiautomator2` | Android | Google's UiAutomator2 framework |
+| `espresso` | Android | Google's Espresso framework |
+| `mac2` | macOS | macOS desktop automation |
+| `safari` | iOS/macOS | Safari browser automation |
+| `gecko` | Multiple | Firefox browser automation |
+| `chromium` | Multiple | Chrome browser automation |
+
+## Troubleshooting
+
+### "appium: command not found"
+
+The npm global bin directory may not be in your PATH:
+
+```bash
+# Check npm global prefix
+npm config get prefix
+
+# Add to ~/.zshrc
+export PATH="$(npm config get prefix)/bin:$PATH"
+
+# Source and verify
+source ~/.zshrc
+appium -v
+```
+
+### Driver Installation Fails
+
+If driver installation fails with permission errors:
+
+```bash
+# Fix npm permissions (don't use sudo with npm)
+mkdir ~/.npm-global
+npm config set prefix '~/.npm-global'
+echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.zshrc
+source ~/.zshrc
+
+# Reinstall drivers
+appium driver install xcuitest
+```
+
+### "@appium/types" Error
+
+```bash
+npm install @appium/types -D
+```
+
+### Port Already in Use
+
+```bash
+# Find process using port 4723
+lsof -i :4723
+
+# Kill the process
+kill -9 <PID>
+
+# Or start Appium on a different port
+appium --port 4724
+```
+
+### Session Not Created
+
+Run diagnostics with <LinkBadge href="/guides/appium-doctor/" /> to identify
+configuration issues.
+
+## Resources
+
+<LinkCard
+  href="https://appium.io/docs/en/latest/"
+  title="Appium Documentation"
+  description="Official Appium 2.0 documentation with guides, API reference, and examples"
+/>
+<LinkCard
+  href="https://appiumpro.com/editions/122-installing-appium-20-and-the-driver-and-plugins-cli"
+  title="Appium Pro: Installing Appium 2.0"
+  description="Step-by-step guide for installing Appium 2.0 with the new driver and plugins CLI"
+/>
+<LinkCard
+  href="https://github.com/appium/appium-inspector"
+  title="Appium Inspector"
+  description="A GUI inspector for mobile apps - essential for finding element locators"
+/>

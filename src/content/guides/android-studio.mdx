@@ -1,0 +1,150 @@
+---
+title: Android Studio
+description:
+  Install and configure Android Studio for Android development and emulator
+  management
+category: IDEs
+order: 8
+tags: [android, ide, emulator, mobile, ides]
+difficulty: intermediate
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is Android Studio?
+
+[Android Studio](https://developer.android.com/studio) is the official integrated
+development environment for Google's Android operating system, built on IntelliJ
+IDEA software and designed specifically for Android development.
+
+> Android Studio is used for creating and managing Android emulators and for
+> running tests on Android devices.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/zsh/" />
+  <LinkBadge href="/guides/sdkman/" />
+  <LinkBadge href="/guides/java/" />
+</div>
+
+## Installation
+
+1. [Download Android Studio](https://developer.android.com/studio) from the official website
+2. Run Android Studio the first time and go through the installation steps
+3. Check SDK versions are installed
+
+## Ensure Required SDKs are Installed
+
+1. Open Android Studio
+2. Click on the **More Actions** dropdown in the middle of the app screen
+3. Choose **SDK Manager** from the dropdown list
+4. Under **SDK Platforms**:
+   - Click the checkbox of the SDK version you want
+   - Ensure that **Show Package Details** is checked to see the QEMU packages
+
+## Ensure Command Line Tools are Installed
+
+> This is important for Appium and other command-line tools.
+
+Under **SDK Tools**:
+1. Click the checkbox for **Android SDK Command-line Tools (latest)**
+2. Click the checkbox for **Android SDK Platform Tools**
+
+## Add Your Required SDK Build Tools
+
+1. On the bottom right of the screen, click the checkbox for **Show Package Details**
+2. There will be a list of all available build-tools versions
+3. Select the version(s) you need
+4. Click **Apply**
+5. Click **OK** to confirm the components to be installed
+6. Click **Finish**
+7. Click **OK** to close the settings dialog
+
+## Configure Environment Variables
+
+Close Android Studio and add the following to your `~/.zshrc` or `~/.bashrc` config
+file:
+
+```bash
+# Android Studio
+export ANDROID_HOME=$HOME/Library/Android/sdk
+export PATH=$PATH:$ANDROID_HOME/emulator
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+export PATH=$PATH:$ANDROID_HOME/tools
+export PATH=$PATH:$ANDROID_HOME/tools/bin
+```
+
+## Verify Installation
+
+Open a new terminal session:
+
+```bash
+avdmanager list target
+```
+
+## Good to Know
+
+- UI Automator is **no longer supported** - use <LinkBadge href="/guides/appium-inspector/" /> instead
+- For emulator configuration, see the <LinkBadge href="/guides/android-emulator/" /> guide
+
+## Troubleshooting
+
+### SDK Not Found After Installation
+
+If `avdmanager` or other SDK tools aren't recognized:
+
+1. Verify ANDROID_HOME is set correctly:
+   ```bash
+   echo $ANDROID_HOME
+   ```
+
+2. Ensure the SDK location exists:
+   ```bash
+   ls $ANDROID_HOME
+   ```
+
+3. Re-source your shell config:
+   ```bash
+   source ~/.zshrc  # or ~/.bashrc for bash
+   ```
+
+### HAXM/Hypervisor Issues on Apple Silicon
+
+Apple Silicon Macs don't need HAXM. If you see HAXM-related errors:
+
+- Ensure you're using ARM-based system images (not x86)
+- Install the appropriate emulator: **SDK Tools > Android Emulator**
+
+### "Command Line Tools Not Found" Error
+
+```bash
+# Verify the installation path
+ls $ANDROID_HOME/cmdline-tools/latest/bin
+
+# If missing, reinstall via SDK Manager
+# SDK Tools > Android SDK Command-line Tools (latest)
+```
+
+### Gradle Sync Failed
+
+- Update Android Studio to the latest version
+- Check your internet connection
+- Clear the Gradle cache:
+  ```bash
+  rm -rf ~/.gradle/caches
+  ```
+
+## Resources
+
+<LinkCard
+  href="https://developer.android.com/studio"
+  title="Download Android Studio"
+  description="Official Android Studio download page with installation instructions"
+/>
+<LinkCard
+  href="https://developer.android.com/studio/run/managing-avds"
+  title="AVD Manager Documentation"
+  description="Learn how to create and manage Android Virtual Devices"
+/>

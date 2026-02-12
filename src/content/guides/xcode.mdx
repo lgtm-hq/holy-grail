@@ -1,0 +1,155 @@
+---
+title: Xcode
+description:
+  Install and configure Xcode for iOS development and simulator management
+category: IDEs
+order: 9
+tags: [xcode, ios, ide, simulator, mobile, ides]
+difficulty: intermediate
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is Xcode?
+
+[Xcode](https://developer.apple.com/xcode/) is Apple's integrated development
+environment (IDE) for macOS, which is used for compiling and building iOS apps to
+be tested on iOS simulators and real Apple iPhones.
+
+## Installation
+
+### Full Install (Recommended)
+
+Download Xcode from the [App Store](https://apps.apple.com/app/xcode/id497799835).
+
+### Developer Tools Only
+
+If you only need the command-line developer tools:
+
+```bash
+xcode-select --install
+```
+
+Click to install the Xcode developer tools when prompted.
+
+## Ensure Required Simulators are Installed
+
+1. Open Xcode
+2. Click on **Xcode** in the top left corner
+3. Click on **Preferences** (or **Settings** in newer versions)
+4. Click on **Platforms**
+5. Select the simulators you want to have installed
+6. Click on the **GET** button next to the name of the simulator
+
+> By default, only simulators with the latest available OS are available.
+
+## Ensure Command Line Tools are Installed
+
+1. Open Xcode
+2. Click on **Xcode** in the top left corner
+3. Click on **Preferences**
+4. Click on **Locations**
+5. Check that the **Command Line Tools** dropdown is **not empty**
+   - It should show something like `Xcode <version>`
+
+> If you see "(No Xcode Selected)" under the dropdown list even though you've
+> already selected something, simply re-select the item in the dropdown and it
+> should update.
+
+## Verify Installation
+
+Open a new terminal session:
+
+```bash
+xcode-select -p
+# Should output: /Applications/Xcode.app/Contents/Developer
+
+xcodebuild -version
+# Should output: Xcode <version> Build version <build>
+```
+
+## List Available Simulators
+
+```bash
+xcrun simctl list devices
+```
+
+## Troubleshooting
+
+### "xcode-select: error: tool 'xcodebuild' requires Xcode"
+
+After installing Xcode, you need to accept the license and select the tools path:
+
+```bash
+sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+sudo xcodebuild -license accept
+```
+
+### Command Line Tools Missing After macOS Update
+
+macOS updates can reset the Xcode configuration:
+
+```bash
+# Reinstall command line tools
+sudo rm -rf /Library/Developer/CommandLineTools
+xcode-select --install
+```
+
+### Simulator Not Appearing
+
+1. Open Xcode > Preferences > Platforms
+2. Download the required simulator runtime
+3. Verify it appears:
+   ```bash
+   xcrun simctl list devices available
+   ```
+
+### "Unable to boot device in current state: Booted"
+
+The simulator is already running. Reset if needed:
+
+```bash
+# Shutdown all simulators
+xcrun simctl shutdown all
+
+# Or reset a specific simulator
+xcrun simctl erase <device-udid>
+```
+
+### Build Errors with "Signing Certificates"
+
+For iOS real device testing:
+
+1. Open Xcode
+2. Go to Preferences > Accounts
+3. Add your Apple ID
+4. Download manual provisioning profiles or enable automatic signing
+
+### Disk Space Issues
+
+Xcode can consume significant disk space. Clean up:
+
+```bash
+# Remove old simulators
+xcrun simctl delete unavailable
+
+# Remove derived data
+rm -rf ~/Library/Developer/Xcode/DerivedData
+
+# Remove old archives
+rm -rf ~/Library/Developer/Xcode/Archives
+```
+
+## Resources
+
+<LinkCard
+  href="https://developer.apple.com/xcode/"
+  title="Xcode - Apple Developer"
+  description="Official Xcode page with features and documentation"
+/>
+<LinkCard
+  href="https://developer.apple.com/documentation/xcode"
+  title="Xcode Documentation"
+  description="Complete Xcode documentation from Apple"
+/>
