@@ -25,12 +25,16 @@ log_info "New version: $new_version"
 
 if [[ "$old_version" != "$new_version" ]]; then
 	log_success "Version changed: $old_version -> $new_version"
-	echo "version_changed=true" >>"$GITHUB_OUTPUT"
-	echo "new_version=$new_version" >>"$GITHUB_OUTPUT"
-	echo "old_version=$old_version" >>"$GITHUB_OUTPUT"
+	{
+		echo "version_changed=true"
+		echo "new_version=$new_version"
+		echo "old_version=$old_version"
+	} >>"$GITHUB_OUTPUT"
 else
 	log_info "Version unchanged: $new_version"
-	echo "version_changed=false" >>"$GITHUB_OUTPUT"
-	echo "new_version=$new_version" >>"$GITHUB_OUTPUT"
-	echo "old_version=$old_version" >>"$GITHUB_OUTPUT"
+	{
+		echo "version_changed=false"
+		echo "new_version=$new_version"
+		echo "old_version=$old_version"
+	} >>"$GITHUB_OUTPUT"
 fi

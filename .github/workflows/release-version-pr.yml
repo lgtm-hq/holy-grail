@@ -53,15 +53,15 @@ jobs:
 
       - name: Create or update version PR
         if: >-
-          steps.guard.outputs.should_skip != 'true'
-          && steps.version.outputs.bump_type != 'none'
+          steps.guard.outputs.should_skip != 'true' && steps.version.outputs.bump_type
+          != 'none'
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7
         id: create-pr
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: release/next
           delete-branch: true
-          title: "chore(release): v${{ steps.version.outputs.new_version }}"
+          title: 'chore(release): v${{ steps.version.outputs.new_version }}'
           body: |
             ## Automated Release PR
 
@@ -78,7 +78,8 @@ jobs:
 
             > Merging this PR will trigger the auto-tag workflow to create a git
             > tag and GitHub release.
-          commit-message: "chore(release): v${{ steps.version.outputs.new_version }} [skip ci]"
+          commit-message:
+            'chore(release): v${{ steps.version.outputs.new_version }} [skip ci]'
           labels: |
             release
             automated
