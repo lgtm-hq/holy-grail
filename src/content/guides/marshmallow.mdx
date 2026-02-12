@@ -132,7 +132,6 @@ class UserCreateResponse(Schema):
 ### Validate Request Data
 
 ```python
-import json
 from marshmallow import ValidationError
 
 data = {
@@ -142,19 +141,20 @@ data = {
 }
 
 schema = UserCreateRequest()
-errors = schema.validate(data)
 
-if errors:
-    raise Exception(json.dumps(errors))
+try:
+    validated = schema.load(data)
+except ValidationError as e:
+    print(f"Request validation failed: {e.messages}")
 
-# Proceed with API request
+# Proceed with validated data
 ```
 
 ### Validate Response Data
 
 ```python
 import requests
-from marshmallow import Schema
+from marshmallow import ValidationError
 
 response = requests.post(
     url="https://api.example.com/users",

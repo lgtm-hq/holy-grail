@@ -243,7 +243,16 @@ pipenv run pip freeze > requirements.txt && pipenv install -r requirements.txt
 **Generate requirements.txt from Pipfile:**
 
 ```bash
-pipenv lock -r > requirements.txt
+pipenv requirements > requirements.txt
+
+# Include dev dependencies
+pipenv requirements --dev > requirements-dev.txt
+
+# Only dev dependencies (excludes production packages)
+pipenv requirements --dev-only > requirements-dev-only.txt
+
+# Include hashes for secure installs
+pipenv requirements --hash > requirements.txt
 ```
 
 ### Update Pipfile

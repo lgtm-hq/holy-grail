@@ -67,6 +67,8 @@ except ValidationError as e:
 Validate data **after** receiving an API response:
 
 ```python
+import requests
+
 response = requests.get("https://api.example.com/users/1")
 response_data = response.json()
 

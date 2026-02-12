@@ -300,12 +300,18 @@ sudo rm -rf /Library/Frameworks/Python.framework
 sudo rm -rf /usr/local/bin/python
 ```
 
-> Remove any references in your `~/.zshrc` or `~/.bashrc` files to Python. Then fix
-> old package permissions:
+> Remove any references in your `~/.zshrc` or `~/.bashrc` files to Python. If you
+> encounter permission issues with leftover files in `/usr/local/bin`, fix ownership
+> only for specific Python-related files:
 >
 > ```bash
-> sudo chown -R $USER /usr/local/bin/*
+> # Only change ownership for specific Python files, not everything in /usr/local/bin
+> sudo chown $USER /usr/local/bin/python*
+> sudo chown $USER /usr/local/bin/pip*
 > ```
+>
+> Alternatively, reinstall Python via Homebrew or use a virtual environment to avoid
+> permission issues entirely.
 
 ### Direct Install Removal
 
@@ -316,8 +322,8 @@ Open a new terminal session.
 **Uninstall all pip packages:**
 
 ```bash
-# python3
-pip3 uninstall -y -r <(pip3 freeze)
+# Works in any shell (sh, bash, zsh, fish, etc.)
+pip3 freeze | xargs pip3 uninstall -y
 ```
 
 **Get the location of your Python installation:**
@@ -348,7 +354,7 @@ rm -rf ~/Library/Caches/pip
 **Uninstall pip itself:**
 
 ```bash
-pip3 uninstall pip3
+pip3 uninstall pip
 ```
 
 ## Resources
