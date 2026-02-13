@@ -28,4 +28,3 @@
 
 - **ci:** consolidate CodeQL workflows (#12)
 - initial project scaffold
-
