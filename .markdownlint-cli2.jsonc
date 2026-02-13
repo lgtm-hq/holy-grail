@@ -13,5 +13,6 @@
     ".lintro/**",
     "playwright-report/**",
     "coverage/**",
+    "CHANGELOG.md",
   ],
 }

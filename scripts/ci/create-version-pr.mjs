@@ -293,6 +293,7 @@ function main() {
   // Update CHANGELOG.md
   // Use try-catch instead of existsSync to avoid TOCTOU race condition
   const changelogPath = "CHANGELOG.md";
+  let changelogContent;
   try {
     const existing = readFileSync(changelogPath, "utf-8");
     // Insert after the main heading
@@ -300,17 +301,19 @@ function main() {
     if (headerMatch) {
       const header = headerMatch[1];
       const rest = existing.slice(header.length);
-      writeFileSync(changelogPath, `${header}${changelogEntry}${rest}`);
+      changelogContent = `${header}${changelogEntry}${rest}`;
     } else {
-      writeFileSync(changelogPath, `${changelogEntry}${existing}`);
+      changelogContent = `${changelogEntry}${existing}`;
     }
   } catch (err) {
     if (err.code === "ENOENT") {
-      writeFileSync(changelogPath, `# Changelog\n\n${changelogEntry}`);
+      changelogContent = `# Changelog\n\n${changelogEntry}`;
     } else {
       throw err;
     }
   }
+  // Normalize trailing whitespace to avoid consecutive blank lines (MD012)
+  writeFileSync(changelogPath, changelogContent.trimEnd() + "\n");
   console.log("Updated CHANGELOG.md");
 
   // Set outputs
