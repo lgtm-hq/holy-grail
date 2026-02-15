@@ -2,6 +2,10 @@
 
 <!-- markdownlint-disable MD033 MD013 -->
 <p align="center">
+<img src="public/images/holy-grail-hero.jpg" alt="Knights of the Holy Grail" width="480">
+</p>
+
+<p align="center">
 The quest for the perfect dev environment.
 </p>
 
@@ -34,10 +38,14 @@ built with Astro and searchable with Pagefind.
 ## 🚀 Quick Start
 
 ```bash
+# Using Bun (recommended)
 bun install              # Install dependencies
 bun run dev              # Start dev server
 bun run build            # Build for production
 bun run preview          # Preview production build
+
+# Using npm
+npm install && npm run dev
 ```
 
 ## ✨ Features
@@ -81,11 +89,16 @@ bun run preview          # Preview production build
 ```bash
 git clone https://github.com/lgtm-hq/holy-grail.git
 cd holy-grail
-bun install
 
+# Using Bun (recommended)
+bun install
 bun run dev              # Development server
 bun run build            # Production build (includes astro check)
 bun run preview          # Preview production build
+
+# Using npm
+npm install
+npm run dev
 ```
 
 ### Linting
