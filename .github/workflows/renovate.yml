@@ -4,10 +4,10 @@ name: Maintenance - Renovate Dependencies
 # Automated dependency updates using Renovate bot. Runs daily to check for
 # outdated dependencies and creates PRs with updates.
 
-"on":
+'on':
   schedule:
     # Run daily at 22:00 UTC
-    - cron: "0 22 * * *"
+    - cron: '0 22 * * *'
   workflow_dispatch:
 
 permissions:
@@ -31,13 +31,9 @@ jobs:
         with:
           egress-policy: block
           allowed-endpoints: >
-            github.com:443
-            api.github.com:443
-            codeload.github.com:443
-            ghcr.io:443
+            github.com:443 api.github.com:443 codeload.github.com:443 ghcr.io:443
             pkg-containers.githubusercontent.com:443
-            release-assets.githubusercontent.com:443
-            objects.githubusercontent.com:443
+            release-assets.githubusercontent.com:443 objects.githubusercontent.com:443
             registry.npmjs.org:443
 
       - name: Checkout
@@ -55,4 +51,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           configurationFile: renovate.json
         env:
-          LOG_LEVEL: ${{ github.event_name == 'workflow_dispatch' && 'debug' || 'info' }}
+          LOG_LEVEL:
+            ${{ github.event_name == 'workflow_dispatch' && 'debug' || 'info' }}
