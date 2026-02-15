@@ -40,7 +40,8 @@ bun run build            # Build for production
 bun run preview          # Preview production build
 
 # Using npm
-npm install && npm run dev
+npm install
+npm run dev
 ```
 
 ## ✨ Features
