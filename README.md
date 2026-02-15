@@ -6,12 +6,7 @@
 </p>
 
 <p align="center">
-The quest for the perfect dev environment.
-</p>
-
-<p align="center">
-A curated collection of step-by-step developer installation and setup guides,
-built with Astro and searchable with Pagefind.
+<em>"We seek the Holy Grail of dev setups — one that doesn't break after a macOS update."</em>
 </p>
 
 <!-- Badges: Build & Quality -->
