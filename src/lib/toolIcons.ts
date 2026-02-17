@@ -23,7 +23,6 @@ export const TOOL_ICONS: Record<string, ToolIcon> = {
   nodejs: { type: "svg", value: "/icons/nodejs.svg", alt: "Node.js" },
   gradle: { type: "svg", value: "/icons/gradle.svg", alt: "Gradle" },
   maven: { type: "svg", value: "/icons/maven.svg", alt: "Maven" },
-  black: { type: "svg", value: "/icons/python.svg", alt: "Black" },
 
   // IDEs
   "android-studio": { type: "svg", value: "/icons/android-studio.svg", alt: "Android Studio" },
