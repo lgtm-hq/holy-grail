@@ -1,15 +1,16 @@
 ---
 title: Schema Validation
 description:
-  Understanding API schema validation concepts and approaches for Python applications
+  Schema validation with Marshmallow and Pydantic for Python applications
 category: Tools
-order: 24
-tags: [python, api, validation, testing, schemas]
+order: 22
+tags: [python, validation, schemas, pydantic, marshmallow, api, serialization]
 difficulty: intermediate
 ---
 
 import LinkBadge from '../../components/LinkBadge.astro';
 import LinkCard from '../../components/LinkCard.astro';
+import Tabs from '../../components/Tabs.astro';
 
 ## What is Schema Validation?
 
@@ -34,91 +35,56 @@ A schema defines:
 - **Required fields**: Which fields must be present
 - **Constraints**: Minimum/maximum values, patterns, etc.
 
-## Validation Approaches
+## Prerequisites
 
-### Request Schema Validation
+<div class="badge-group">
+  <LinkBadge href="/guides/python/" />
+</div>
 
-Validate data **before** making an API request:
+## Installation
 
-```python
-from pydantic import BaseModel, ValidationError
-
-class UserCreateRequest(BaseModel):
-    first_name: str
-    last_name: str
-    email: str
-
-# Validate before sending
-data = {
-    "first_name": "John",
-    "last_name": "Doe",
-    "email": "john@example.com"
-}
-
-try:
-    validated = UserCreateRequest(**data)
-    # Proceed with API request
-except ValidationError as e:
-    print(f"Validation failed: {e}")
-```
-
-### Response Schema Validation
-
-Validate data **after** receiving an API response:
-
-```python
-import requests
-from pydantic import BaseModel, ValidationError
-
-class UserResponse(BaseModel):
-    id: int
-    name: str
-
-response = requests.get("https://api.example.com/users/1")
-response_data = response.json()
-
-try:
-    validated = UserResponse(**response_data)
-except ValidationError as e:
-    raise AssertionError(f"Response schema mismatch: {e}")
-```
-
-## Getting Schemas
-
-### From OpenAPI/Swagger
-
-If your API has OpenAPI specifications (Swagger), you can:
-
-1. Export the schema as JSON or YAML
-2. Use code generators to create Python models
-
-**For FastAPI applications:**
-- Navigate to `/docs` or `/openapi.json`
-- Download the specification
-
-**For SwaggerHub:**
-- Open the API in SwaggerHub Editor
-- Export as YAML or JSON
-
-### Code Generation
-
-Generate Python models from OpenAPI specs:
-
-**Using Pydantic:**
+<Tabs tabs={["Pydantic", "Marshmallow"]}>
+<Fragment slot="Pydantic">
 ```bash
-pip install datamodel-code-generator
-datamodel-codegen --input openapi.json --input-file-type openapi --output models.py
-```
+uv pip install pydantic
 
-**Using Marshmallow:**
+# For OpenAPI schema generation
+uv pip install datamodel-code-generator
+```
+</Fragment>
+<Fragment slot="Marshmallow">
 ```bash
-pip install swagger-marshmallow-codegen
-swagger-marshmallow-codegen openapi.json models.py
+uv pip install marshmallow
+
+# For OpenAPI schema generation
+uv pip install swagger-marshmallow-codegen
 ```
+</Fragment>
+</Tabs>
 
-### Manual Definition
+## Verify Installation
 
-For simple cases, define schemas directly:
+<Tabs tabs={["Pydantic", "Marshmallow"]}>
+<Fragment slot="Pydantic">
+```python
+import pydantic
+print(pydantic.__version__)
+# Expected: 2.x.x
+```
+</Fragment>
+<Fragment slot="Marshmallow">
+```python
+import marshmallow
+print(marshmallow.__version__)
+```
+</Fragment>
+</Tabs>
+
+## Basic Usage
+
+<Tabs tabs={["Pydantic", "Marshmallow"]}>
+<Fragment slot="Pydantic">
+### Define a Model
 
 ```python
 from pydantic import BaseModel
@@ -132,14 +98,387 @@ class User(BaseModel):
     age: Optional[int] = None
 ```
 
-## Python Libraries
+### Validate Data
 
-Two popular libraries for schema validation in Python:
+```python
+# Valid data
+user = User(id=1, name="John Doe", email="john@example.com")
+print(user.model_dump())
+# {'id': 1, 'name': 'John Doe', 'email': 'john@example.com', 'is_active': True, 'age': None}
 
-<div class="badge-group">
-  <LinkBadge href="/guides/marshmallow/" />
-  <LinkBadge href="/guides/pydantic/" />
-</div>
+# Invalid data raises ValidationError
+from pydantic import ValidationError
+
+try:
+    user = User(id="not_an_int", name="John", email="john@example.com")
+except ValidationError as e:
+    print(e.errors())
+```
+</Fragment>
+<Fragment slot="Marshmallow">
+### Define a Schema
+
+```python
+from marshmallow import Schema, fields
+
+class UserSchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str(required=True)
+    email = fields.Email(required=True)
+    created_at = fields.DateTime(dump_only=True)
+```
+
+### Serialize (Dump) Data
+
+```python
+user_data = {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com"
+}
+
+schema = UserSchema()
+result = schema.dump(user_data)
+print(result)
+# {'id': 1, 'name': 'John Doe', 'email': 'john@example.com'}
+```
+
+### Deserialize and Validate (Load) Data
+
+```python
+input_data = {
+    "name": "Jane Doe",
+    "email": "jane@example.com"
+}
+
+schema = UserSchema()
+result = schema.load(input_data)
+# Returns validated data or raises ValidationError
+```
+</Fragment>
+</Tabs>
+
+## Validation Approaches
+
+### Request Schema Validation
+
+Validate data **before** making an API request:
+
+<Tabs tabs={["Pydantic", "Marshmallow"]}>
+<Fragment slot="Pydantic">
+```python
+from pydantic import BaseModel, ValidationError
+
+class CreateUserRequest(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
+
+data = {
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "email": "jane@example.com"
+}
+
+try:
+    validated = CreateUserRequest(**data)
+    # Proceed with API request using validated.model_dump()
+except ValidationError as e:
+    print(f"Validation failed: {e}")
+```
+</Fragment>
+<Fragment slot="Marshmallow">
+```python
+from marshmallow import Schema, fields, ValidationError
+
+class UserCreateRequest(Schema):
+    firstName = fields.String(required=True)
+    lastName = fields.String(required=True)
+    emailAddress = fields.Email(required=True)
+
+data = {
+    "firstName": "User FName",
+    "lastName": "User LName",
+    "emailAddress": "new_user@example.com"
+}
+
+schema = UserCreateRequest()
+
+try:
+    validated = schema.load(data)
+except ValidationError as e:
+    print(f"Request validation failed: {e.messages}")
+```
+</Fragment>
+</Tabs>
+
+### Response Schema Validation
+
+Validate data **after** receiving an API response:
+
+<Tabs tabs={["Pydantic", "Marshmallow"]}>
+<Fragment slot="Pydantic">
+```python
+import requests
+from pydantic import BaseModel, ValidationError
+
+class User(BaseModel):
+    id: int
+    name: str
+    email: str
+
+response = requests.get("https://api.example.com/users/1")
+
+try:
+    user = User(**response.json())
+    print(f"Valid user: {user.name}")
+except ValidationError as e:
+    raise AssertionError(f"Response schema mismatch: {e}")
+```
+</Fragment>
+<Fragment slot="Marshmallow">
+```python
+import requests
+from marshmallow import Schema, fields, ValidationError, INCLUDE
+
+class UserCreateResponse(Schema):
+    emailAddress = fields.String(required=True)
+
+    class Meta:
+        unknown = INCLUDE
+
+response = requests.post(
+    url="https://api.example.com/users",
+    json={"firstName": "User", "lastName": "Name", "emailAddress": "user@example.com"}
+)
+
+response_data = response.json()
+schema = UserCreateResponse()
+
+try:
+    validated = schema.load(response_data)
+except ValidationError as e:
+    print(f"Response validation failed: {e.messages}")
+```
+</Fragment>
+</Tabs>
+
+## Generate from OpenAPI
+
+If your API has OpenAPI specifications (Swagger), you can export the schema as JSON or YAML and use code generators to create Python models.
+
+**For FastAPI applications:**
+- Navigate to `/docs` or `/openapi.json`
+- Download the specification
+
+**For SwaggerHub:**
+- Open the API in SwaggerHub Editor
+- Export as YAML or JSON
+
+<Tabs tabs={["Pydantic", "Marshmallow"]}>
+<Fragment slot="Pydantic">
+### Install and Run datamodel-code-generator
+
+```bash
+uv pip install datamodel-code-generator
+
+# From YAML
+datamodel-codegen --input api_spec.yaml --input-file-type openapi --output models.py
+
+# From JSON
+datamodel-codegen --input api_spec.json --input-file-type openapi --output models.py
+```
+
+### Generated Output Example
+
+```python
+# generated by datamodel-codegen
+from __future__ import annotations
+from typing import Optional
+from pydantic import BaseModel
+
+class AuthenticationRequest(BaseModel):
+    device_name: Optional[str] = None
+    device_id: Optional[str] = None
+    secret: Optional[str] = None
+    client_version: Optional[str] = None
+    client_id: Optional[int] = None
+
+class LoginResponse(BaseModel):
+    user_id: Optional[str] = None
+    second_factor_required: Optional[bool] = None
+```
+</Fragment>
+<Fragment slot="Marshmallow">
+### Install and Run swagger-marshmallow-codegen
+
+```bash
+uv pip install swagger-marshmallow-codegen
+
+# From YAML
+swagger-marshmallow-codegen api_spec.yaml models.py
+
+# From JSON
+swagger-marshmallow-codegen api_spec.json models.py
+```
+
+### Generated Output Example
+
+```python
+# Auto-generated by swagger-marshmallow-codegen
+from marshmallow import Schema, fields, INCLUDE
+
+class UserCreateRequest(Schema):
+    firstName = fields.String(required=True)
+    lastName = fields.String(required=True)
+    emailAddress = fields.String(required=True)
+    birthDate = fields.Date()
+
+    class Meta:
+        unknown = INCLUDE
+
+class UserCreateResponse(Schema):
+    emailAddress = fields.String(required=True)
+
+    class Meta:
+        unknown = INCLUDE
+```
+</Fragment>
+</Tabs>
+
+## Advanced Features
+
+<Tabs tabs={["Pydantic", "Marshmallow"]}>
+<Fragment slot="Pydantic">
+### Field Validation
+
+```python
+from pydantic import BaseModel, field_validator, Field
+
+class User(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    age: int = Field(ge=0, le=150)
+    email: str
+
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, v):
+        if '@' not in v:
+            raise ValueError('Invalid email format')
+        return v.lower()
+```
+
+### Nested Models
+
+```python
+class Address(BaseModel):
+    street: str
+    city: str
+    country: str
+
+class User(BaseModel):
+    name: str
+    address: Address
+    tags: list[str] = []
+```
+
+### Model Configuration
+
+```python
+from pydantic import BaseModel, ConfigDict
+
+class StrictUser(BaseModel):
+    model_config = ConfigDict(
+        strict=True,           # No type coercion
+        extra='forbid',        # Error on extra fields
+        frozen=True,           # Immutable instances
+    )
+
+    name: str
+    age: int
+```
+
+### JSON Schema Export
+
+```python
+class User(BaseModel):
+    name: str
+    email: str
+
+# Export as JSON Schema
+print(User.model_json_schema())
+```
+
+### Alias for API Field Names
+
+```python
+from pydantic import BaseModel, ConfigDict, Field
+
+class User(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    first_name: str = Field(alias="firstName")
+    last_name: str = Field(alias="lastName")
+
+# Can parse with either name
+user = User(firstName="John", lastName="Doe")
+# Or
+user = User(first_name="John", last_name="Doe")
+```
+</Fragment>
+<Fragment slot="Marshmallow">
+### Nested Schemas
+
+```python
+from marshmallow import Schema, fields
+
+class AddressSchema(Schema):
+    street = fields.Str()
+    city = fields.Str()
+    country = fields.Str()
+
+class UserSchema(Schema):
+    name = fields.Str()
+    address = fields.Nested(AddressSchema)
+```
+
+### Custom Validation
+
+```python
+from marshmallow import Schema, fields, validates, ValidationError
+
+class UserSchema(Schema):
+    age = fields.Int()
+
+    @validates('age')
+    def validate_age(self, value):
+        if value < 0:
+            raise ValidationError('Age must be positive.')
+        if value > 150:
+            raise ValidationError('Age seems unrealistic.')
+```
+
+### Handle Unknown Fields
+
+```python
+from marshmallow import Schema, EXCLUDE, INCLUDE, RAISE
+
+class StrictSchema(Schema):
+    class Meta:
+        unknown = RAISE  # Raise error on unknown fields
+
+class FlexibleSchema(Schema):
+    class Meta:
+        unknown = INCLUDE  # Include unknown fields
+
+class FilteringSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE  # Silently ignore unknown fields
+```
+</Fragment>
+</Tabs>
+
+## Pydantic vs Marshmallow
 
 | Feature | Pydantic | Marshmallow |
 |---------|----------|-------------|
@@ -147,6 +486,10 @@ Two popular libraries for schema validation in Python:
 | Performance | Faster (Rust core) | Good |
 | JSON Schema | Built-in export | Via extension |
 | ORM Integration | SQLModel | SQLAlchemy |
+| Approach | Type-annotation-first | Class-attribute-first |
+| Default in FastAPI | Yes | No |
+| Serialization | `.model_dump()` | `.dump()` |
+| Deserialization | Constructor / `model_validate()` | `.load()` |
 
 ## Best Practices
 
@@ -162,6 +505,8 @@ Two popular libraries for schema validation in Python:
 
 Ensure nested schemas are properly defined:
 
+<Tabs tabs={["Pydantic", "Marshmallow"]}>
+<Fragment slot="Pydantic">
 ```python
 # Wrong - won't validate nested structure
 class User(BaseModel):
@@ -175,6 +520,23 @@ class Address(BaseModel):
 class User(BaseModel):
     address: Address
 ```
+</Fragment>
+<Fragment slot="Marshmallow">
+```python
+# Wrong - won't validate nested structure
+class UserSchema(Schema):
+    address = fields.Dict()  # Too loose
+
+# Right - properly typed
+class AddressSchema(Schema):
+    street = fields.Str()
+    city = fields.Str()
+
+class UserSchema(Schema):
+    address = fields.Nested(AddressSchema)
+```
+</Fragment>
+</Tabs>
 
 ### Schema Drift Between Code and API
 
@@ -184,10 +546,18 @@ Keep schemas in sync with API specs:
 2. **Run schema tests in CI** to catch drift
 3. **Use OpenAPI specs** as the source of truth
 
+<Tabs tabs={["Pydantic", "Marshmallow"]}>
+<Fragment slot="Pydantic">
 ```bash
-# Regenerate models
 datamodel-codegen --input openapi.json --output models.py
 ```
+</Fragment>
+<Fragment slot="Marshmallow">
+```bash
+swagger-marshmallow-codegen openapi.json models.py
+```
+</Fragment>
+</Tabs>
 
 ### Performance Issues with Large Payloads
 
@@ -197,7 +567,7 @@ For large JSON documents:
 - Validate only required fields for quick checks
 - Consider Pydantic v2 (Rust-based, much faster)
 
-### Type Coercion Issues
+### Type Coercion Issues (Pydantic)
 
 Pydantic coerces types by default. For strict validation:
 
@@ -209,8 +579,98 @@ class StrictModel(BaseModel):
     count: int  # Won't accept "123" string
 ```
 
+### Pydantic v1 vs v2
+
+If you're migrating from v1:
+
+| v1 | v2 |
+|----|-----|
+| `class Config` | `model_config = ConfigDict()` |
+| `.dict()` | `.model_dump()` |
+| `.json()` | `.model_dump_json()` |
+| `@validator` | `@field_validator` |
+| `parse_obj()` | `model_validate()` |
+
+### Optional Fields Still Required (Pydantic v2)
+
+In Pydantic v2, `Optional` only affects the **type** (allows `None`), not whether
+the field is required. A field without a default value is always required,
+regardless of `Optional`. This differs from Pydantic v1, where `Optional` alone
+implied a default of `None`.
+
+```python
+# Pydantic v2: still required (no default value)
+field: Optional[str]
+
+# Pydantic v2: truly optional (has a default)
+field: Optional[str] = None
+```
+
+### Extra Fields Causing Errors (Pydantic)
+
+By default, extra fields are ignored. To change:
+
+```python
+model_config = ConfigDict(extra='forbid')  # Raise error
+model_config = ConfigDict(extra='allow')   # Include them
+model_config = ConfigDict(extra='ignore')  # Silently drop (default)
+```
+
+### ValidationError Not Raised (Marshmallow)
+
+Make sure you're using `load()` not `dump()`:
+- `load()` - deserializes AND validates
+- `dump()` - serializes only, no validation
+
+### YAML Parsing Error with swagger-marshmallow-codegen
+
+If you see:
+```
+INFO:dictknife.loading._lazyimport:yaml package is not found
+TypeError: JSONDecoder.__init__() got an unexpected keyword argument 'loader'
+```
+
+Use JSON format instead:
+```bash
+swagger-marshmallow-codegen api_spec.json models.py
+```
+
+### Field Name Mismatches (Marshmallow)
+
+Use `data_key` for different API field names:
+
+```python
+class UserSchema(Schema):
+    first_name = fields.Str(data_key="firstName")
+```
+
 ## Resources
 
+<LinkCard
+  href="https://docs.pydantic.dev/"
+  title="Pydantic Documentation"
+  description="Official documentation with comprehensive guides"
+/>
+<LinkCard
+  href="https://marshmallow.readthedocs.io/"
+  title="Marshmallow Documentation"
+  description="Official documentation with guides and API reference"
+/>
+<LinkCard
+  href="https://github.com/koxudaxi/datamodel-code-generator"
+  title="datamodel-code-generator"
+  description="Generate Pydantic models from various sources"
+/>
+<LinkCard
+  href="https://github.com/podhmo/swagger-marshmallow-codegen"
+  title="swagger-marshmallow-codegen"
+  description="Generate Marshmallow schemas from Swagger/OpenAPI specs"
+/>
+<LinkCard
+  href="https://docs.pydantic.dev/latest/migration/"
+  title="Pydantic v1 to v2 Migration"
+  description="Guide for migrating from Pydantic v1 to v2"
+/>
 <LinkCard
   href="https://json-schema.org/"
   title="JSON Schema"
@@ -220,9 +680,4 @@ class StrictModel(BaseModel):
   href="https://swagger.io/specification/"
   title="OpenAPI Specification"
   description="Standard for describing RESTful APIs"
-/>
-<LinkCard
-  href="https://yeahub.com/python-libraries-for-data-validation/"
-  title="Python Validation Libraries"
-  description="Comparison of Python data validation libraries"
 />
