@@ -220,7 +220,12 @@ Validate data **after** receiving an API response:
 <Fragment slot="Pydantic">
 ```python
 import requests
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
+
+class User(BaseModel):
+    id: int
+    name: str
+    email: str
 
 response = requests.get("https://api.example.com/users/1")
 
