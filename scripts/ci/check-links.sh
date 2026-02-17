@@ -16,13 +16,23 @@ fi
 
 echo "Checking external links in ${CONTENT_DIR}/**/*.mdx ..."
 
+# Exclusions:
+#   example.com, localhost, 127.0.0.1 — non-routable/documentation domains
+#   your-app(.|$) — placeholder hostnames in guide code examples (your-app, your-app.example.com)
+#   github.com, raw.githubusercontent.com — rate-limited, causes intermittent CI failures
+#   npmjs.com, registry.npmjs.org — rate-limited
+
 lychee \
 	--no-progress \
 	--format markdown \
 	--exclude 'example\.com' \
 	--exclude 'localhost' \
 	--exclude '127\.0\.0\.1' \
-	--exclude 'your-app' \
+	--exclude 'your-app(\.|$)' \
+	--exclude 'github\.com' \
+	--exclude 'raw\.githubusercontent\.com' \
+	--exclude 'npmjs\.com' \
+	--exclude 'registry\.npmjs\.org' \
 	--timeout 30 \
 	--max-retries 3 \
 	--accept '200..=204' \
