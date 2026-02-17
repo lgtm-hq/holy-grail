@@ -1,0 +1,284 @@
+---
+title: Desired Capabilities
+description:
+  Configure Appium and Selenium sessions using W3C capabilities to specify
+  target platforms, devices, browsers, and automation behavior
+category: Testing
+order: 28
+tags: [appium, selenium, testing, capabilities, w3c, automation]
+difficulty: intermediate
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What are Desired Capabilities?
+
+Desired capabilities are a set of key-value pairs that tell Appium or Selenium
+what kind of automation session to create. They specify the target platform,
+device, browser, application, and automation behavior.
+
+For example, a mobile session's capabilities might specify:
+
+- The mobile platform (Android or iOS)
+- The device name and OS version
+- The automation engine (UiAutomator2 or XCUITest)
+- The path to the application under test
+
+> In Appium 2.x, capabilities follow the
+> [W3C WebDriver Protocol](https://www.w3.org/TR/webdriver2/) and require
+> vendor-prefixed keys (e.g., `appium:deviceName` instead of `deviceName`).
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/appium/" />
+</div>
+
+## W3C Capabilities Format
+
+Appium 2.x uses the W3C WebDriver Protocol, which requires all non-standard
+capabilities to be vendor-prefixed with `appium:`.
+
+### Standard W3C Capabilities
+
+These capabilities are defined by the W3C specification and do **not** need a
+vendor prefix:
+
+| Capability | Description | Example |
+|------------|-------------|---------|
+| `platformName` | Target platform | `"Android"`, `"iOS"` |
+| `browserName` | Browser to automate (web only) | `"chrome"`, `"safari"` |
+
+### Appium-Specific Capabilities
+
+All other capabilities require the `appium:` prefix:
+
+| Capability | Description | Example |
+|------------|-------------|---------|
+| `appium:automationName` | Automation engine | `"UiAutomator2"`, `"XCUITest"` |
+| `appium:deviceName` | Device name | `"iPhone 15"`, `"Pixel 7"` |
+| `appium:platformVersion` | OS version | `"17.0"`, `"14"` |
+| `appium:app` | Path to application file | `"/path/to/app.apk"` |
+| `appium:udid` | Device UDID | `"00008030-001A3..."` |
+| `appium:noReset` | Preserve app state between sessions | `true` |
+| `appium:fullReset` | Uninstall app before session | `false` |
+
+## Platform Examples
+
+### Android
+
+```python
+from appium.options import UiAutomator2Options
+
+options = UiAutomator2Options()
+options.platform_name = "Android"
+options.device_name = "Pixel 7"
+options.platform_version = "14"
+options.automation_name = "UiAutomator2"
+options.app = "/path/to/app.apk"
+```
+
+Or using a raw capabilities dictionary:
+
+```python
+caps = {
+    "platformName": "Android",
+    "appium:automationName": "UiAutomator2",
+    "appium:deviceName": "Pixel 7",
+    "appium:platformVersion": "14",
+    "appium:app": "/path/to/app.apk",
+}
+```
+
+### iOS
+
+```python
+from appium.options import XCUITestOptions
+
+options = XCUITestOptions()
+options.platform_name = "iOS"
+options.device_name = "iPhone 15"
+options.platform_version = "17.0"
+options.automation_name = "XCUITest"
+options.app = "/path/to/app.ipa"
+```
+
+Or using a raw capabilities dictionary:
+
+```python
+caps = {
+    "platformName": "iOS",
+    "appium:automationName": "XCUITest",
+    "appium:deviceName": "iPhone 15",
+    "appium:platformVersion": "17.0",
+    "appium:app": "/path/to/app.ipa",
+}
+```
+
+### Web (Selenium)
+
+For web automation, use the browser-specific options:
+
+```python
+from selenium.webdriver.chrome.options import Options
+
+options = Options()
+options.add_argument("--headless")
+options.add_argument("--window-size=1920,1080")
+```
+
+## Using Options Classes (Recommended)
+
+Appium 2.x provides Options classes that handle vendor prefixing automatically.
+This is the recommended approach over raw dictionaries:
+
+```python
+from appium import webdriver
+from appium.options import UiAutomator2Options
+
+options = UiAutomator2Options()
+options.platform_name = "Android"
+options.device_name = "emulator-5554"
+options.app = "/path/to/app.apk"
+
+# additional capabilities
+options.no_reset = True
+options.new_command_timeout = 300
+
+driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
+```
+
+> Options classes provide autocomplete in your IDE and validate capability
+> names at development time rather than at runtime.
+
+## Common Capabilities
+
+### Session Behavior
+
+| Capability | Description | Default |
+|------------|-------------|---------|
+| `appium:noReset` | Do not reset app state before session | `false` |
+| `appium:fullReset` | Uninstall and reinstall the app | `false` |
+| `appium:newCommandTimeout` | Seconds to wait for a new command before ending session | `60` |
+| `appium:eventTimings` | Enable event timing logging | `false` |
+
+### Android-Specific
+
+| Capability | Description |
+|------------|-------------|
+| `appium:appPackage` | Java package of the app |
+| `appium:appActivity` | Activity to launch |
+| `appium:avd` | Name of the AVD to launch |
+| `appium:autoGrantPermissions` | Auto-grant app permissions |
+| `appium:chromedriverExecutable` | Path to a specific chromedriver |
+
+### iOS-Specific
+
+| Capability | Description |
+|------------|-------------|
+| `appium:bundleId` | Bundle ID of the app |
+| `appium:xcodeOrgId` | Team ID for code signing |
+| `appium:xcodeSigningId` | Signing identity |
+| `appium:wdaLocalPort` | Port for WebDriverAgent |
+| `appium:showXcodeLog` | Show Xcode build logs |
+
+## Good to Know
+
+### Legacy vs W3C Format
+
+If you encounter older documentation or code using capabilities without the
+`appium:` prefix, it is using the legacy (JSONWP) format from Appium 1.x:
+
+```python
+# legacy format (Appium 1.x) -- do not use
+caps = {
+    "platformName": "Android",
+    "deviceName": "Pixel 7",        # missing appium: prefix
+    "automationName": "UiAutomator2",  # missing appium: prefix
+}
+
+# W3C format (Appium 2.x) -- use this
+caps = {
+    "platformName": "Android",
+    "appium:deviceName": "Pixel 7",
+    "appium:automationName": "UiAutomator2",
+}
+```
+
+### Environment-Specific Capabilities
+
+Store capabilities in configuration files rather than hardcoding them in test
+code. This makes it easy to run the same tests against different environments:
+
+```python
+# config/android.py
+ANDROID_CAPS = {
+    "platformName": "Android",
+    "appium:automationName": "UiAutomator2",
+    "appium:deviceName": "Pixel 7",
+    "appium:app": "/path/to/app.apk",
+}
+
+# config/ios.py
+IOS_CAPS = {
+    "platformName": "iOS",
+    "appium:automationName": "XCUITest",
+    "appium:deviceName": "iPhone 15",
+    "appium:app": "/path/to/app.ipa",
+}
+```
+
+### Capability Precedence
+
+When using Options classes, capabilities set via the class properties take
+precedence over those set via `set_capability()`. If a capability is set
+both ways, the property value wins.
+
+## Troubleshooting
+
+### "InvalidArgumentError: ... is not a valid W3C capability"
+
+The capability is missing the `appium:` vendor prefix. Add the prefix or use
+an Options class instead.
+
+### Session Not Created
+
+If the session fails to start:
+
+1. Verify the `platformName` matches the installed driver
+2. Check that the `appium:app` path points to an existing file
+3. Ensure the device specified by `appium:deviceName` or `appium:udid` is
+   available
+4. Run `appium driver list --installed` to confirm the driver is installed
+
+### Wrong App Launches
+
+If a different app launches than expected:
+
+- For Android: check `appium:appPackage` and `appium:appActivity`
+- For iOS: check `appium:bundleId`
+- Ensure `appium:noReset` is set correctly
+
+## Resources
+
+<LinkCard
+  href="https://appium.io/docs/en/latest/guides/caps/"
+  title="Appium Capabilities"
+  description="Official Appium documentation on W3C capabilities and vendor extensions"
+/>
+<LinkCard
+  href="https://github.com/appium/appium-uiautomator2-driver#capabilities"
+  title="UiAutomator2 Driver Capabilities"
+  description="Complete list of Android-specific capabilities for the UiAutomator2 driver"
+/>
+<LinkCard
+  href="https://appium.github.io/appium-xcuitest-driver/latest/capabilities/"
+  title="XCUITest Driver Capabilities"
+  description="Complete list of iOS-specific capabilities for the XCUITest driver"
+/>
+<LinkCard
+  href="https://www.w3.org/TR/webdriver2/#capabilities"
+  title="W3C WebDriver Capabilities Specification"
+  description="The W3C standard that defines how capabilities work in WebDriver"
+/>
