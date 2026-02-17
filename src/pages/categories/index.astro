@@ -15,7 +15,7 @@ const allGuides = await getCollection('guides');
 const base = withBase;
 
 // Get categories from centralized config
-const categories = getAllCategories().filter(c => c.slug !== 'tools');
+const categories = getAllCategories();
 
 // Count guides per category
 const categoryCounts = categories.map((cat) => ({

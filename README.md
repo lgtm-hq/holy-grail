@@ -46,7 +46,7 @@ npm run dev
 
 ## ✨ Features
 
-- **📖 25+ Guides** - Comprehensive step-by-step developer setup guides
+- **📖 22 Guides** - Comprehensive step-by-step developer setup guides
 - **🔍 Full-Text Search** - Instant search powered by Pagefind
 - **🎨 Themed** - Dark and light themes via turbo-themes
 - **⚡ Static & Fast** - Astro-powered static site generation
@@ -54,14 +54,15 @@ npm run dev
 
 ## 📚 Guides
 
-| Category                  | Guides                                                                                  |
-| ------------------------- | --------------------------------------------------------------------------------------- |
-| 🐍 **Python**             | Python, Black, Pipenv, Pydantic, Marshmallow, Schema Validation                         |
-| ☕ **Java & Build Tools** | Java, SDKMAN, Maven, Gradle                                                             |
-| 📱 **Android**            | Android Studio, Android Emulator, ADB                                                   |
-| 🍎 **iOS & Apple**        | Xcode, Carthage, ios-deploy, ideviceinstaller, libimobiledevice, ios-webkit-debug-proxy |
-| 🧪 **Mobile Testing**     | Appium, Appium Inspector, Appium Doctor                                                 |
-| 🌐 **Web & System**       | Node.js, Homebrew, Zsh                                                                  |
+| Category           | Guides                                                                                                                                                     |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🏗️ **Foundation**  | Homebrew, SDKMAN, ZSH                                                                                                                                      |
+| 📚 **Languages**   | Java, Python, Node.js                                                                                                                                      |
+| 🛠️ **IDEs**        | Android Studio, Xcode, iOS Simulators                                                                                                                      |
+| 🔨 **Build Tools** | Maven, Gradle                                                                                                                                              |
+| 📱 **iOS Tools**   | iOS Device Tools (libimobiledevice, ideviceinstaller, ios-deploy, ios-webkit-debug-proxy, Carthage)                                                        |
+| 🧪 **Testing**     | Appium, ADB, Android Emulator, Configure iOS Drivers, Prepare iOS Project, Desired Capabilities, Driver Instantiation, Locator Strategy, Page Object Model |
+| ⚙️ **Tools**       | Schema Validation                                                                                                                                          |
 
 ## 🛠️ Built With
 

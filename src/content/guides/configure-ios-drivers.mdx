@@ -12,7 +12,7 @@ difficulty: intermediate
 import LinkBadge from '../../components/LinkBadge.astro';
 import LinkCard from '../../components/LinkCard.astro';
 
-## What is Configure iOS Drivers?
+## What is the XCUITest Driver?
 
 The [XCUITest driver](https://github.com/appium/appium-xcuitest-driver) is the
 Appium driver for automating iOS, iPadOS, and tvOS applications. It uses Apple's
@@ -32,7 +32,7 @@ a WebDriver server that runs on the device alongside your app.
 
 Ensure you have:
 
-- Appium 2.x installed with the `xcuitest` driver (`appium driver install xcuitest`)
+- Appium installed with the `xcuitest` driver (`appium driver install xcuitest`)
 - Xcode installed with Command Line Tools configured
 - An Apple ID signed into Xcode (required for code signing)
 
@@ -248,16 +248,16 @@ sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
 For physical devices, ensure:
 
 - The device is connected via USB and trusted
-- <LinkBadge href="/guides/ios-deploy/" /> is installed for device detection
-- <LinkBadge href="/guides/libimobiledevice/" /> is installed for device
+- [ios-deploy](/guides/ios-device-tools/#ios-deploy) is installed for device detection
+- [libimobiledevice](/guides/ios-device-tools/#libimobiledevice) is installed for device
   communication
 
 ### Session Creation Errors
 
-Run <LinkBadge href="/guides/appium-doctor/" /> to diagnose environment issues:
+Run driver diagnostics to identify environment issues:
 
 ```bash
-appium-doctor --ios
+appium driver doctor xcuitest
 ```
 
 ## Resources
@@ -275,5 +275,5 @@ appium-doctor --ios
 <LinkCard
   href="https://appium.io/docs/en/latest/"
   title="Appium Documentation"
-  description="Official Appium 2.x documentation with guides, API reference, and examples"
+  description="Official Appium documentation with guides, API reference, and examples"
 />

@@ -12,7 +12,7 @@ difficulty: advanced
 import LinkBadge from '../../components/LinkBadge.astro';
 import LinkCard from '../../components/LinkCard.astro';
 
-## Overview
+## What are iOS Device Tools?
 
 This guide covers the essential command-line tools for interacting with physical iOS
 devices. These tools are widely used in mobile automation testing, particularly with
@@ -401,8 +401,9 @@ switching. Use W3C-compliant namespaced capabilities:
 manager for Cocoa projects (iOS, macOS). Unlike CocoaPods, Carthage builds your
 dependencies as frameworks and gives you full control over your project structure.
 
-> Carthage may be required for building WebDriverAgent, which Appium uses for iOS
-> automation.
+> **Note:** For new iOS projects, [Swift Package Manager](https://developer.apple.com/documentation/xcode/swift-packages)
+> (built into Xcode) is the recommended dependency manager. Carthage is still
+> needed for building WebDriverAgent, which Appium uses for iOS automation.
 
 ### Installation
 
@@ -698,9 +699,9 @@ Ensure the framework is properly linked in Xcode:
   description="Official repository with documentation and releases"
 />
 <LinkCard
-  href="https://appium.io/docs/en/latest/guides/real-devices/"
-  title="Appium Real Device Setup"
-  description="Guide for setting up Appium with real iOS devices"
+  href="https://appium.github.io/appium-xcuitest-driver/latest/preparation/real-device-config/"
+  title="XCUITest Real Device Setup"
+  description="Official guide for configuring the XCUITest driver for real iOS devices"
 />
 <LinkCard
   href="https://github.com/google/ios-webkit-debug-proxy"
