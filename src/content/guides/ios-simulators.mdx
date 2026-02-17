@@ -1,0 +1,304 @@
+---
+title: iOS Simulators
+description:
+  Configure and manage iOS simulators in Xcode for app development and UI automation
+  testing
+category: IDEs
+order: 10
+tags: [ios, xcode, simulator, testing, mobile, simctl]
+difficulty: beginner
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What are iOS Simulators?
+
+iOS Simulators let you debug and test your app on a variety of Apple hardware you
+don't have immediate access to. They run within the Simulator app on your Mac and
+replicate the software environment of an actual device.
+
+> Simulators do not replicate the full performance or hardware features of a real
+> device (e.g., camera, GPS, Bluetooth). Use them for functional and UI automation
+> testing with tools like <LinkBadge href="/guides/appium/" />, and validate on
+> physical devices for performance-critical testing.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/xcode/" />
+</div>
+
+## Installing Simulator Runtimes
+
+### Via Xcode UI
+
+1. Open Xcode
+2. Go to **Xcode** > **Settings** (or press `Cmd + ,`)
+3. Select the **Platforms** tab
+4. You'll see the currently installed runtimes (e.g., iOS, watchOS, tvOS)
+5. Click the **+** button in the bottom-left corner
+6. Choose your platform (e.g., **iOS**)
+7. Select the version you want to install and click **Download & Install**
+8. Enter your password when prompted — the download will begin
+
+> By default, Xcode ships with the latest simulator runtime for each platform.
+> You only need to download additional runtimes for testing against older iOS
+> versions.
+
+### Via Command Line
+
+Starting with Xcode 14, you can also download simulator runtimes using
+`xcodebuild`:
+
+```bash
+# List available runtimes for download
+xcodebuild -downloadAllPlatforms
+
+# Download a specific platform runtime
+xcodebuild -downloadPlatform iOS
+```
+
+Starting with Xcode 16, you can use the `simctl` runtime commands:
+
+```bash
+# List all available runtimes (installed and downloadable)
+xcrun simctl runtime list
+
+# List only installed runtimes
+xcrun simctl list runtimes
+```
+
+## Managing Simulators
+
+### List Available Simulators
+
+```bash
+# List all simulators grouped by runtime
+xcrun simctl list devices
+
+# List only available (bootable) simulators
+xcrun simctl list devices available
+
+# List in JSON format (useful for scripting)
+xcrun simctl list devices --json
+```
+
+### Create a Simulator
+
+```bash
+xcrun simctl create "iPhone 16 Pro" \
+  "com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro" \
+  "com.apple.CoreSimulator.SimRuntime.iOS-18-2"
+```
+
+To find valid device type and runtime identifiers:
+
+```bash
+# List device types
+xcrun simctl list devicetypes
+
+# List installed runtimes
+xcrun simctl list runtimes
+```
+
+### Boot and Open a Simulator
+
+```bash
+# Boot a simulator by name or UDID
+xcrun simctl boot "iPhone 16 Pro"
+
+# Open the Simulator app (shows booted devices)
+open -a Simulator
+```
+
+### Shut Down Simulators
+
+```bash
+# Shut down a specific simulator
+xcrun simctl shutdown "iPhone 16 Pro"
+
+# Shut down all running simulators
+xcrun simctl shutdown all
+```
+
+### Erase a Simulator (Factory Reset)
+
+```bash
+# Reset a specific simulator to clean state
+xcrun simctl erase "iPhone 16 Pro"
+
+# Erase all simulators
+xcrun simctl erase all
+```
+
+### Delete a Simulator
+
+```bash
+# Delete a specific simulator
+xcrun simctl delete "iPhone 16 Pro"
+
+# Delete all unavailable simulators (runtimes no longer installed)
+xcrun simctl delete unavailable
+```
+
+## Useful Simulator Commands
+
+### Install and Launch Apps
+
+```bash
+# Install an app
+xcrun simctl install booted /path/to/MyApp.app
+
+# Launch an app by bundle ID
+xcrun simctl launch booted com.example.myapp
+
+# Uninstall an app
+xcrun simctl uninstall booted com.example.myapp
+```
+
+### Take a Screenshot
+
+```bash
+xcrun simctl io booted screenshot ~/Desktop/screenshot.png
+```
+
+### Record Video
+
+```bash
+# Start recording (press Ctrl+C to stop)
+xcrun simctl io booted recordVideo ~/Desktop/recording.mp4
+```
+
+### Open a URL
+
+```bash
+xcrun simctl openurl booted "https://example.com"
+```
+
+### Set Device Location
+
+```bash
+# Set a custom GPS location (latitude, longitude)
+xcrun simctl location booted set 37.7749,-122.4194
+```
+
+### Push Notifications
+
+```bash
+# Send a push notification from a JSON payload file
+xcrun simctl push booted com.example.myapp notification.json
+```
+
+### Manage Device Appearance
+
+```bash
+# Set appearance to dark mode
+xcrun simctl ui booted appearance dark
+
+# Set appearance to light mode
+xcrun simctl ui booted appearance light
+```
+
+## Choosing a Simulator for Testing
+
+When you build your iOS app in Xcode, you can choose any installed simulator from
+the device dropdown in the toolbar. Select the desired device model (e.g., iPhone
+15, iPhone 16 Pro) and the iOS version you need.
+
+For Appium testing, specify the simulator in your capabilities:
+
+```json
+{
+  "platformName": "iOS",
+  "appium:automationName": "XCUITest",
+  "appium:deviceName": "iPhone 16 Pro",
+  "appium:platformVersion": "18.2"
+}
+```
+
+## Troubleshooting
+
+### "xcrun: error: SDK 'iphoneos' cannot be located"
+
+Xcode command-line tools aren't properly configured:
+
+```bash
+sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+```
+
+### Simulator Stuck on Boot
+
+```bash
+# Force shutdown and reboot
+xcrun simctl shutdown all
+xcrun simctl boot "iPhone 16 Pro"
+```
+
+If the issue persists, erase the simulator:
+
+```bash
+xcrun simctl erase "iPhone 16 Pro"
+```
+
+### Runtime Not Available
+
+If a simulator shows "unavailable", the runtime may need re-downloading:
+
+1. Open Xcode > Settings > Platforms
+2. Delete the problematic runtime (click the **-** button)
+3. Re-download it by clicking **+**
+
+Or via command line:
+
+```bash
+xcodebuild -downloadPlatform iOS
+```
+
+### Disk Space Issues
+
+Simulator runtimes can be large (5-10 GB each). Free up space by removing old
+runtimes:
+
+```bash
+# List installed runtimes and their sizes
+xcrun simctl list runtimes
+
+# Delete unused simulators
+xcrun simctl delete unavailable
+
+# Remove a specific runtime via Xcode Settings > Platforms
+```
+
+### CoreSimulator Service Errors
+
+Reset the CoreSimulator framework:
+
+```bash
+# Shut down all simulators first
+xcrun simctl shutdown all
+
+# Reset CoreSimulator defaults
+defaults delete com.apple.CoreSimulator
+
+# Restart the service
+launchctl kickstart -k system/com.apple.CoreSimulator.CoreSimulatorService
+```
+
+## Resources
+
+<LinkCard
+  href="https://developer.apple.com/documentation/xcode/running-your-app-in-simulator-or-on-a-device"
+  title="Running Your App in Simulator"
+  description="Apple's official guide to using the Simulator app for development"
+/>
+<LinkCard
+  href="https://developer.apple.com/documentation/xcode/installing-additional-simulator-runtimes"
+  title="Installing Additional Simulator Runtimes"
+  description="How to download and manage additional iOS, watchOS, and tvOS simulator runtimes"
+/>
+<LinkCard
+  href="https://nshipster.com/simctl/"
+  title="simctl - NSHipster"
+  description="Comprehensive guide to the xcrun simctl command-line utility"
+/>
