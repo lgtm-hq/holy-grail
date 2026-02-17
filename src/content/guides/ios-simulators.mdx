@@ -262,7 +262,7 @@ Simulator runtimes can be large (5-10 GB each). Free up space by removing old
 runtimes:
 
 ```bash
-# List installed runtimes and their sizes
+# List installed runtimes (check sizes via Xcode > Settings > Platforms)
 xcrun simctl list runtimes
 
 # Delete unused simulators
@@ -283,8 +283,11 @@ xcrun simctl shutdown all
 defaults delete com.apple.CoreSimulator
 
 # Restart the service
-sudo launchctl kickstart -k system/com.apple.CoreSimulator.CoreSimulatorService
+launchctl kickstart -k "gui/$(id -u)/com.apple.CoreSimulator.CoreSimulatorService"
 ```
+
+> On macOS 14.4+, `launchctl kickstart` may not be available. Restarting your
+> Mac achieves the same result.
 
 ## Resources
 
