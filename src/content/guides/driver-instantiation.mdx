@@ -73,8 +73,8 @@ driver = webdriver.Remote(
 )
 ```
 
-> In Appium 2.x, the server URL is `http://127.0.0.1:4723` (no `/wd/hub` path).
-> The `/wd/hub` prefix was required in Appium 1.x but is no longer needed.
+> The server URL is `http://127.0.0.1:4723` (no `/wd/hub` path). The `/wd/hub`
+> prefix was required in Appium 1.x but is no longer needed.
 
 ## Web Driver (Selenium)
 
@@ -279,15 +279,8 @@ appium --port 4724
 
 If you see errors related to `/wd/hub`:
 
-- **Appium 2.x**: Use `http://127.0.0.1:4723` (no path suffix)
-- **Appium 1.x** (legacy): Used `http://127.0.0.1:4723/wd/hub`
-
-If you must connect to a server that expects `/wd/hub`, start Appium with the
-base path flag:
-
-```bash
-appium --base-path /wd/hub
-```
+- Use `http://127.0.0.1:4723` (no path suffix)
+- The `/wd/hub` path was only used in Appium 1.x and is no longer supported
 
 ### Driver Quit Errors
 
@@ -319,7 +312,7 @@ def driver():
   description="Official Selenium documentation for setting up and using WebDriver"
 />
 <LinkCard
-  href="https://appium.github.io/python-client-sphinx/"
+  href="https://github.com/appium/python-client"
   title="Appium Python Client"
-  description="API documentation for the Appium Python client library"
+  description="Official Appium Python client library with API documentation and examples"
 />

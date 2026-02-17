@@ -203,6 +203,8 @@ for (const tab of validTabs) {
           if (!tab) return;
           activateTab(container, tab, true);
           history.replaceState(null, '', `#${encodeURIComponent(tab)}`);
+          // Scroll to the top of the tab group so content starts in view
+          container.scrollIntoView({ block: 'start', behavior: 'smooth' });
         });
       });
 
@@ -284,6 +286,17 @@ for (const tab of validTabs) {
 
   .tabs-container {
     margin: var(--space-lg) 0;
+    scroll-margin-top: 4.5rem; /* clear the sticky site header on scrollIntoView */
+  }
+
+  .tabs-container .tabs {
+    width: fit-content;
+  }
+
+  .tabs-container .tabs.tabs-boxed {
+    position: sticky;
+    top: 4rem; /* clear the sticky site header */
+    z-index: 50;
   }
 
   .tab-content :global(pre) {

@@ -97,6 +97,8 @@ const filteredHeadings = headings.filter(h => h.depth >= 2 && h.depth <= 3);
       window.__tocObserver.disconnect();
     }
 
+    const desktopToc = document.querySelector('.toc-desktop');
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -106,6 +108,10 @@ const filteredHeadings = headings.filter(h => h.depth >= 2 && h.depth <= 3);
               const href = link.getAttribute('href');
               if (href === `#${id}`) {
                 link.classList.add('active');
+                // Scroll the desktop TOC to keep the active item visible
+                if (desktopToc?.contains(link)) {
+                  link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
               } else {
                 link.classList.remove('active');
               }

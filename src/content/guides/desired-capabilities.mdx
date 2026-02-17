@@ -25,7 +25,7 @@ For example, a mobile session's capabilities might specify:
 - The automation engine (UiAutomator2 or XCUITest)
 - The path to the application under test
 
-> In Appium 2.x, capabilities follow the
+> Since Appium 2.x, capabilities follow the
 > [W3C WebDriver Protocol](https://www.w3.org/TR/webdriver2/) and require
 > vendor-prefixed keys (e.g., `appium:deviceName` instead of `deviceName`).
 
@@ -37,7 +37,7 @@ For example, a mobile session's capabilities might specify:
 
 ## W3C Capabilities Format
 
-Appium 2.x uses the W3C WebDriver Protocol, which requires all non-standard
+Appium uses the W3C WebDriver Protocol, which requires all non-standard
 capabilities to be vendor-prefixed with `appium:`.
 
 ### Standard W3C Capabilities
@@ -130,7 +130,7 @@ options.add_argument("--window-size=1920,1080")
 
 ## Using Options Classes (Recommended)
 
-Appium 2.x provides Options classes that handle vendor prefixing automatically.
+Appium provides Options classes that handle vendor prefixing automatically.
 This is the recommended approach over raw dictionaries:
 
 ```python
@@ -191,14 +191,14 @@ If you encounter older documentation or code using capabilities without the
 `appium:` prefix, it is using the legacy (JSONWP) format from Appium 1.x:
 
 ```python
-# legacy format (Appium 1.x) -- do not use
+# legacy format (Appium 1.x) -- will not work
 caps = {
     "platformName": "Android",
     "deviceName": "Pixel 7",        # missing appium: prefix
     "automationName": "UiAutomator2",  # missing appium: prefix
 }
 
-# W3C format (Appium 2.x) -- use this
+# W3C format (required) -- use this
 caps = {
     "platformName": "Android",
     "appium:deviceName": "Pixel 7",

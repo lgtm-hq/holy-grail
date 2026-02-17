@@ -1,11 +1,11 @@
 ---
 title: Appium
 description:
-  Install and configure Appium, Appium Doctor, and Appium Inspector for mobile
-  automation testing on iOS and Android devices
+  Install and configure Appium and Appium Inspector for mobile automation
+  testing on iOS and Android devices
 category: Testing
 order: 10
-tags: [appium, testing, mobile, automation, ios, android, inspector, diagnostics]
+tags: [appium, testing, mobile, automation, ios, android, inspector]
 difficulty: intermediate
 ---
 
@@ -81,54 +81,35 @@ appium
 
 The server will start and listen on `http://0.0.0.0:4723` by default.
 
-> **Do not install Appium Desktop** as it is not compatible with Appium 2 and the
-> project is no longer being supported.
+> **Do not install Appium Desktop** as it is incompatible with Appium 2.x and
+> later. The project is no longer being supported.
 
 ## Companion Tools
 
-<Tabs tabs={["Doctor", "Inspector"]}>
-<Fragment slot="Doctor">
-### What is Appium Doctor?
+<Tabs tabs={["Diagnostics", "Inspector"]}>
+<Fragment slot="Diagnostics">
+### Driver Diagnostics
 
-Appium Doctor is a command-line tool that diagnoses and validates your Appium
-installation. It checks that all the necessary dependencies for both iOS and Android
-testing are properly configured.
+Appium includes a built-in diagnostics command that validates your environment
+for each installed driver. It checks that all the necessary dependencies for
+the target platform are properly configured.
 
-> Run Appium Doctor before troubleshooting test failures -- it quickly identifies
-> common configuration issues.
-
-### Installation
-
-```bash
-npm i --location=global @appium/doctor
-```
-
-Close your terminal session after installation.
-
-### Verify Installation
-
-```bash
-appium-doctor --version
-```
+> The standalone `@appium/doctor` package is deprecated. Use the built-in
+> `appium driver doctor` command instead.
 
 ### Run Diagnostics
 
-**Full diagnostic check:**
+**Check a specific driver:**
 
 ```bash
-appium-doctor
+appium driver doctor xcuitest
+appium driver doctor uiautomator2
 ```
 
-**iOS-specific check:**
+**Check a specific plugin:**
 
 ```bash
-appium-doctor --ios
-```
-
-**Android-specific check:**
-
-```bash
-appium-doctor --android
+appium plugin doctor <plugin_name>
 ```
 
 ### Understanding the Output
@@ -141,14 +122,14 @@ appium-doctor --android
 
 ### Common Checks Performed
 
-**iOS Checks:**
+**iOS (xcuitest):**
 - Xcode is installed and has required simulators
 - Xcode Command Line Tools configured
 - Carthage installed (if using WebDriverAgent)
 - ios-deploy installed for real device testing
 - libimobiledevice installed for device communication
 
-**Android Checks:**
+**Android (uiautomator2):**
 - ANDROID_HOME environment variable set
 - JAVA_HOME environment variable set
 - Android SDK platform-tools in PATH
@@ -218,7 +199,7 @@ brew install --cask appium-inspector
 3. Configure the Remote Host:
    - **Remote Host:** `127.0.0.1`
    - **Remote Port:** `4723`
-   - **Remote Path:** (leave empty for Appium 2.x)
+   - **Remote Path:** (leave empty for Appium 2.x and later)
 
 ### Desired Capabilities
 
@@ -304,8 +285,8 @@ xcrun simctl listapps booted | plutil -convert json -o - - | jq -r 'keys[]'
 
 ### Appium Inspector vs Appium Desktop
 
-> **Important:** Appium Desktop is deprecated and incompatible with Appium 2.x.
-> Use Appium Inspector instead.
+> **Important:** Appium Desktop is deprecated and incompatible with Appium 2.x
+> and later. Use Appium Inspector instead.
 </Fragment>
 </Tabs>
 
@@ -344,7 +325,7 @@ appium driver uninstall <driver_name>
 
 ## Troubleshooting
 
-<Tabs tabs={["Appium", "Doctor", "Inspector"]}>
+<Tabs tabs={["Appium", "Diagnostics", "Inspector"]}>
 <Fragment slot="Appium">
 ### "appium: command not found"
 
@@ -398,34 +379,18 @@ appium --port 4724
 
 ### Session Not Created
 
-Run diagnostics with Appium Doctor (see the Doctor tab) to identify
+Run driver diagnostics (see the Diagnostics tab) to identify
 configuration issues.
 </Fragment>
-<Fragment slot="Doctor">
-### "appium-doctor: command not found"
-
-The npm global bin directory may not be in your PATH:
-
-```bash
-# Find npm global directory
-npm config get prefix
-
-# Add to PATH in ~/.zshrc
-export PATH="$(npm config get prefix)/bin:$PATH"
-```
-
+<Fragment slot="Diagnostics">
 ### Checks Pass But Tests Still Fail
 
-Appium Doctor checks environment setup, not all runtime issues. If checks pass but
-tests fail:
+Driver diagnostics check environment setup, not all runtime issues. If checks
+pass but tests fail:
 
 1. Check Appium server logs for detailed errors
 2. Verify the device/simulator is correctly connected
 3. Ensure the app under test is properly signed (iOS)
-4. Run `appium-doctor` with verbose output:
-   ```bash
-   appium-doctor --verbose
-   ```
 
 ### "Necessary" vs "Optional" Checks
 
@@ -447,7 +412,7 @@ Focus on fixing necessary issues first before addressing optional warnings.
    lsof -i :4723
    ```
 
-3. Ensure Remote Path is empty for Appium 2.x (was `/wd/hub` in Appium 1.x)
+3. Ensure Remote Path is empty (the `/wd/hub` path was only used in Appium 1.x)
 
 ### "Session Creation Failed"
 
@@ -482,17 +447,12 @@ On macOS, the app may be blocked by Gatekeeper:
 <LinkCard
   href="https://appium.io/docs/en/latest/"
   title="Appium Documentation"
-  description="Official Appium 2.0 documentation with guides, API reference, and examples"
+  description="Official Appium documentation with guides, API reference, and examples"
 />
 <LinkCard
-  href="https://appiumpro.com/editions/122-installing-appium-20-and-the-driver-and-plugins-cli"
-  title="Appium Pro: Installing Appium 2.0"
-  description="Step-by-step guide for installing Appium 2.0 with the new driver and plugins CLI"
-/>
-<LinkCard
-  href="https://github.com/appium/appium/tree/master/packages/doctor"
-  title="Appium Doctor on GitHub"
-  description="Official repository and documentation"
+  href="https://appium.io/docs/en/latest/guides/migrating-2-to-3/"
+  title="Migrating to Appium 3"
+  description="Official migration guide for upgrading from Appium 2.x to 3.x"
 />
 <LinkCard
   href="https://appium.io/docs/en/latest/quickstart/"
@@ -512,5 +472,5 @@ On macOS, the app may be blocked by Gatekeeper:
 <LinkCard
   href="https://appium.io/docs/en/latest/guides/caps/"
   title="Appium Desired Capabilities"
-  description="Complete reference for configuring Appium sessions"
+  description="Complete reference for configuring Appium sessions with W3C capabilities"
 />

@@ -1,0 +1,35 @@
+---
+name: Quality Links
+
+on:
+  schedule:
+    - cron: '0 9 1 * *' # Monthly on the 1st at 9am UTC
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/content/**/*.mdx'
+  workflow_dispatch:
+
+concurrency:
+  group: quality-links-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-links:
+    name: Check Links
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Check external links
+        uses: lycheeverse/lychee-action@a8c4c7cb88f0c7386610c35eb25108e448569cb0 # v2.7.0
+        with:
+          args: >-
+            --no-progress --exclude 'example\.com' --exclude 'localhost' --exclude
+            '127\.0\.0\.1' --exclude 'your-app' --timeout 30 --max-retries 3
+            'src/content/**/*.mdx'
+          fail: true

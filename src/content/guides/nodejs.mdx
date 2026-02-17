@@ -293,6 +293,28 @@ which npx
 command -v nvm
 ```
 
+## Good to Know
+
+### Alternative: fnm (Fast Node Manager)
+
+[fnm](https://github.com/Schniz/fnm) is a faster alternative to nvm, written in
+Rust. It supports `.nvmrc` files and is compatible with nvm's version syntax:
+
+```bash
+# Install via Homebrew
+brew install fnm
+
+# Add to ~/.zshrc
+eval "$(fnm env)"
+
+# Usage is similar to nvm
+fnm install --lts
+fnm use <version>
+```
+
+> fnm has significantly faster shell startup times compared to nvm. Consider
+> it if nvm is slowing down your terminal.
+
 ## Troubleshooting
 
 ### "nvm: command not found"
