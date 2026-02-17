@@ -52,7 +52,7 @@ Starting with Xcode 14, you can also download simulator runtimes using
 `xcodebuild`:
 
 ```bash
-# List available runtimes for download
+# Download all available platform runtimes
 xcodebuild -downloadAllPlatforms
 
 # Download a specific platform runtime
@@ -282,7 +282,7 @@ xcrun simctl shutdown all
 defaults delete com.apple.CoreSimulator
 
 # Restart the service
-launchctl kickstart -k system/com.apple.CoreSimulator.CoreSimulatorService
+sudo launchctl kickstart -k system/com.apple.CoreSimulator.CoreSimulatorService
 ```
 
 ## Resources
