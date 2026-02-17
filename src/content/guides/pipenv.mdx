@@ -14,28 +14,21 @@ import LinkCard from '../../components/LinkCard.astro';
 
 ## What is Pipenv?
 
-[Pipenv](https://pipenv.pypa.io/) is a packaging tool for Python that solves some
-common problems associated with the typical workflow using `pip`, `virtualenv`, and
-`requirements.txt`. It consolidates and simplifies the development process to a single
-command line tool.
+[Pipenv](https://pipenv.pypa.io/) is a packaging tool for Python that combines `pip`
+and `virtualenv` into a single workflow. It replaces `requirements.txt` with the
+`Pipfile` format and generates a lockfile for deterministic builds.
 
-> - You no longer need to use `pip` and `virtualenv` separately. They work together.
-> - Managing a `requirements.txt` file can be problematic, so Pipenv uses the
->   `Pipfile` instead, which is superior for basic use cases.
-> - Hashes are used everywhere, always. Security. Automatically expose security
->   vulnerabilities.
+> For a comparison of Pipenv with other tools (uv, Poetry), see
+> <LinkBadge href="/guides/virtual-environments/" />.
 
 ## Prerequisites
 
 <div class="badge-group">
   <LinkBadge href="/guides/homebrew/" />
-  <LinkBadge href="/guides/zsh/" />
   <LinkBadge href="/guides/python/" />
 </div>
 
 ## Installation
-
-Open a new terminal session and run:
 
 ```bash
 brew install pipenv
@@ -53,146 +46,39 @@ pipenv --version
 
 ## Install Packages
 
-Open a new terminal session.
-
 **Install a production dependency:**
 
 ```bash
 pipenv install <package-name>
 ```
 
-This adds the package to the `[packages]` section in your `Pipfile`:
-
-```toml
-[packages]
-<package-name> = "*"
-```
-
-**Installation with version specifiers:**
+**Install with a version specifier:**
 
 ```bash
-pipenv install "package_name<1.2"
-pipenv install "package_name<=1.2"
-pipenv install "package_name>1.2"
-pipenv install "package_name>=1.2"
-pipenv install "package_name==1.*"
-pipenv install "package_name==1.2.*"
+pipenv install "package_name~=1.2"
 pipenv install "package_name==1.2.3"
 ```
 
-> It's always good to **lock package versions**. This means changing `= "*"` to
-> `= "==1.2.3"`. Using `= "*"` means that it will always just install the latest
-> available version of that package.
-
-## Install Dev Packages
-
-Assuming you have a package that is not yet a requirement for your project, that
-dependency will be added/found under the `[dev-packages]` section in your `Pipfile`.
-
-You can install that package with the same `pipenv install` command, but include the
-`--dev` flag:
+**Install a dev dependency:**
 
 ```bash
 pipenv install <package-name> --dev
 ```
 
-This adds the package to `[dev-packages]`:
-
-```toml
-[dev-packages]
-<package-name> = "*"
-```
-
-**Install dev requirements from requirements.txt:**
-
-```bash
-pipenv install -r requirements.txt --dev
-```
+> For a full guide on version specifiers and updating dependencies, see
+> <LinkBadge href="/guides/update-dependencies/" />.
 
 ## Uninstall Packages
 
-Open a new terminal session.
-
-**Uninstall a specific package:**
-
 ```bash
+# Uninstall a specific package
 pipenv uninstall <package_name>
-```
 
-**Uninstall all packages:**
-
-```bash
+# Uninstall all packages
 pipenv uninstall --all
-```
 
-**Uninstall only dev packages:**
-
-```bash
+# Uninstall only dev packages
 pipenv uninstall --all-dev
-```
-
-## Using the Virtual Environment
-
-### Creating a Virtual Environment
-
-Open a new terminal session.
-
-**Optionally name your virtual environment:**
-
-```bash
-export PIPENV_CUSTOM_VENV_NAME=your_venv_name
-```
-
-**Create your virtual environment with dependencies:**
-
-```bash
-pipenv install
-```
-
-**Install using the lockfile (ignore Pipfile):**
-
-```bash
-pipenv install --ignore-pipfile
-```
-
-> The `--ignore-pipfile` flag tells Pipenv to install strictly from an existing
-> `Pipfile.lock`, ignoring the `Pipfile` entirely. If no `Pipfile.lock` is present,
-> a virtual environment will be created but no dependencies will be installed.
-> Pipenv does **not** fall back to `requirements.txt`.
-
-**Specify a Python version:**
-
-If you did not specify a Python version in your `Pipfile` and want to use a specific
-version:
-
-```bash
-pipenv --python <version>
-```
-
-> The version you specify must already be installed on your machine.
-
-### Activating a Virtual Environment
-
-Keep in mind that `pipenv` is now a replacement for the default `pip` command. Both
-commands can and do still work with your virtual environment, but using `pip` will only
-install to your virtual environment and will **not** update your `Pipfile` or
-`Pipfile.lock`.
-
-```bash
-pipenv shell
-```
-
-### Deactivating a Virtual Environment
-
-```bash
-exit
-```
-
-### Run a Single Command
-
-```bash
-pipenv run python script.py
-pipenv run pytest
 ```
 
 ## Pipfile Example
@@ -215,30 +101,21 @@ black = "*"
 python_version = "3.11"
 ```
 
-## Good to Know
+## Migrating from requirements.txt
 
-### Managing Dependencies (requirements)
-
-**Migrating from requirements.txt to Pipenv:**
+**Auto-detect and import existing requirements.txt:**
 
 ```bash
 pipenv install
 ```
 
-> This command will detect if there's a `requirements.txt` file in your project and
-> use it.
+> Pipenv will detect a `requirements.txt` in your project directory and import it
+> automatically.
 
-**Specifically install dependencies from requirements.txt:**
+**Explicitly import from requirements.txt:**
 
 ```bash
 pipenv install -r requirements.txt
-```
-
-**Export installed dependencies from your virtual environment to a requirements.txt and
-create the Pipfile and Pipfile.lock:**
-
-```bash
-pipenv run pip freeze > requirements.txt && pipenv install -r requirements.txt
 ```
 
 **Generate requirements.txt from Pipfile:**
@@ -249,49 +126,11 @@ pipenv requirements > requirements.txt
 # Include dev dependencies
 pipenv requirements --dev > requirements-dev.txt
 
-# Only dev dependencies (excludes production packages)
-pipenv requirements --dev-only > requirements-dev-only.txt
-
 # Include hashes for secure installs
 pipenv requirements --hash > requirements.txt
 ```
 
-### Update Pipfile
-
-To update (or create if not already there) a `Pipfile` file with your installed
-dependencies:
-
-```bash
-pipenv lock
-```
-
-> This will create a `Pipfile.lock` with the hashes of all the installed dependencies.
-
-### Version Specifiers
-
-| Specifier | Meaning |
-|-----------|---------|
-| `*` | Any version |
-| `==1.0` | Exactly 1.0 |
-| `>=1.0` | 1.0 or higher |
-| `~=1.0` | Compatible with 1.0 (>=1.0, \<2.0) |
-| `!=1.5` | Any version except 1.5 |
-
-### Locate Your Virtual Environment
-
-**Location of your virtual environment:**
-
-```bash
-pipenv --venv
-```
-
-**Location of your project home:**
-
-```bash
-pipenv --where
-```
-
-> All virtual environments can be found in: `/Users/{user}/.local/share/virtualenvs`
+## Useful Commands
 
 ### Check for Security Vulnerabilities
 
@@ -305,13 +144,7 @@ pipenv check
 pipenv graph
 ```
 
-### Remove Virtual Environment
-
-```bash
-pipenv --rm
-```
-
-## Environment Variables
+### Environment Variables
 
 Pipenv automatically loads variables from a `.env` file in your project root:
 
@@ -321,32 +154,22 @@ DATABASE_URL=postgres://localhost/mydb
 SECRET_KEY=your-secret-key
 ```
 
-## Troubleshooting
+### Run a Single Command
 
-### "Pipfile.lock is out of date"
-
-```bash
-pipenv lock
-pipenv install
-```
-
-### Clear Cache
+Without activating the shell:
 
 ```bash
-pipenv --clear
+pipenv run python script.py
+pipenv run pytest
 ```
 
-### Specify Python Version
+## Next Steps
 
-```bash
-pipenv --python 3.11
-```
-
-### Use System Python
-
-```bash
-pipenv --python $(which python3)
-```
+<div class="badge-group">
+  <LinkBadge href="/guides/virtual-environments/" />
+  <LinkBadge href="/guides/update-dependencies/" />
+  <LinkBadge href="/guides/upgrade-python/" />
+</div>
 
 ## Resources
 
@@ -359,9 +182,4 @@ pipenv --python $(which python3)
   href="https://github.com/pypa/pipenv"
   title="Pipenv on GitHub"
   description="Official repository with issues and releases"
-/>
-<LinkCard
-  href="https://realpython.com/pipenv-guide/"
-  title="Pipenv Guide (Real Python)"
-  description="Comprehensive tutorial on using Pipenv effectively"
 />
