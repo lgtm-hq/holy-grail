@@ -86,6 +86,7 @@ for (const tab of validTabs) {
           id={`${instanceId}-panel-${key}`}
           aria-labelledby={`${instanceId}-tab-${key}`}
           data-tab-content={tab}
+          hidden={tab !== activeTab}
         >
           <Fragment set:html={renderedSlots[tab] || ''} />
         </div>
@@ -111,7 +112,9 @@ for (const tab of validTabs) {
       b.setAttribute('tabindex', isActive ? '0' : '-1');
     });
     panels.forEach((p) => {
-      p.classList.toggle('active', p.dataset.tabContent === tab);
+      const isActive = p.dataset.tabContent === tab;
+      p.classList.toggle('active', isActive);
+      p.hidden = !isActive;
     });
 
     if (sync && group) {
@@ -132,7 +135,9 @@ for (const tab of validTabs) {
           other
             .querySelectorAll<HTMLElement>('.tab-content')
             .forEach((p) => {
-              p.classList.toggle('active', p.dataset.tabContent === tab);
+              const isActive = p.dataset.tabContent === tab;
+              p.classList.toggle('active', isActive);
+              p.hidden = !isActive;
             });
         });
     }

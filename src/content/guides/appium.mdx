@@ -1,16 +1,17 @@
 ---
 title: Appium
 description:
-  Install and configure Appium for mobile automation testing on iOS and Android
-  devices
+  Install and configure Appium, Appium Doctor, and Appium Inspector for mobile
+  automation testing on iOS and Android devices
 category: Testing
 order: 10
-tags: [appium, testing, mobile, automation, ios, android]
+tags: [appium, testing, mobile, automation, ios, android, inspector, diagnostics]
 difficulty: intermediate
 ---
 
 import LinkBadge from '../../components/LinkBadge.astro';
 import LinkCard from '../../components/LinkCard.astro';
+import Tabs from '../../components/Tabs.astro';
 
 ## What is Appium?
 
@@ -83,6 +84,231 @@ The server will start and listen on `http://0.0.0.0:4723` by default.
 > **Do not install Appium Desktop** as it is not compatible with Appium 2 and the
 > project is no longer being supported.
 
+## Companion Tools
+
+<Tabs tabs={["Doctor", "Inspector"]}>
+<Fragment slot="Doctor">
+### What is Appium Doctor?
+
+Appium Doctor is a command-line tool that diagnoses and validates your Appium
+installation. It checks that all the necessary dependencies for both iOS and Android
+testing are properly configured.
+
+> Run Appium Doctor before troubleshooting test failures -- it quickly identifies
+> common configuration issues.
+
+### Installation
+
+```bash
+npm i --location=global @appium/doctor
+```
+
+Close your terminal session after installation.
+
+### Verify Installation
+
+```bash
+appium-doctor --version
+```
+
+### Run Diagnostics
+
+**Full diagnostic check:**
+
+```bash
+appium-doctor
+```
+
+**iOS-specific check:**
+
+```bash
+appium-doctor --ios
+```
+
+**Android-specific check:**
+
+```bash
+appium-doctor --android
+```
+
+### Understanding the Output
+
+| Symbol | Meaning |
+|--------|---------|
+| ✔ | Check passed |
+| ✖ | Check failed (required fix) |
+| ⚠ | Warning (optional fix) |
+
+### Common Checks Performed
+
+**iOS Checks:**
+- Xcode is installed and has required simulators
+- Xcode Command Line Tools configured
+- Carthage installed (if using WebDriverAgent)
+- ios-deploy installed for real device testing
+- libimobiledevice installed for device communication
+
+**Android Checks:**
+- ANDROID_HOME environment variable set
+- JAVA_HOME environment variable set
+- Android SDK platform-tools in PATH
+- Android SDK build-tools installed
+- Emulator available
+
+### Fixing Common Issues
+
+**ANDROID_HOME not set:**
+
+Add to your `~/.zshrc`:
+
+```bash
+export ANDROID_SDK_ROOT=$HOME/Library/Android/sdk
+export ANDROID_HOME=$ANDROID_SDK_ROOT  # legacy alias
+export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
+export PATH=$PATH:$ANDROID_SDK_ROOT/emulator
+```
+
+**JAVA_HOME not set (using SDKMAN):**
+
+```bash
+export JAVA_HOME=$HOME/.sdkman/candidates/java/current
+```
+
+**Xcode Command Line Tools not configured:**
+
+```bash
+sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+```
+</Fragment>
+<Fragment slot="Inspector">
+### What is Appium Inspector?
+
+[Appium Inspector](https://github.com/appium/appium-inspector) is a GUI tool for
+inspecting mobile application UI elements. It allows you to view the app's element
+hierarchy, find element locators, and interact with elements in real-time.
+
+> Appium Inspector is essential for identifying element locators (XPath,
+> accessibility ID, etc.) when writing automated tests.
+
+### Installation
+
+Download the latest `.dmg` file from the
+[releases page](https://github.com/appium/appium-inspector/releases).
+
+1. Open the downloaded `.dmg` file
+2. Drag **Appium Inspector** to your Applications folder
+3. Open from Applications (you may need to right-click and select "Open" the first
+   time)
+
+**Alternative: Using Homebrew**
+
+```bash
+brew install --cask appium-inspector
+```
+
+### Connecting to Appium Server
+
+1. Start Appium server in terminal:
+   ```bash
+   appium
+   ```
+
+2. Open Appium Inspector
+
+3. Configure the Remote Host:
+   - **Remote Host:** `127.0.0.1`
+   - **Remote Port:** `4723`
+   - **Remote Path:** (leave empty for Appium 2.x)
+
+### Desired Capabilities
+
+**iOS Simulator:**
+
+```json
+{
+  "platformName": "iOS",
+  "appium:automationName": "XCUITest",
+  "appium:deviceName": "iPhone 15",
+  "appium:platformVersion": "17.0",
+  "appium:app": "/path/to/your/app.app"
+}
+```
+
+**Android Emulator:**
+
+```json
+{
+  "platformName": "Android",
+  "appium:automationName": "UiAutomator2",
+  "appium:deviceName": "Pixel 7",
+  "appium:app": "/path/to/your/app.apk"
+}
+```
+
+**Attach to running app (Android):**
+
+```json
+{
+  "platformName": "Android",
+  "appium:automationName": "UiAutomator2",
+  "appium:deviceName": "Pixel 7",
+  "appium:appPackage": "com.example.myapp",
+  "appium:appActivity": ".MainActivity"
+}
+```
+
+**Attach to running app (iOS):**
+
+```json
+{
+  "platformName": "iOS",
+  "appium:automationName": "XCUITest",
+  "appium:deviceName": "iPhone 15",
+  "appium:bundleId": "com.example.myapp"
+}
+```
+
+### Using the Inspector
+
+**Element Selection:**
+
+1. Click on any element in the app screenshot
+2. View element attributes in the right panel
+3. Copy the locator strategy you need (XPath, ID, Accessibility ID, etc.)
+
+**Locator Strategies (Priority Order):**
+
+1. **Accessibility ID** - Most reliable, cross-platform
+2. **ID** - Fast and stable (Android `resource-id`, iOS `name`)
+3. **Class Name** - Use with index or combined selectors
+4. **XPath** - Last resort; can be brittle
+
+**Actions:**
+
+- **Tap** - Click on elements
+- **Send Keys** - Type text into input fields
+- **Swipe** - Perform swipe gestures
+- **Refresh** - Reload the element tree
+
+### Finding Package and Activity (Android)
+
+```bash
+adb shell dumpsys activity activities | grep mResumedActivity
+```
+
+### Finding Bundle ID (iOS)
+
+```bash
+xcrun simctl listapps booted | plutil -convert json -o - - | jq -r 'keys[]'
+```
+
+### Appium Inspector vs Appium Desktop
+
+> **Important:** Appium Desktop is deprecated and incompatible with Appium 2.x.
+> Use Appium Inspector instead.
+</Fragment>
+</Tabs>
+
 ## Good to Know
 
 ### Update Drivers
@@ -118,6 +344,8 @@ appium driver uninstall <driver_name>
 
 ## Troubleshooting
 
+<Tabs tabs={["Appium", "Doctor", "Inspector"]}>
+<Fragment slot="Appium">
 ### "appium: command not found"
 
 The npm global bin directory may not be in your PATH:
@@ -170,8 +398,84 @@ appium --port 4724
 
 ### Session Not Created
 
-Run diagnostics with <LinkBadge href="/guides/appium-doctor/" /> to identify
+Run diagnostics with Appium Doctor (see the Doctor tab) to identify
 configuration issues.
+</Fragment>
+<Fragment slot="Doctor">
+### "appium-doctor: command not found"
+
+The npm global bin directory may not be in your PATH:
+
+```bash
+# Find npm global directory
+npm config get prefix
+
+# Add to PATH in ~/.zshrc
+export PATH="$(npm config get prefix)/bin:$PATH"
+```
+
+### Checks Pass But Tests Still Fail
+
+Appium Doctor checks environment setup, not all runtime issues. If checks pass but
+tests fail:
+
+1. Check Appium server logs for detailed errors
+2. Verify the device/simulator is correctly connected
+3. Ensure the app under test is properly signed (iOS)
+4. Run `appium-doctor` with verbose output:
+   ```bash
+   appium-doctor --verbose
+   ```
+
+### "Necessary" vs "Optional" Checks
+
+- **Necessary (✖)**: Must be fixed for Appium to work
+- **Optional (⚠)**: Recommended but not required
+
+Focus on fixing necessary issues first before addressing optional warnings.
+</Fragment>
+<Fragment slot="Inspector">
+### "Cannot Connect to Appium Server"
+
+1. Verify Appium is running:
+   ```bash
+   curl http://127.0.0.1:4723/status
+   ```
+
+2. Check the port isn't blocked by another process:
+   ```bash
+   lsof -i :4723
+   ```
+
+3. Ensure Remote Path is empty for Appium 2.x (was `/wd/hub` in Appium 1.x)
+
+### "Session Creation Failed"
+
+- Verify your desired capabilities are correct
+- Check that the device/simulator is booted and available
+- For iOS: Ensure WebDriverAgent is properly signed
+- Check Appium server logs for detailed error messages
+
+### App Opens in macOS
+
+On macOS, the app may be blocked by Gatekeeper:
+
+1. Right-click the app {'>'} Open
+2. Click "Open" in the security dialog
+3. Or run: `xattr -cr /Applications/Appium\ Inspector.app`
+
+### Elements Not Showing in Tree
+
+- Click "Refresh" to reload the element hierarchy
+- Some elements may be off-screen; try scrolling in the app
+- Native elements in WebViews require switching context:
+  ```json
+  {
+    "appium:autoWebview": true
+  }
+  ```
+</Fragment>
+</Tabs>
 
 ## Resources
 
@@ -186,7 +490,27 @@ configuration issues.
   description="Step-by-step guide for installing Appium 2.0 with the new driver and plugins CLI"
 />
 <LinkCard
+  href="https://github.com/appium/appium/tree/master/packages/doctor"
+  title="Appium Doctor on GitHub"
+  description="Official repository and documentation"
+/>
+<LinkCard
+  href="https://appium.io/docs/en/latest/quickstart/"
+  title="Appium Quickstart Guide"
+  description="Environment setup and troubleshooting"
+/>
+<LinkCard
   href="https://github.com/appium/appium-inspector"
-  title="Appium Inspector"
-  description="A GUI inspector for mobile apps - essential for finding element locators"
+  title="Appium Inspector on GitHub"
+  description="Official repository with releases, documentation, and issue tracker"
+/>
+<LinkCard
+  href="https://github.com/appium/appium-inspector/releases"
+  title="Appium Inspector Releases"
+  description="Download the latest version for macOS, Windows, or Linux"
+/>
+<LinkCard
+  href="https://appium.io/docs/en/latest/guides/caps/"
+  title="Appium Desired Capabilities"
+  description="Complete reference for configuring Appium sessions"
 />
