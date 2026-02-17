@@ -194,7 +194,7 @@ Only ever installs the exact version specified. A typical `pipenv update` comman
 > **Best for:** Ensuring a specific known-good version is used. Requires manual version
 > bumps.
 
-### Less Than ( < )
+### Less Than ( {'<'} )
 
 ```toml
 behave = "<1.2.6"
@@ -205,7 +205,7 @@ Ensures no version newer than the one specified will be installed.
 > **Best for:** Projects where you know that versions above a certain point introduce
 > breaking changes.
 
-### Less Than or Equal ( <= )
+### Less Than or Equal ( {'<='} )
 
 ```toml
 behave = "<=1.2.6"
@@ -217,7 +217,7 @@ older version, but ensures the specified version is the ceiling.
 > **Best for:** Applications that support at least the version specified but should
 > remain backwards compatible.
 
-### Greater Than ( > )
+### Greater Than ( {'>'} )
 
 ```toml
 behave = ">1.2.6"
@@ -229,7 +229,7 @@ supported version while excluding it.
 > **Best for:** Always getting the latest version when you are not concerned with
 > breaking changes.
 
-### Greater Than or Equal ( >= )
+### Greater Than or Equal ( {'>='} )
 
 ```toml
 behave = ">=1.2.6"
