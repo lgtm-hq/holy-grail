@@ -430,6 +430,8 @@ user = User(first_name="John", last_name="Doe")
 ### Nested Schemas
 
 ```python
+from marshmallow import Schema, fields
+
 class AddressSchema(Schema):
     street = fields.Str()
     city = fields.Str()
@@ -443,7 +445,7 @@ class UserSchema(Schema):
 ### Custom Validation
 
 ```python
-from marshmallow import validates, ValidationError
+from marshmallow import Schema, fields, validates, ValidationError
 
 class UserSchema(Schema):
     age = fields.Int()
