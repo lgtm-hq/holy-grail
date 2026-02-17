@@ -158,38 +158,140 @@ npm -v
 npm --version
 ```
 
-## Uninstall Node.js
+## Uninstalling
+
+### Determine How Node.js Was Installed
+
+```bash
+which node
+```
+
+| Output | Installed Via |
+|--------|--------------|
+| `~/.nvm/versions/node/...` | nvm |
+| `~/.local/share/fnm/...` | fnm |
+| `/opt/homebrew/bin/node` | Homebrew (Apple Silicon) |
+| `/usr/local/bin/node` | Homebrew (Intel) or direct install |
+
+### Uninstall Node.js Versions (nvm)
 
 > If you get an error: `nvm: Cannot uninstall currently-active node version` when
 > uninstalling any currently-active version, run `nvm deactivate` first.
 
-**Uninstall a specific version:**
-
 ```bash
-nvm uninstall <node_version>
-```
+# list installed versions
+nvm ls
 
-**Uninstall the latest version:**
+# uninstall a specific version
+nvm uninstall <version>
 
-```bash
-nvm uninstall node
-```
-
-**Uninstall the latest LTS version:**
-
-```bash
+# uninstall the latest LTS version
 nvm uninstall --lts
 ```
 
-## Uninstall nvm
+### Uninstall nvm
 
-To remove, delete, or uninstall nvm, just remove the `~/.nvm` directory:
+Remove nvm and all Node.js versions it manages:
 
 ```bash
 rm -rf ~/.nvm
 ```
 
-Also remove the nvm lines from your `~/.zshrc` or `~/.bashrc` file.
+Remove the nvm initialization lines from your shell config file (`~/.zshrc`,
+`~/.bashrc`, `~/.bash_profile`, `~/.profile`, or `~/.config/fish/config.fish`):
+
+```bash
+# remove these lines
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+```
+
+Restart your shell or `source` the edited file for changes to take effect.
+
+### Uninstall fnm
+
+fnm stores versions in `$FNM_DIR` if set, otherwise
+`$XDG_DATA_HOME/fnm` (defaults to `~/.local/share/fnm`). Older installs may
+use `~/.fnm`.
+
+```bash
+# remove fnm and all managed versions (use your actual path)
+rm -rf "${FNM_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/fnm}"
+rm -rf ~/.fnm  # if it exists (older installs)
+
+# if installed via Homebrew
+brew uninstall fnm
+```
+
+Remove fnm initialization from your shell config file (`~/.zshrc`, `~/.bashrc`,
+`~/.bash_profile`, `~/.profile`, or `~/.config/fish/config.fish`):
+
+```bash
+# remove this line
+eval "$(fnm env)"
+```
+
+### Uninstall Homebrew-installed Node.js
+
+```bash
+brew uninstall node
+brew cleanup --prune-prefix
+```
+
+> If `brew uninstall node` fails due to dependency errors, use
+> `brew uninstall --ignore-dependencies node` instead.
+
+### Uninstall Official Installer (.pkg)
+
+If Node.js was installed from the official `.pkg` installer from nodejs.org:
+
+```bash
+sudo rm -rf /usr/local/bin/node
+sudo rm -rf /usr/local/bin/npm
+sudo rm -rf /usr/local/bin/npx
+sudo rm -rf /usr/local/include/node
+sudo rm -rf /usr/local/lib/node_modules
+sudo rm -rf /usr/local/lib/dtrace/node.d
+sudo rm -rf /usr/local/share/doc/node
+sudo rm -rf /usr/local/share/man/man1/node*
+sudo rm -rf /usr/local/share/man/man1/npm*
+sudo rm -rf /usr/local/share/systemtap/tapset/node.stp
+```
+
+### Remove npm and Global Packages
+
+```bash
+rm -rf ~/.npm
+rm -rf ~/.node-gyp
+rm -rf ~/.npmrc
+rm -rf ~/.node_repl_history
+```
+
+### Remove Yarn or pnpm (If Installed)
+
+```bash
+# yarn
+rm -rf ~/.yarn
+rm -rf ~/.yarnrc
+rm -rf ~/.yarnrc.yml
+
+# pnpm
+rm -rf ~/.local/share/pnpm
+rm -rf ~/.config/pnpm
+```
+
+### Verify Removal
+
+```bash
+# all should return "command not found"
+which node
+which npm
+which npx
+
+# nvm is a shell function, not a binary
+command -v nvm
+```
 
 ## Troubleshooting
 

@@ -158,6 +158,125 @@ keytool -import -trustcacerts -keystore $JAVA_HOME/lib/security/cacerts \
   -storepass changeit -alias your-cert -file certificate.crt
 ```
 
+## Uninstalling
+
+### Check Installed Java Versions
+
+```bash
+/usr/libexec/java_home -V
+```
+
+Also check if Java is managed by SDKMAN:
+
+```bash
+sdk list java 2>/dev/null | grep installed
+```
+
+### Remove JDK via SDKMAN
+
+```bash
+# list installed versions
+sdk list java | grep installed
+
+# uninstall a specific version
+sdk uninstall java <version>
+```
+
+To remove SDKMAN itself and all its managed SDKs:
+
+```bash
+rm -rf ~/.sdkman
+```
+
+Remove the SDKMAN initialization from `~/.zshrc` or `~/.bashrc`:
+
+```bash
+# remove these lines
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+```
+
+### Remove JDK via Homebrew
+
+```bash
+brew list | grep -i "openjdk\|java\|temurin"
+brew uninstall --cask --zap temurin
+# or
+brew uninstall openjdk
+```
+
+### Remove Manually Installed JDKs (Oracle / OpenJDK)
+
+JDKs installed via `.dmg` or `.pkg` installers are in
+`/Library/Java/JavaVirtualMachines/`:
+
+```bash
+# list installed JDKs
+ls /Library/Java/JavaVirtualMachines/
+
+# remove a specific JDK
+sudo rm -rf /Library/Java/JavaVirtualMachines/<jdk-name>.jdk
+```
+
+> `sudo` is required because `/Library/Java/` is a system directory owned by
+> root.
+
+### Remove Java Plugins and Preferences
+
+Remove the Java browser plugin and system preferences pane (if installed by
+Oracle JDK):
+
+```bash
+sudo rm -rf /Library/Internet\ Plug-Ins/JavaAppletPlugin.plugin
+sudo rm -rf /Library/PreferencePanes/JavaControlPanel.prefPane
+sudo rm -rf /Library/Application\ Support/Oracle/Java
+```
+
+### Remove jenv (If Used)
+
+```bash
+brew uninstall jenv
+rm -rf ~/.jenv
+```
+
+Remove jenv initialization from `~/.zshrc` or `~/.bashrc`:
+
+```bash
+# remove these lines
+export PATH="$HOME/.jenv/bin:$PATH"
+eval "$(jenv init -)"
+```
+
+### Clean Up Shell Configuration
+
+Remove any Java-related environment variables from `~/.zshrc` or `~/.bashrc`:
+
+```bash
+# remove lines like these
+export JAVA_HOME=...
+export PATH=$PATH:$JAVA_HOME/bin
+```
+
+Then reload your shell config or restart your terminal:
+
+```bash
+source ~/.zshrc   # or source ~/.bashrc
+```
+
+### Verify Removal
+
+```bash
+# should return "No Java runtime present"
+java -version
+
+# should return empty or "Unable to find any JVMs"
+/usr/libexec/java_home -V
+```
+
+> `which java` will still resolve to `/usr/bin/java` on macOS — this is a system
+> stub, not an installed JVM. Use `java -version` and `/usr/libexec/java_home -V`
+> to confirm the JVM is removed.
+
 ## Resources
 
 <LinkCard

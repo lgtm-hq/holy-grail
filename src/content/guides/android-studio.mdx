@@ -136,6 +136,114 @@ ls $ANDROID_HOME/cmdline-tools/latest/bin
   rm -rf ~/.gradle/caches
   ```
 
+## Uninstalling
+
+> Simply dragging Android Studio to the Trash leaves behind gigabytes of SDK
+> files, emulator images, caches, and preferences scattered across your system.
+
+### Remove the Application
+
+```bash
+rm -rf /Applications/Android\ Studio.app
+```
+
+### Remove User Data and Preferences
+
+```bash
+# IDE preferences
+rm -rf ~/Library/Preferences/AndroidStudio*
+rm -rf ~/Library/Preferences/com.google.android.*
+rm -rf ~/Library/Preferences/com.android.*
+
+# Application support
+rm -rf ~/Library/Application\ Support/AndroidStudio*
+rm -rf ~/Library/Application\ Support/Google/AndroidStudio*
+
+# Logs
+rm -rf ~/Library/Logs/AndroidStudio*
+
+# Caches
+rm -rf ~/Library/Caches/AndroidStudio*
+
+# Legacy configuration (older versions)
+rm -rf ~/.AndroidStudio*
+```
+
+### Remove the Android SDK
+
+First confirm your SDK location:
+
+```bash
+echo $ANDROID_SDK_ROOT
+echo $ANDROID_HOME
+```
+
+If either prints a path other than `~/Library/Android/sdk`, remove that path
+instead. Then remove the SDK:
+
+```bash
+rm -rf ~/Library/Android/sdk
+```
+
+### Remove Android Emulator Data
+
+```bash
+rm -rf ~/.android
+```
+
+> This directory contains your emulator images, `adb` configuration, and
+> device keys. If you use `adb` with physical devices and want to keep your
+> trusted device keys, back up `~/.android/adbkey` and `~/.android/adbkey.pub`
+> before removing.
+
+### Remove Gradle Files
+
+```bash
+rm -rf ~/.gradle
+```
+
+> **Warning:** The `~/.gradle` directory is shared by all Gradle-based
+> projects (not just Android). If you use Gradle for other projects (e.g.,
+> Spring Boot, Kotlin), do not remove this directory or back it up first.
+
+### Remove Project Files
+
+> **Warning:** This permanently deletes your Android project source code. Back up
+> any projects you want to keep before running this command.
+
+```bash
+rm -rf ~/AndroidStudioProjects
+```
+
+### Clean Up Environment Variables
+
+Remove Android-related entries from `~/.zshrc` or `~/.bashrc` (whichever you
+used during installation):
+
+```bash
+# remove these lines if present
+export ANDROID_SDK_ROOT=...
+export ANDROID_HOME=...
+export PATH=$PATH:$ANDROID_SDK_ROOT/emulator
+export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
+export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
+```
+
+Then reload your shell config or restart your terminal:
+
+```bash
+source ~/.zshrc   # or source ~/.bashrc
+```
+
+### Verify Removal
+
+```bash
+# should return "command not found"
+which adb
+which emulator
+which sdkmanager
+```
+
 ## Resources
 
 <LinkCard
