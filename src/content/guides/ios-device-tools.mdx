@@ -1,0 +1,714 @@
+---
+title: iOS Device Tools
+description:
+  Install and configure command-line tools for iOS device communication, app
+  deployment, debugging, and dependency management
+category: iOS Tools
+order: 13
+tags: [ios, mobile, testing, devices, debugging, appium, deployment, carthage]
+difficulty: advanced
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## Overview
+
+This guide covers the essential command-line tools for interacting with physical iOS
+devices. These tools are widely used in mobile automation testing, particularly with
+Appium, and provide capabilities for device communication, app deployment, web view
+debugging, and dependency management.
+
+**Tools covered:**
+
+- **libimobiledevice** - Cross-platform library for iOS device communication
+- **ideviceinstaller** - App installation and management on iOS devices
+- **ios-deploy** - Deploy and debug iOS apps without Xcode
+- **ios-webkit-debug-proxy** - Chrome DevTools proxy for iOS web view debugging
+- **Carthage** - Decentralized dependency manager for Cocoa projects
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/homebrew/" />
+  <LinkBadge href="/guides/xcode/" />
+</div>
+
+Some tools also require an Apple Developer account for real device testing.
+
+## libimobiledevice
+
+[libimobiledevice](https://libimobiledevice.org/) is a cross-platform library for
+communicating with iOS devices. It provides command-line tools for interacting with
+iPhones and iPads without requiring iTunes or Xcode.
+
+> libimobiledevice is used by Appium for device communication, particularly for
+> real device testing.
+
+### Installation
+
+The following `brew` command is for macOS. Linux and Windows users should consult
+the [official libimobiledevice documentation](https://libimobiledevice.org/) or
+their distribution's package manager for platform-specific installation instructions.
+
+```bash
+brew install libimobiledevice
+```
+
+This installs several command-line utilities:
+
+- `idevice_id` - List attached devices
+- `ideviceinfo` - Get device information
+- `idevicename` - Get or set device name
+- `idevicesyslog` - View device system logs
+- `idevicescreenshot` - Capture screenshots
+- `idevicepair` - Manage device pairing
+
+> **Note:** `ideviceinstaller` is **not** included with libimobiledevice. It is a
+> separate Homebrew formula and must be installed separately. See the
+> [ideviceinstaller](#ideviceinstaller) section below.
+
+### Verify Your Installation
+
+```bash
+idevice_id --version
+```
+
+### List Connected Devices
+
+```bash
+idevice_id -l
+```
+
+### Get Device Information
+
+**Full device info:**
+
+```bash
+ideviceinfo
+```
+
+**Specific information:**
+
+```bash
+# Device name
+ideviceinfo -k DeviceName
+
+# iOS version
+ideviceinfo -k ProductVersion
+
+# Device model
+ideviceinfo -k ProductType
+
+# Serial number
+ideviceinfo -k SerialNumber
+```
+
+**Human-readable format:**
+
+```bash
+ideviceinfo -s
+```
+
+### Device Pairing
+
+When you first connect a device, you need to pair it:
+
+```bash
+idevicepair pair
+```
+
+Tap "Trust" on the iOS device when prompted.
+
+**Verify pairing:**
+
+```bash
+idevicepair validate
+```
+
+**List paired devices:**
+
+```bash
+idevicepair list
+```
+
+**Unpair a device:**
+
+```bash
+idevicepair unpair
+```
+
+### View Device Logs
+
+Stream system logs in real-time:
+
+```bash
+idevicesyslog
+```
+
+**Filter by process:**
+
+```bash
+idevicesyslog | grep -i "MyApp"
+```
+
+**Save to file:**
+
+```bash
+idevicesyslog > device.log
+```
+
+### Take Screenshots
+
+```bash
+idevicescreenshot screenshot.png
+```
+
+## ideviceinstaller
+
+[ideviceinstaller](https://github.com/libimobiledevice/ideviceinstaller) is a
+command-line application to manage apps and app archives on iOS devices. It allows
+interaction with the app installation service of an iOS device, enabling you to
+install, uninstall, and manage applications directly from the terminal.
+
+> This tool is essential for mobile automation testing with Appium, as it provides
+> the interface for deploying apps to real iOS devices.
+
+### Installation
+
+First, reset Xcode's command line tools selection, then install
+ideviceinstaller:
+
+```bash
+# Reset Xcode command line tools
+sudo xcode-select -r
+
+# Install ideviceinstaller
+brew install ideviceinstaller
+```
+
+### Verify Your Installation
+
+```bash
+ideviceinstaller --version
+```
+
+### Common Commands
+
+**List installed apps on connected device:**
+
+```bash
+ideviceinstaller -l
+```
+
+**Install an app (.ipa file):**
+
+```bash
+ideviceinstaller -i /path/to/app.ipa
+```
+
+**Uninstall an app by bundle ID:**
+
+```bash
+ideviceinstaller -U com.example.appname
+```
+
+### Working with Multiple Devices
+
+When multiple devices are connected, specify the UDID:
+
+```bash
+ideviceinstaller -u <device_udid> -i /path/to/app.ipa
+```
+
+Get the UDID with:
+
+```bash
+idevice_id -l
+```
+
+## ios-deploy
+
+[ios-deploy](https://github.com/ios-control/ios-deploy) is a command-line tool that
+allows you to install and debug iOS apps on real devices without using Xcode. It's
+essential for running Appium tests on physical iOS devices.
+
+> ios-deploy is required for Appium testing on real iOS devices. Simulators don't
+> need it.
+
+### Installation
+
+```bash
+brew install ios-deploy
+```
+
+### Verify Your Installation
+
+```bash
+ios-deploy --version
+```
+
+### Usage
+
+**Detect connected devices:**
+
+```bash
+ios-deploy --detect
+```
+
+or
+
+```bash
+ios-deploy -c
+```
+
+**Install an app:**
+
+```bash
+ios-deploy --bundle /path/to/MyApp.app
+```
+
+**Install and launch:**
+
+```bash
+ios-deploy --bundle /path/to/MyApp.app --debug
+```
+
+**Uninstall an app:**
+
+```bash
+ios-deploy --uninstall_only --bundle_id com.example.myapp
+```
+
+**List installed apps:**
+
+```bash
+ios-deploy --list_bundle_id
+```
+
+### Common Options
+
+| Option | Description |
+|--------|-------------|
+| `-c`, `--detect` | List connected devices |
+| `-b`, `--bundle` | Install the specified app bundle |
+| `-d`, `--debug` | Launch app in debug mode after install |
+| `-u`, `--uninstall_only` | Uninstall app by bundle ID |
+| `-L`, `--list_bundle_id` | List installed app bundle IDs |
+| `-W`, `--no-wifi` | Ignore Wi-Fi connected devices |
+| `-i`, `--id` | Target specific device by UDID |
+
+### Targeting Specific Devices
+
+When multiple devices are connected:
+
+```bash
+ios-deploy --id DEVICE_UDID --bundle /path/to/MyApp.app
+```
+
+Get device UDID:
+
+```bash
+ios-deploy --detect
+```
+
+## ios-webkit-debug-proxy
+
+[ios-webkit-debug-proxy](https://github.com/google/ios-webkit-debug-proxy) is a
+DevTools proxy that implements the Chrome Remote Debugging Protocol for iOS
+devices. It enables debugging of Safari and web views on real iOS devices using
+Chrome DevTools.
+
+> ios-webkit-debug-proxy is required for Appium testing when your app uses web
+> views (hybrid apps) on real iOS devices. The `startIWDP` capability that
+> previously allowed Appium to manage the proxy automatically is deprecated in
+> Appium 2.x — you must start the proxy manually before running your tests.
+
+### Installation
+
+```bash
+brew install ios-webkit-debug-proxy
+```
+
+### Verify Your Installation
+
+```bash
+ios_webkit_debug_proxy --version
+```
+
+### Usage
+
+**Start the proxy with default settings:**
+
+```bash
+ios_webkit_debug_proxy
+```
+
+**With a specific port:**
+
+```bash
+ios_webkit_debug_proxy -c <device_udid>:9222
+```
+
+**Enable Web Inspector on your iOS device:**
+
+1. Go to **Settings {'>'} Safari {'>'} Advanced**
+2. Enable **Web Inspector**
+
+**Connect Chrome DevTools:**
+
+1. Start the proxy
+2. Open Chrome and navigate to `chrome://inspect`
+3. Your iOS device should appear under "Remote Target"
+4. Click "inspect" on the web view you want to debug
+
+> **Note:** Chrome DevTools protocol compatibility may vary between iOS versions
+> and Chrome releases. If you experience issues, try using Safari's Web Inspector
+> as an alternative for debugging iOS web views.
+
+### Configuration Options
+
+```bash
+# Specify frontend URL
+ios_webkit_debug_proxy -f chrome-devtools://devtools/bundled/inspector.html
+
+# Use specific device
+ios_webkit_debug_proxy -c <udid>:9222
+
+# Debug mode for verbose output
+ios_webkit_debug_proxy -d
+
+# Specify port range for multiple devices
+ios_webkit_debug_proxy -c null:9221,:9222-9322
+```
+
+### Appium Integration
+
+For Appium testing with web views on real devices, start the proxy manually
+before running your tests. Appium will automatically use it for web context
+switching. Use W3C-compliant namespaced capabilities:
+
+```json
+{
+  "appium:webviewConnectTimeout": 90000,
+  "appium:nativeWebTap": true
+}
+```
+
+## Carthage
+
+[Carthage](https://github.com/Carthage/Carthage) is a decentralized dependency
+manager for Cocoa projects (iOS, macOS). Unlike CocoaPods, Carthage builds your
+dependencies as frameworks and gives you full control over your project structure.
+
+> Carthage may be required for building WebDriverAgent, which Appium uses for iOS
+> automation.
+
+### Installation
+
+```bash
+brew install carthage
+```
+
+### Verify Your Installation
+
+```bash
+carthage version
+```
+
+### Basic Usage
+
+**Create a Cartfile** in your project root:
+
+```ruby
+github "Alamofire/Alamofire" ~> 5.0
+github "onevcat/Kingfisher" ~> 7.0
+```
+
+**Build for iOS:**
+
+```bash
+carthage update --platform iOS
+```
+
+**Build for macOS:**
+
+```bash
+carthage update --platform macOS
+```
+
+**Build for all platforms:**
+
+```bash
+carthage update
+```
+
+**Use XCFrameworks (pre-built binaries):**
+
+```bash
+carthage update --use-xcframeworks
+```
+
+### Cartfile Syntax
+
+**Dependency sources:**
+
+```ruby
+# GitHub repository
+github "owner/repo"
+
+# Git URL
+git "https://example.com/repo.git"
+
+# Binary framework
+binary "https://example.com/framework.json"
+```
+
+**Version requirements:**
+
+```ruby
+# Exactly version 1.0
+github "owner/repo" == 1.0
+
+# At least version 1.0
+github "owner/repo" >= 1.0
+
+# Compatible with version 1.0 (semver)
+github "owner/repo" ~> 1.0
+
+# Specific branch
+github "owner/repo" "develop"
+
+# Specific commit
+github "owner/repo" "abc123"
+```
+
+### Adding Frameworks to Xcode
+
+**Using XCFrameworks (Recommended):**
+
+1. Run `carthage update --use-xcframeworks`
+2. In Xcode, select your target
+3. Go to **General** {'>'} **Frameworks, Libraries, and Embedded Content**
+4. Click **+** and select **Add Other** {'>'} **Add Files**
+5. Navigate to `Carthage/Build/` and select the `.xcframework`
+
+**Using Traditional Frameworks:**
+
+1. Run `carthage update`
+2. Add frameworks from `Carthage/Build/iOS/` or `Carthage/Build/Mac/`
+3. Add a Run Script build phase for copying frameworks:
+
+```bash
+/usr/local/bin/carthage copy-frameworks
+```
+
+Input Files:
+```
+$(SRCROOT)/Carthage/Build/iOS/SomeFramework.framework
+```
+
+### Appium WebDriverAgent
+
+If Appium requires building WebDriverAgent with Carthage:
+
+1. Navigate to WebDriverAgent directory:
+   ```bash
+   cd ~/.appium/node_modules/appium-xcuitest-driver/node_modules/appium-webdriveragent
+   ```
+
+   > **Note:** The exact path to `appium-webdriveragent` may vary depending on your
+   > installation method (global vs. local, npm vs. other package managers). To locate
+   > the correct directory, search for `appium-webdriveragent` in your global or
+   > project-local `node_modules`, or run `npm ls -g appium-xcuitest-driver` to confirm
+   > the install location.
+
+2. Bootstrap dependencies:
+   ```bash
+   ./Scripts/bootstrap.sh
+   ```
+
+This script uses Carthage to fetch and build WebDriverAgent dependencies.
+
+## Troubleshooting
+
+### libimobiledevice
+
+**"Could not connect to lockdownd"**
+
+The device may not be trusted. Unlock the device and run:
+
+```bash
+idevicepair pair
+```
+
+Then tap "Trust" on the device.
+
+**"No device found"**
+
+1. Ensure the device is connected via USB
+2. Check USB cable (some cables are charge-only)
+3. Try a different USB port
+4. Restart the device
+
+**"Could not start service"**
+
+Ensure the device is unlocked and on the home screen.
+
+### ideviceinstaller
+
+**"Could not connect to lockdownd"**
+
+This usually means the device doesn't trust the computer:
+
+1. Disconnect and reconnect the device
+2. Unlock the device
+3. Tap "Trust" on the trust dialog
+4. Try the command again
+
+**"No device found"**
+
+Ensure the device is connected via USB (not just charging), unlocked, and not in a
+call or using the camera.
+
+```bash
+# Kill and restart usbmuxd
+sudo killall usbmuxd
+sudo launchctl start com.apple.usbmuxd
+```
+
+**Installation fails with provisioning error**
+
+The app must be signed with a valid provisioning profile that includes the
+device's UDID. For development:
+
+1. Add the device to your Apple Developer account
+2. Regenerate provisioning profiles
+3. Re-sign the IPA file
+
+### ios-deploy
+
+**"Could not find Developer Disk Image"**
+
+Your iOS version may be newer than your Xcode version. Update Xcode to the latest
+version.
+
+**"The device is locked"**
+
+Unlock your device and trust the connected computer.
+
+**"Could not find matching provisioning profile"**
+
+Ensure your app is signed with a valid provisioning profile that includes the
+device UDID.
+
+**Permission denied**
+
+If you encounter permission issues, try reinstalling Xcode or the Command Line Tools
+first, as this usually resolves permissions without modifying the Xcode bundle.
+
+> **Caution:** Recursively changing permissions on Xcode app contents can interfere
+> with future Xcode updates and code signing. Use this as a last resort only.
+
+```bash
+sudo chmod -R 755 /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/DeviceSupport
+```
+
+### ios-webkit-debug-proxy
+
+**"Could not connect to device"**
+
+Ensure:
+- Web Inspector is enabled on the device
+- The device is connected via USB and trusted
+- Safari or a web view is open on the device
+
+**Port already in use**
+
+Kill existing proxy instances:
+
+```bash
+# Find the process
+lsof -i :9222
+
+# Kill it
+kill -9 <pid>
+```
+
+**No web views detected**
+
+1. Make sure a Safari tab or web view is actually open
+2. Check that Web Inspector is enabled in Safari settings
+3. Try restarting the proxy and Safari
+
+**Proxy crashes on connection**
+
+Update to the latest version:
+
+```bash
+brew upgrade ios-webkit-debug-proxy
+```
+
+### Carthage
+
+**"Build Failed"**
+
+Clear the cache and retry:
+
+```bash
+rm -rf ~/Library/Caches/org.carthage.CarthageKit
+carthage update --platform iOS
+```
+
+**Xcode version mismatch**
+
+If using multiple Xcode versions:
+
+```bash
+sudo xcode-select -s /Applications/Xcode.app
+carthage update --platform iOS
+```
+
+**Module not found**
+
+Ensure the framework is properly linked in Xcode:
+1. Check **Build Settings** {'>'} **Framework Search Paths**
+2. Add `$(PROJECT_DIR)/Carthage/Build/iOS` if missing
+
+## Resources
+
+<LinkCard
+  href="https://libimobiledevice.org/"
+  title="libimobiledevice.org"
+  description="Official project website with documentation"
+/>
+<LinkCard
+  href="https://github.com/libimobiledevice/libimobiledevice"
+  title="libimobiledevice on GitHub"
+  description="Official repository with source code and issues"
+/>
+<LinkCard
+  href="https://github.com/libimobiledevice/ideviceinstaller"
+  title="ideviceinstaller on GitHub"
+  description="Source code and documentation for ideviceinstaller"
+/>
+<LinkCard
+  href="https://github.com/ios-control/ios-deploy"
+  title="ios-deploy on GitHub"
+  description="Official repository with documentation and releases"
+/>
+<LinkCard
+  href="https://appium.io/docs/en/latest/guides/real-devices/"
+  title="Appium Real Device Setup"
+  description="Guide for setting up Appium with real iOS devices"
+/>
+<LinkCard
+  href="https://github.com/google/ios-webkit-debug-proxy"
+  title="ios-webkit-debug-proxy on GitHub"
+  description="Source code and documentation"
+/>
+<LinkCard
+  href="https://github.com/Carthage/Carthage"
+  title="Carthage on GitHub"
+  description="Official repository with documentation and releases"
+/>

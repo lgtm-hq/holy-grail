@@ -34,15 +34,7 @@ export const TOOL_ICONS: Record<string, ToolIcon> = {
   "appium-doctor": { type: "svg", value: "/icons/appium.svg", alt: "Appium Doctor" },
   adb: { type: "svg", value: "/icons/android.svg", alt: "ADB" },
   "android-emulator": { type: "svg", value: "/icons/android.svg", alt: "Android Emulator" },
-  "ios-deploy": { type: "svg", value: "/icons/apple.svg", alt: "iOS Deploy" },
-  libimobiledevice: { type: "svg", value: "/icons/apple.svg", alt: "libimobiledevice" },
-  carthage: { type: "svg", value: "/icons/apple.svg", alt: "Carthage" },
-  ideviceinstaller: { type: "svg", value: "/icons/apple.svg", alt: "ideviceinstaller" },
-  "ios-webkit-debug-proxy": {
-    type: "svg",
-    value: "/icons/apple.svg",
-    alt: "iOS WebKit Debug Proxy",
-  },
+  "ios-device-tools": { type: "svg", value: "/icons/apple.svg", alt: "iOS Device Tools" },
 
   // Tools
   "schema-validation": { type: "svg", value: "/icons/code.svg", alt: "Schema Validation" },
