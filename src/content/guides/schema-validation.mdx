@@ -189,7 +189,12 @@ except ValidationError as e:
 </Fragment>
 <Fragment slot="Marshmallow">
 ```python
-from marshmallow import ValidationError
+from marshmallow import Schema, fields, ValidationError
+
+class UserCreateRequest(Schema):
+    firstName = fields.String(required=True)
+    lastName = fields.String(required=True)
+    emailAddress = fields.Email(required=True)
 
 data = {
     "firstName": "User FName",
@@ -229,7 +234,13 @@ except ValidationError as e:
 <Fragment slot="Marshmallow">
 ```python
 import requests
-from marshmallow import ValidationError
+from marshmallow import Schema, fields, ValidationError, INCLUDE
+
+class UserCreateResponse(Schema):
+    emailAddress = fields.String(required=True)
+
+    class Meta:
+        unknown = INCLUDE
 
 response = requests.post(
     url="https://api.example.com/users",
