@@ -703,16 +703,18 @@ The syntax is the same whether you write it in `pyproject.toml` or `Pipfile`:
 behave = "~=1.2.6"
 ```
 
-Allows updates within the same major version. Equivalent to `>=1.2.6, <2.0.0`.
+Allows patch updates within the same minor version. `~=1.2.6` is equivalent to
+`>=1.2.6, <1.3.0`.
 
-| Current | Latest Major | Latest Minor | Latest Micro |
-|---------|-------------|-------------|-------------|
-| 1.2.6 | 2.0.0 | 1.3.0 | 1.3.1 |
+| Current | Installable | Not Installable |
+|---------|-------------|-----------------|
+| 1.2.6 | 1.2.7, 1.2.9 | 1.3.0, 2.0.0 |
 
-In this example, `~=1.2.6` would upgrade to `1.3.1` but **not** to `2.0.0`.
+In this example, `~=1.2.6` would upgrade to `1.2.9` but **not** to `1.3.0` or `2.0.0`.
 
-> **Best for:** Projects that want compatible updates without breaking changes from major
-> version bumps.
+> **Note:** `~=1.2` (without a micro version) allows minor updates: `>=1.2, <2.0.0`.
+
+> **Best for:** Projects that want only patch-level updates within a known minor version.
 
 ### Caret ( ^ ) -- Poetry Default
 
@@ -1015,9 +1017,14 @@ pipenv requirements --dev > requirements-dev.txt
 <Fragment slot="poetry">
 
 ```bash
-# Import existing requirements
+# Import existing requirements (simple files only)
 poetry add $(cat requirements.txt)
 ```
+
+> This approach fails on files with comments, blank lines, or directives like
+> `-r` or `-e`. For complex `requirements.txt` files, pre-filter with
+> `grep -v '^\s*#\|^\s*$\|^-' requirements.txt | xargs poetry add` or use a
+> migration tool like [poetry-import](https://github.com/brunonicko/poetry-import).
 
 **Export to requirements.txt:**
 
