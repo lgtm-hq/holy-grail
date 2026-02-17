@@ -584,15 +584,18 @@ If you're migrating from v1:
 | `@validator` | `@field_validator` |
 | `parse_obj()` | `model_validate()` |
 
-### Optional Fields Still Required (Pydantic)
+### Optional Fields Still Required (Pydantic v2)
 
-Use `Optional` with a default value:
+In Pydantic v2, `Optional` only affects the **type** (allows `None`), not whether
+the field is required. A field without a default value is always required,
+regardless of `Optional`. This differs from Pydantic v1, where `Optional` alone
+implied a default of `None`.
 
 ```python
-# This is still required (no default)
+# Pydantic v2: still required (no default value)
 field: Optional[str]
 
-# This is truly optional
+# Pydantic v2: truly optional (has a default)
 field: Optional[str] = None
 ```
 
