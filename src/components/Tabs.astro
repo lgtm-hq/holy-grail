@@ -1,0 +1,295 @@
+---
+/**
+ * Tabs - Interactive tabbed content component
+ *
+ * Uses turbo-themes boxed tab styling with localStorage persistence.
+ * All tab groups on a page with the same labels stay in sync.
+ * Supports deep-linking via URL hash (e.g., #Inspector).
+ *
+ * Usage in MDX:
+ *   <Tabs tabs={["uv", "pipenv", "poetry"]}>
+ *     <Fragment slot="uv">uv content</Fragment>
+ *     <Fragment slot="pipenv">pipenv content</Fragment>
+ *     <Fragment slot="poetry">poetry content</Fragment>
+ *   </Tabs>
+ */
+
+interface Props {
+  tabs: string[];
+  defaultTab?: string;
+}
+
+const { tabs, defaultTab } = Astro.props;
+
+// Validate tabs and determine active tab
+const validTabs = Array.isArray(tabs) && tabs.length > 0 ? tabs : [];
+const activeTab =
+  validTabs.length > 0
+    ? defaultTab && validTabs.includes(defaultTab)
+      ? defaultTab
+      : validTabs[0]
+    : '';
+
+// Generate unique instance ID for ARIA associations
+const instanceId = `tabs-${Math.random().toString(36).slice(2, 8)}`;
+
+// Create URL-safe slugs for HTML IDs
+function slugify(str: string): string {
+  return str
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+// Generate stable, collision-free keys for each tab (index-suffixed)
+const tabKeys = validTabs.map((t, i) => {
+  const s = slugify(t) || 'tab';
+  return `${s}-${i}`;
+});
+
+// Pre-render named slots (Astro requires static slot names in templates)
+const renderedSlots: Record<string, string> = {};
+for (const tab of validTabs) {
+  if (Astro.slots.has(tab)) {
+    renderedSlots[tab] = await Astro.slots.render(tab);
+  }
+}
+---
+
+{validTabs.length > 0 && (
+  <div class="tabs-container" data-tabs-group={validTabs.map(slugify).join(',')}>
+    <div class="tabs tabs-boxed" role="tablist">
+      {validTabs.map((tab, i) => {
+        const key = tabKeys[i];
+        return (
+          <button
+            type="button"
+            id={`${instanceId}-tab-${key}`}
+            class={`tab ${tab === activeTab ? 'active' : ''}`}
+            role="tab"
+            aria-selected={tab === activeTab ? 'true' : 'false'}
+            aria-controls={`${instanceId}-panel-${key}`}
+            tabindex={tab === activeTab ? '0' : '-1'}
+            data-tab={tab}
+          >
+            {tab}
+          </button>
+        );
+      })}
+    </div>
+    {validTabs.map((tab, i) => {
+      const key = tabKeys[i];
+      return (
+        <div
+          class={`tab-content ${tab === activeTab ? 'active' : ''}`}
+          role="tabpanel"
+          id={`${instanceId}-panel-${key}`}
+          aria-labelledby={`${instanceId}-tab-${key}`}
+          data-tab-content={tab}
+        >
+          <Fragment set:html={renderedSlots[tab] || ''} />
+        </div>
+      );
+    })}
+  </div>
+)}
+
+<script>
+  function activateTab(
+    container: HTMLElement,
+    tab: string,
+    sync: boolean,
+  ) {
+    const group = container.dataset.tabsGroup;
+    const buttons = container.querySelectorAll<HTMLButtonElement>('.tab');
+    const panels = container.querySelectorAll<HTMLElement>('.tab-content');
+
+    buttons.forEach((b) => {
+      const isActive = b.dataset.tab === tab;
+      b.classList.toggle('active', isActive);
+      b.setAttribute('aria-selected', String(isActive));
+      b.setAttribute('tabindex', isActive ? '0' : '-1');
+    });
+    panels.forEach((p) => {
+      p.classList.toggle('active', p.dataset.tabContent === tab);
+    });
+
+    if (sync && group) {
+      document
+        .querySelectorAll<HTMLElement>(
+          `.tabs-container[data-tabs-group="${group}"]`,
+        )
+        .forEach((other) => {
+          if (other === container) return;
+          other
+            .querySelectorAll<HTMLButtonElement>('.tab')
+            .forEach((b) => {
+              const isActive = b.dataset.tab === tab;
+              b.classList.toggle('active', isActive);
+              b.setAttribute('aria-selected', String(isActive));
+              b.setAttribute('tabindex', isActive ? '0' : '-1');
+            });
+          other
+            .querySelectorAll<HTMLElement>('.tab-content')
+            .forEach((p) => {
+              p.classList.toggle('active', p.dataset.tabContent === tab);
+            });
+        });
+    }
+
+    if (group) {
+      try {
+        localStorage.setItem(`tabs-${group}`, tab);
+      } catch {
+        // localStorage unavailable
+      }
+    }
+  }
+
+  function initTabs() {
+    const containers = document.querySelectorAll<HTMLElement>('.tabs-container');
+
+    containers.forEach((container) => {
+      if (container.dataset.tabsInitialized) return;
+      container.dataset.tabsInitialized = 'true';
+
+      const group = container.dataset.tabsGroup;
+      if (!group) return;
+
+      const buttons = container.querySelectorAll<HTMLButtonElement>('.tab');
+
+      // Determine initial tab: URL hash > localStorage > server default
+      let hash = '';
+      try {
+        hash = decodeURIComponent(window.location.hash.slice(1));
+      } catch {
+        hash = window.location.hash.slice(1);
+      }
+      if (hash) {
+        const hashMatch = Array.from(buttons).find(
+          (b) =>
+            b.dataset.tab === hash ||
+            b.dataset.tab?.toLowerCase() === hash.toLowerCase(),
+        );
+        if (hashMatch?.dataset.tab) {
+          activateTab(container, hashMatch.dataset.tab, true);
+        }
+      } else {
+        let saved: string | null = null;
+        try {
+          saved = localStorage.getItem(`tabs-${group}`);
+        } catch {
+          // localStorage unavailable
+        }
+        if (saved) {
+          const hasTab = Array.from(buttons).some(
+            (b) => b.dataset.tab === saved,
+          );
+          if (hasTab) {
+            activateTab(container, saved, false);
+          }
+        }
+      }
+
+      // Click handler
+      buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const tab = button.dataset.tab;
+          if (!tab) return;
+          activateTab(container, tab, true);
+          history.replaceState(null, '', `#${encodeURIComponent(tab)}`);
+        });
+      });
+
+      // Keyboard navigation (Arrow keys, Home, End)
+      const tablist = container.querySelector('[role="tablist"]');
+      tablist?.addEventListener('keydown', (e: Event) => {
+        const event = e as KeyboardEvent;
+        const tabsArray = Array.from(buttons);
+        const currentIndex = tabsArray.findIndex(
+          (b) => b === document.activeElement,
+        );
+        if (currentIndex === -1) return;
+
+        let newIndex: number | null = null;
+
+        switch (event.key) {
+          case 'ArrowRight':
+          case 'ArrowDown':
+            newIndex = (currentIndex + 1) % tabsArray.length;
+            break;
+          case 'ArrowLeft':
+          case 'ArrowUp':
+            newIndex =
+              (currentIndex - 1 + tabsArray.length) % tabsArray.length;
+            break;
+          case 'Home':
+            newIndex = 0;
+            break;
+          case 'End':
+            newIndex = tabsArray.length - 1;
+            break;
+          default:
+            return;
+        }
+
+        event.preventDefault();
+        const newButton = tabsArray[newIndex];
+        newButton.focus();
+        const tab = newButton.dataset.tab;
+        if (tab) {
+          activateTab(container, tab, true);
+          history.replaceState(null, '', `#${encodeURIComponent(tab)}`);
+        }
+      });
+    });
+  }
+
+  // Handle hash changes for deep-linking
+  window.addEventListener('hashchange', () => {
+    let hash = '';
+    try {
+      hash = decodeURIComponent(window.location.hash.slice(1));
+    } catch {
+      hash = window.location.hash.slice(1);
+    }
+    if (!hash) return;
+
+    document
+      .querySelectorAll<HTMLElement>('.tabs-container')
+      .forEach((container) => {
+        const buttons = container.querySelectorAll<HTMLButtonElement>('.tab');
+        const match = Array.from(buttons).find(
+          (b) =>
+            b.dataset.tab === hash ||
+            b.dataset.tab?.toLowerCase() === hash.toLowerCase(),
+        );
+        if (match?.dataset.tab) {
+          activateTab(container, match.dataset.tab, true);
+        }
+      });
+  });
+
+  document.addEventListener('DOMContentLoaded', initTabs);
+  document.addEventListener('astro:after-swap', initTabs);
+</script>
+
+<style>
+  @import '@lgtm-hq/turbo-themes/css/components/tabs.css';
+
+  .tabs-container {
+    margin: var(--space-lg) 0;
+  }
+
+  .tab-content :global(pre) {
+    margin-top: 0;
+  }
+
+  .tab-content :global(> :first-child) {
+    margin-top: 0;
+  }
+
+  .tab-content :global(> :last-child) {
+    margin-bottom: 0;
+  }
+</style>

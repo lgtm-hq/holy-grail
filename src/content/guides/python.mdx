@@ -1,16 +1,17 @@
 ---
 title: Python
 description:
-  Set up Python development environment with pyenv for version management and proper
-  configuration on macOS
+  Set up Python with pyenv, manage virtual environments and dependencies using uv,
+  pipenv, or poetry, and keep your projects up to date on macOS
 category: Languages
 order: 4
-tags: [python, pyenv, programming, languages]
+tags: [python, pyenv, uv, pipenv, poetry, virtualenv, dependencies]
 difficulty: beginner
 ---
 
 import LinkBadge from '../../components/LinkBadge.astro';
 import LinkCard from '../../components/LinkCard.astro';
+import Tabs from '../../components/Tabs.astro';
 
 ## What is Python?
 
@@ -110,6 +111,832 @@ config file.
 > The order of the exports to the `$PATH` is important. From the bottom-up of the
 > `.zshrc` file: SDKMAN! (BOTTOM), Python exports (ABOVE SDKMAN!).
 
+## Package Management
+
+### Choosing a Tool
+
+Several tools exist for managing Python packages and virtual environments. Here is how
+they compare:
+
+| Tool | Purpose | Notes |
+|------|---------|-------|
+| `uv` | Fast Python package installer, resolver, and project manager | Modern Rust-based tool that replaces pip, virtualenv, and more |
+| `pipenv` | Dependency management and virtual environments | Replaces `pip` + `virtualenv` + `requirements.txt` workflow |
+| `poetry` | Dependency management, packaging, and publishing | All-in-one tool with `pyproject.toml`-based configuration |
+
+For most workflows, **uv** is the recommended tool due to its speed and comprehensive
+feature set. **Pipenv** and **Poetry** are mature alternatives with large ecosystems.
+
+### Install a Package Manager
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```bash
+# Install uv
+brew install uv
+```
+
+Verify:
+
+```bash
+uv --version
+```
+
+</Fragment>
+<Fragment slot="pipenv">
+
+```bash
+# Install pipenv
+brew install pipenv
+```
+
+Verify:
+
+```bash
+pipenv --version
+```
+
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+# Install poetry
+brew install poetry
+```
+
+Verify:
+
+```bash
+poetry --version
+```
+
+</Fragment>
+</Tabs>
+
+### Install Packages
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```bash
+# Add a production dependency
+uv add <package-name>
+
+# Add with a version constraint
+uv add "requests>=2.28"
+
+# Add a dev dependency
+uv add --dev <package-name>
+```
+
+</Fragment>
+<Fragment slot="pipenv">
+
+```bash
+# Add a production dependency
+pipenv install <package-name>
+
+# Add with a version specifier
+pipenv install "package_name~=1.2"
+pipenv install "package_name==1.2.3"
+
+# Add a dev dependency
+pipenv install <package-name> --dev
+```
+
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+# Add a production dependency
+poetry add <package-name>
+
+# Add with a version constraint
+poetry add "requests^2.28"
+
+# Add a dev dependency
+poetry add --group dev <package-name>
+```
+
+</Fragment>
+</Tabs>
+
+### Uninstall Packages
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```bash
+# Remove a specific package
+uv remove <package-name>
+```
+
+</Fragment>
+<Fragment slot="pipenv">
+
+```bash
+# Remove a specific package
+pipenv uninstall <package-name>
+
+# Remove all packages
+pipenv uninstall --all
+
+# Remove only dev packages
+pipenv uninstall --all-dev
+```
+
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+# Remove a specific package
+poetry remove <package-name>
+
+# Remove a dev dependency
+poetry remove --group dev <package-name>
+```
+
+</Fragment>
+</Tabs>
+
+### Config File Examples
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```toml
+# pyproject.toml
+[project]
+name = "my-project"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "requests>=2.28",
+    "flask~=3.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.1",
+]
+```
+
+</Fragment>
+<Fragment slot="pipenv">
+
+```toml
+# Pipfile
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+requests = "*"
+flask = "~=3.0"
+
+[dev-packages]
+pytest = "*"
+black = "*"
+
+[requires]
+python_version = "3.12"
+```
+
+</Fragment>
+<Fragment slot="poetry">
+
+```toml
+# pyproject.toml
+[tool.poetry]
+name = "my-project"
+version = "0.1.0"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+requests = "^2.28"
+flask = "^3.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0"
+ruff = "^0.1"
+```
+
+</Fragment>
+</Tabs>
+
+## Virtual Environments
+
+A Python virtual environment is an isolated directory tree that contains a Python
+installation and a set of additional packages. Virtual environments prevent dependency
+conflicts between projects by giving each project its own independent set of packages.
+
+### Create a Virtual Environment
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```bash
+uv venv
+```
+
+This creates a `.venv` directory in your project root. You can specify a Python version:
+
+```bash
+uv venv --python 3.12
+```
+
+If using a `pyproject.toml` with dependencies, create the environment and install
+everything in one step:
+
+```bash
+uv sync
+```
+
+</Fragment>
+<Fragment slot="pipenv">
+
+```bash
+pipenv install
+```
+
+> If no `Pipfile` exists, a new virtual environment is created but no dependencies are
+> installed. Pipenv will import from a `requirements.txt` if one exists.
+
+Specify a Python version:
+
+```bash
+pipenv --python <version>
+```
+
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+poetry install
+```
+
+To specify a Python version:
+
+```bash
+poetry env use python3.12
+```
+
+To create the environment in your project directory (instead of Poetry's cache):
+
+```bash
+poetry config virtualenvs.in-project true
+poetry install
+```
+
+</Fragment>
+</Tabs>
+
+### Activate a Virtual Environment
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+With uv, you typically do not need to activate the environment manually. Instead,
+run commands through `uv run`:
+
+```bash
+uv run python script.py
+uv run pytest
+```
+
+If you prefer manual activation:
+
+```bash
+source .venv/bin/activate
+```
+
+</Fragment>
+<Fragment slot="pipenv">
+
+```bash
+pipenv shell
+```
+
+> This will also create a virtual environment if one does not yet exist.
+
+</Fragment>
+<Fragment slot="poetry">
+
+Run commands through Poetry without activating:
+
+```bash
+poetry run python script.py
+poetry run pytest
+```
+
+Or activate the shell:
+
+```bash
+poetry shell
+```
+
+</Fragment>
+</Tabs>
+
+### Deactivate a Virtual Environment
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+If you activated manually:
+
+```bash
+deactivate
+```
+
+If you used `uv run`, no deactivation is needed.
+
+</Fragment>
+<Fragment slot="pipenv">
+
+```bash
+exit
+```
+
+</Fragment>
+<Fragment slot="poetry">
+
+If you used `poetry shell`:
+
+```bash
+exit
+```
+
+If you activated manually:
+
+```bash
+deactivate
+```
+
+</Fragment>
+</Tabs>
+
+### Generated Files
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+- **pyproject.toml** -- Declares your project's dependencies and metadata
+- **uv.lock** -- Records the exact versions of all dependencies for reproducible installs
+
+</Fragment>
+<Fragment slot="pipenv">
+
+- **Pipfile** -- Declares your project's dependencies and replaces `requirements.txt`
+- **Pipfile.lock** -- Records the exact versions and hashes of all dependencies for
+  reproducible installs
+
+</Fragment>
+<Fragment slot="poetry">
+
+- **pyproject.toml** -- Declares your project's dependencies, metadata, and build config
+- **poetry.lock** -- Records the exact versions of all dependencies for reproducible
+  installs
+
+</Fragment>
+</Tabs>
+
+### Environment Location
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+uv creates the virtual environment in `.venv` within your project by default.
+
+</Fragment>
+<Fragment slot="pipenv">
+
+Pipenv stores virtual environments in a centralized location:
+
+```bash
+pipenv --venv
+# Default: ~/.local/share/virtualenvs/
+```
+
+To create environments inside your project instead:
+
+```bash
+export PIPENV_VENV_IN_PROJECT=1
+pipenv install
+```
+
+</Fragment>
+<Fragment slot="poetry">
+
+By default, Poetry stores virtual environments in a centralized cache:
+
+```bash
+poetry env info --path
+# Default: ~/Library/Caches/pypoetry/virtualenvs/
+```
+
+To create environments inside your project:
+
+```bash
+poetry config virtualenvs.in-project true
+```
+
+</Fragment>
+</Tabs>
+
+## Updating Dependencies
+
+### Check What Is Outdated
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```bash
+uv pip list --outdated
+```
+
+Check if the lockfile is up to date:
+
+```bash
+uv lock --check
+```
+
+</Fragment>
+<Fragment slot="pipenv">
+
+```bash
+pipenv update --outdated
+```
+
+> Packages listed as "Skipped" have version specifiers that prevent automatic updates.
+> Packages listed as "out-of-date" are eligible for update.
+
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+poetry show --outdated
+```
+
+</Fragment>
+</Tabs>
+
+### Update Individual Dependencies
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+Update within the existing constraint:
+
+```bash
+uv lock --upgrade-package <package_name>
+uv sync
+```
+
+Change the constraint and install latest:
+
+```bash
+uv add <package_name>@latest
+```
+
+</Fragment>
+<Fragment slot="pipenv">
+
+```bash
+pipenv update <package_name>
+```
+
+This will **not** overwrite the version specifier in your `Pipfile`. To change the
+specifier and install a newer version:
+
+```bash
+pipenv install <package_name>~=<required_version>
+```
+
+For dev dependencies, add the `--dev` flag:
+
+```bash
+pipenv update <package_name> --dev
+```
+
+</Fragment>
+<Fragment slot="poetry">
+
+Update within the existing constraint:
+
+```bash
+poetry update <package_name>
+```
+
+Change the constraint and install latest:
+
+```bash
+poetry add <package_name>@latest
+```
+
+For dev dependencies:
+
+```bash
+poetry add <package_name>@latest --group dev
+```
+
+</Fragment>
+</Tabs>
+
+### Update All Dependencies
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```bash
+uv lock --upgrade
+uv sync
+```
+
+This re-resolves all dependencies while respecting constraints in `pyproject.toml`.
+
+</Fragment>
+<Fragment slot="pipenv">
+
+```bash
+pipenv update
+```
+
+This will **not** overwrite version specifiers in your `Pipfile`. Change specifiers
+manually to allow newer major or minor versions.
+
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+poetry update
+```
+
+Poetry will not exceed constraints in `pyproject.toml`. To allow newer major versions,
+update the constraint first (e.g., change `^2.0` to `^3.0`).
+
+</Fragment>
+</Tabs>
+
+## Version Specifiers
+
+Package versions follow [Semantic Versioning](https://semver.org/) (SemVer):
+
+```text
+major.minor.micro
+  1  .  2  .  6
+```
+
+- **major** -- Incremented for breaking changes
+- **minor** -- Incremented for new features (backwards compatible)
+- **micro** (patch) -- Incremented for bug fixes
+
+All Python tools use [PEP 440](https://peps.python.org/pep-0440/) version specifiers.
+The syntax is the same whether you write it in `pyproject.toml` or `Pipfile`:
+
+### Compatible Release ( ~= )
+
+```toml
+behave = "~=1.2.6"
+```
+
+Allows patch updates within the same minor version. `~=1.2.6` is equivalent to
+`>=1.2.6, <1.3.0`.
+
+| Current | Installable | Not Installable |
+|---------|-------------|-----------------|
+| 1.2.6 | 1.2.7, 1.2.9 | 1.3.0, 2.0.0 |
+
+In this example, `~=1.2.6` would upgrade to `1.2.9` but **not** to `1.3.0` or `2.0.0`.
+
+> **Note:** `~=1.2` (without a micro version) allows minor updates: `>=1.2, <2.0.0`.
+
+> **Best for:** Projects that want only patch-level updates within a known minor version.
+
+### Caret ( ^ ) -- Poetry Default
+
+```toml
+# pyproject.toml (Poetry)
+[tool.poetry.dependencies]
+behave = "^1.2.6"
+```
+
+Allows changes that do not modify the leftmost non-zero digit. `^1.2.6` is equivalent to
+`>=1.2.6, <2.0.0`. This is Poetry's default specifier when adding packages.
+
+> **Best for:** Poetry projects that want compatible updates. Functionally similar to
+> `~=` for most version numbers.
+
+### Exact Match ( == )
+
+```toml
+behave = "==1.2.6"
+```
+
+Only ever installs the exact version specified. A typical update command will **not**
+install a newer version.
+
+> **Best for:** Ensuring a specific known-good version is used. Requires manual version
+> bumps.
+
+### Less Than ( {'<'} )
+
+```toml
+behave = "<1.2.6"
+```
+
+Ensures no version newer than the one specified will be installed.
+
+### Less Than or Equal ( {'<='} )
+
+```toml
+behave = "<=1.2.6"
+```
+
+Matches versions older than or equal to the specified version.
+
+### Greater Than ( {'>'} )
+
+```toml
+behave = ">1.2.6"
+```
+
+Ensures any version newer than the one specified will be installed.
+
+### Greater Than or Equal ( {'>='} )
+
+```toml
+behave = ">=1.2.6"
+```
+
+The minimum installed version is the one specified, and any newer version (including new
+major versions) will be installed if available.
+
+### Wildcard ( * )
+
+```toml
+behave = "*"
+```
+
+Always installs the latest available version. Use with caution in production.
+
+### Update Strategy
+
+1. **Pin production dependencies** with `==` or `~=` (or `^` in Poetry) for stability
+2. **Use `~=` or `^` for libraries** to allow compatible updates automatically
+3. **Check outdated packages regularly** to stay current with security patches
+4. **Test after every update** to catch regressions early
+5. **Commit your lockfile** (`uv.lock`, `Pipfile.lock`, or `poetry.lock`) to version
+   control for reproducible builds
+
+## Upgrading Python
+
+When a new Python release is available, you may want to upgrade the Python version used
+by your project's virtual environment. There is no in-place upgrade path -- you need to
+recreate the environment with the new version.
+
+### Install the New Version
+
+```bash
+# List available versions
+pyenv install --list | grep -E " 3\.(1[0-9])"
+
+# Install the new version
+pyenv install <new-version>
+
+# Set it as the global version
+pyenv global <new-version>
+
+# Verify
+python -V
+```
+
+> uv can also install Python versions directly with `uv python install 3.12`.
+
+### Update Your Config File
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+Update `requires-python` in `pyproject.toml`:
+
+```toml
+[project]
+requires-python = ">=3.12"
+```
+
+</Fragment>
+<Fragment slot="pipenv">
+
+Update `[requires]` in your `Pipfile`:
+
+```toml
+[requires]
+python_version = "3.12"
+```
+
+</Fragment>
+<Fragment slot="poetry">
+
+Update the Python constraint in `pyproject.toml`:
+
+```toml
+[tool.poetry.dependencies]
+python = "^3.12"
+```
+
+</Fragment>
+</Tabs>
+
+### Remove the Old Environment
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```bash
+rm -rf .venv
+```
+
+</Fragment>
+<Fragment slot="pipenv">
+
+```bash
+pipenv --rm
+```
+
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+poetry env remove python3.11
+# Or remove all environments:
+poetry env remove --all
+```
+
+</Fragment>
+</Tabs>
+
+### Recreate the Environment
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```bash
+uv venv --python 3.12
+uv sync
+```
+
+Verify:
+
+```bash
+uv run python -V
+```
+
+</Fragment>
+<Fragment slot="pipenv">
+
+```bash
+pipenv install
+```
+
+Verify:
+
+```bash
+pipenv shell
+python -V
+```
+
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+poetry env use python3.12
+poetry install
+```
+
+Verify:
+
+```bash
+poetry run python -V
+```
+
+</Fragment>
+</Tabs>
+
+### When to Upgrade
+
+- **Security patches** (e.g., 3.11.8 to 3.11.9) -- Upgrade promptly; backwards
+  compatible
+- **Minor releases** (e.g., 3.11 to 3.12) -- Test your project first; some
+  deprecations may affect your code
+- **End-of-life versions** -- Upgrade as soon as practical to maintain security
+
+Check the [Python Release Schedule](https://devguide.python.org/versions/) to see which
+versions are currently supported.
+
 ## Good to Know
 
 ### Check Versions
@@ -156,6 +983,58 @@ which python
 # Output: /Users/<user>/.pyenv/shims/python
 ```
 
+### Migrating from requirements.txt
+
+If you have an existing project using `requirements.txt`:
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```bash
+# Import existing requirements
+uv add -r requirements.txt
+```
+
+</Fragment>
+<Fragment slot="pipenv">
+
+```bash
+# Auto-detect and import
+pipenv install
+
+# Or explicitly import
+pipenv install -r requirements.txt
+```
+
+**Generate requirements.txt from Pipfile:**
+
+```bash
+pipenv requirements > requirements.txt
+pipenv requirements --dev > requirements-dev.txt
+```
+
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+# Import existing requirements (simple files only)
+poetry add $(cat requirements.txt)
+```
+
+> This approach fails on files with comments, blank lines, or directives like
+> `-r` or `-e`. For complex `requirements.txt` files, pre-filter with
+> `grep -Ev '^[[:space:]]*#|^[[:space:]]*$|^-' requirements.txt | xargs poetry add`
+> or use a migration tool like [poetry-import](https://github.com/brunonicko/poetry-import).
+
+**Export to requirements.txt:**
+
+```bash
+poetry export -f requirements.txt --output requirements.txt
+```
+
+</Fragment>
+</Tabs>
+
 ## Troubleshooting
 
 ### "pyenv: command not found"
@@ -185,7 +1064,6 @@ which python
 2. Check for local override files:
 
    ```bash
-   # Remove any .python-version file in home directory
    rm ~/.python-version
    ```
 
@@ -224,33 +1102,115 @@ pyenv install <version>
 python -m ensurepip --upgrade
 ```
 
-### Virtual Environment Issues
+### Tool Cannot Find Python Version
 
-Use Python's built-in `venv` module to create isolated environments:
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
+# Install directly with uv
+uv python install 3.12
+
+# Or install via pyenv
+pyenv install <version>
 ```
 
-For more advanced dependency management, consider using
-<LinkBadge href="/guides/pipenv/" /> or [Poetry](https://python-poetry.org/).
+</Fragment>
+<Fragment slot="pipenv">
+
+```bash
+# List available versions
+pyenv install --list | grep -E " 3\.(1[0-9])"
+
+# Install the required version
+pyenv install <version>
+
+# Set it as global
+pyenv global <version>
+```
+
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+# Install the required version
+pyenv install <version>
+
+# Tell Poetry to use it
+poetry env use python3.12
+```
+
+</Fragment>
+</Tabs>
+
+### Lock Resolution Takes Too Long
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+uv is designed to be fast. If resolution is slow, check for conflicting constraints:
+
+```bash
+uv lock --verbose
+```
+
+</Fragment>
+<Fragment slot="pipenv">
+
+```bash
+pipenv --clear
+pipenv update
+```
+
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+poetry cache clear pypi --all
+poetry update
+```
+
+</Fragment>
+</Tabs>
+
+### Hash Mismatch Errors
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```bash
+uv lock
+uv sync
+```
+
+</Fragment>
+<Fragment slot="pipenv">
+
+```bash
+pipenv lock
+pipenv install --ignore-pipfile
+```
+
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+poetry lock
+poetry install
+```
+
+</Fragment>
+</Tabs>
 
 ## Uninstalling Python
 
 ### Uninstall via Pyenv
 
-Open a new terminal session.
-
-**List installed versions:**
-
 ```bash
+# List installed versions
 pyenv versions
-```
 
-**Uninstall a specific version:**
-
-```bash
+# Uninstall a specific version
 pyenv uninstall --force <version>
 ```
 
@@ -259,41 +1219,22 @@ pyenv uninstall --force <version>
 
 ### Uninstall via Homebrew
 
-Open a new terminal session.
-
-**Check which Python packages are installed:**
-
 ```bash
+# Check which Python packages are installed
 brew list | grep python
-```
 
-**Uninstall Python and run diagnostics:**
-
-```bash
+# Uninstall Python and run diagnostics
 brew uninstall python
 brew doctor
 ```
 
-> To uninstall a specific version, use `brew uninstall python@<version>` (e.g.,
-> `brew uninstall python@3.12`).
+> To uninstall a specific version, use `brew uninstall python@<version>`.
 
 **Delete broken symlinks:**
 
 ```bash
 brew cleanup --prune-prefix
 ```
-
-> Search for items with the name of Python in the following locations and remove any
-> leftover files:
->
-> - `/Library`
-> - `/Library/Caches`
-> - `/Library/Preferences`
-> - `/Library/ApplicationSupport`
-> - `/Library/LaunchAgents`
-> - `/Library/LaunchDaemons`
-> - `/Library/PreferencePanes`
-> - `/Library/StartupItems`
 
 **Remove remaining Python framework and binaries:**
 
@@ -303,58 +1244,23 @@ sudo rm -rf /Library/Frameworks/Python.framework
 sudo rm -rf /usr/local/bin/python
 ```
 
-> Remove any references in your `~/.zshrc` or `~/.bashrc` files to Python. If you
-> encounter permission issues with leftover files in `/usr/local/bin`, fix ownership
-> only for specific Python-related files:
->
-> ```bash
-> # Only change ownership for specific Python files, not everything in /usr/local/bin
-> sudo chown $USER /usr/local/bin/python*
-> sudo chown $USER /usr/local/bin/pip*
-> ```
->
-> Alternatively, reinstall Python via Homebrew or use a virtual environment to avoid
-> permission issues entirely.
-
 ### Direct Install Removal
 
-If Python is directly installed on your machine (without pyenv or Homebrew):
-
-Open a new terminal session.
-
-**Uninstall all pip packages:**
+If Python is directly installed (without pyenv or Homebrew):
 
 ```bash
-# Works in any shell (sh, bash, zsh, fish, etc.)
+# Uninstall all pip packages
 pip3 freeze | xargs pip3 uninstall -y
-```
 
-**Get the location of your Python installation:**
-
-```bash
+# Get the location
 which python3
-# Output: /usr/local/bin/python3
-```
 
-**Look in common installation directories:**
-
-```bash
+# Look in common installation directories
 ls -1 /usr/local/bin/python* 2>/dev/null
-ls -l /usr/local/bin | grep '../Library/Frameworks/Python.framework'
 ```
 
 > **Do not remove system Python from `/usr/bin`.** On macOS, `/usr/bin` is protected
-> by System Integrity Protection (SIP) and is read-only. Only remove **third-party**
-> Python installations found in locations such as `/usr/local`, `/opt`,
-> `/Library/Frameworks/Python.framework`, or pyenv/venv directories. Use the output
-> of the commands above to identify non-system paths, then remove them:
->
-> ```bash
-> # Example: remove a third-party Python in /usr/local
-> sudo rm -rf /usr/local/bin/python3 /Library/Frameworks/Python.framework
-> ```
-
-> Remove any code or aliases in your `~/.zshrc` file that reference Python.
+> by System Integrity Protection (SIP). Only remove third-party installations.
 
 ### Clearing pip Cache
 
@@ -362,21 +1268,40 @@ ls -l /usr/local/bin | grep '../Library/Frameworks/Python.framework'
 rm -rf ~/Library/Caches/pip
 ```
 
-**Uninstall pip itself:**
-
-```bash
-pip3 uninstall pip
-```
-
 ## Resources
 
 <LinkCard
-  href="https://realpython.com/intro-to-pyenv/"
-  title="Managing Multiple Python Versions With pyenv"
-  description="Comprehensive Real Python guide to using pyenv effectively"
+  href="https://docs.astral.sh/uv/"
+  title="uv Documentation"
+  description="Fast Python package installer, resolver, and project manager"
+/>
+<LinkCard
+  href="https://pipenv.pypa.io/"
+  title="Pipenv Documentation"
+  description="Official Pipenv documentation with tutorials and API reference"
+/>
+<LinkCard
+  href="https://python-poetry.org/docs/"
+  title="Poetry Documentation"
+  description="Official Poetry documentation for dependency management and packaging"
 />
 <LinkCard
   href="https://github.com/pyenv/pyenv"
   title="pyenv on GitHub"
-  description="Official pyenv repository with documentation and installation instructions"
+  description="Simple Python version management for installing and switching between versions"
+/>
+<LinkCard
+  href="https://semver.org/"
+  title="Semantic Versioning 2.0.0"
+  description="The specification that defines how package versions are structured"
+/>
+<LinkCard
+  href="https://peps.python.org/pep-0440/"
+  title="PEP 440 -- Version Identification"
+  description="Python standard for version specifiers and dependency resolution"
+/>
+<LinkCard
+  href="https://devguide.python.org/versions/"
+  title="Python Release Schedule"
+  description="Status of all Python branches including end-of-life dates"
 />
