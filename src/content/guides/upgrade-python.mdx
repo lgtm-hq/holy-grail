@@ -2,15 +2,16 @@
 title: Upgrade Python Version
 description:
   Upgrade the Python version used by your project's virtual environment without losing
-  your dependencies
+  your dependencies using uv, pipenv, or poetry
 category: Languages
 order: 27
-tags: [python, pyenv, pipenv, upgrade, virtual-environments]
+tags: [python, uv, pipenv, poetry, pyenv, upgrade, virtual-environments]
 difficulty: intermediate
 ---
 
 import LinkBadge from '../../components/LinkBadge.astro';
 import LinkCard from '../../components/LinkCard.astro';
+import Tabs from '../../components/Tabs.astro';
 
 ## What is a Python Version Upgrade?
 
@@ -26,7 +27,6 @@ the old virtual environment, and recreating it with your existing dependencies.
 
 <div class="badge-group">
   <LinkBadge href="/guides/python/" />
-  <LinkBadge href="/guides/pipenv/" />
   <LinkBadge href="/guides/virtual-environments/" />
 </div>
 
@@ -51,24 +51,59 @@ pyenv global <new-version>
 python -V
 ```
 
-## Update Your Pipfile
+> uv can also install Python versions directly with `uv python install 3.12`. This does
+> not require pyenv.
 
-Update the `[requires]` section in your `Pipfile` to reflect the new Python version:
+## Update Your Config File
+
+Update the Python version constraint in your project's configuration file:
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+Update the `requires-python` field in your `pyproject.toml`:
+
+```toml
+[project]
+requires-python = ">=3.12"
+```
+
+</Fragment>
+<Fragment slot="pipenv">
+
+Update the `[requires]` section in your `Pipfile`:
 
 ```toml
 [requires]
 python_version = "3.12"
 ```
 
-> Change the version to match the new Python version you installed.
+</Fragment>
+<Fragment slot="poetry">
+
+Update the Python version constraint in your `pyproject.toml`:
+
+```toml
+[tool.poetry.dependencies]
+python = "^3.12"
+```
+
+</Fragment>
+</Tabs>
 
 ## Remove the Old Virtual Environment
 
-You do not have to delete your old virtual environment since Pipenv manages naming
-conventions automatically. Only remove it if you prefer to provide your own names for
-virtual environments and are concerned about naming conflicts.
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
 
-### Automatic Removal with Pipenv (Recommended)
+Remove the `.venv` directory in your project:
+
+```bash
+rm -rf .venv
+```
+
+</Fragment>
+<Fragment slot="pipenv">
 
 From your project directory, run:
 
@@ -78,33 +113,64 @@ pipenv --rm
 
 This removes the virtual environment associated with the current project.
 
-### Manual Removal
-
-If you need to remove the virtual environment manually, locate it first:
+If you need to remove it manually:
 
 ```bash
 # Find the virtual environment location
 pipenv --venv
-```
 
-Or browse the default Pipenv virtual environment directory:
-
-```bash
-ls ~/.local/share/virtualenvs/
-```
-
-Then remove the specific virtual environment:
-
-```bash
+# Remove it
 rm -rf ~/.local/share/virtualenvs/<virtual-environment-name>
 ```
 
 > Do **not** use `sudo` for this operation. These are user-owned directories.
 
+</Fragment>
+<Fragment slot="poetry">
+
+Remove the environment associated with the old Python version:
+
+```bash
+# List environments
+poetry env list
+
+# Remove the old one
+poetry env remove python3.11
+```
+
+Or remove all environments for the project:
+
+```bash
+poetry env remove --all
+```
+
+</Fragment>
+</Tabs>
+
 ## Create a New Virtual Environment
 
 With the old environment removed and the new Python version active, recreate the
 virtual environment:
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```bash
+# Create a new environment with the desired version
+uv venv --python 3.12
+
+# Install dependencies
+uv sync
+```
+
+**Verify the new environment:**
+
+```bash
+uv run python -V
+```
+
+</Fragment>
+<Fragment slot="pipenv">
 
 ```bash
 pipenv install
@@ -132,39 +198,25 @@ pipenv --python <new-version>
 pipenv install
 ```
 
-## Upgrading with venv
-
-If you use `venv` instead of Pipenv, the process is similar:
-
-```bash
-# Remove the old environment
-rm -rf .venv
-
-# Create a new one with the desired Python version
-python -m venv .venv
-
-# Activate and reinstall dependencies
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-## Upgrading with uv
-
-With [uv](https://docs.astral.sh/uv/), you can create a new environment targeting a
-specific Python version:
+</Fragment>
+<Fragment slot="poetry">
 
 ```bash
-# Remove the old environment
-rm -rf .venv
+# Tell Poetry to use the new Python version
+poetry env use python3.12
 
-# Create a new one with the desired version
-uv venv --python 3.12
-
-# Reinstall dependencies
-uv pip install -r requirements.txt
-# Or if using pyproject.toml:
-uv sync
+# Install dependencies
+poetry install
 ```
+
+**Verify the new environment:**
+
+```bash
+poetry run python -V
+```
+
+</Fragment>
+</Tabs>
 
 ## Good to Know
 
@@ -201,7 +253,28 @@ pyenv global <old-version>
 
 ## Troubleshooting
 
-### Pipenv Uses the Wrong Python Version
+### Tool Uses the Wrong Python Version
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+If uv creates the environment with an unexpected Python version:
+
+```bash
+rm -rf .venv
+uv venv --python 3.12
+uv sync
+```
+
+You can also pin the version in `pyproject.toml`:
+
+```toml
+[project]
+requires-python = ">=3.12"
+```
+
+</Fragment>
+<Fragment slot="pipenv">
 
 If Pipenv creates the environment with an unexpected Python version:
 
@@ -212,9 +285,38 @@ pipenv --python <new-version>
 pipenv install
 ```
 
+</Fragment>
+<Fragment slot="poetry">
+
+If Poetry uses the wrong Python version:
+
+```bash
+# Remove and recreate with the correct version
+poetry env remove --all
+poetry env use python3.12
+poetry install
+```
+
+</Fragment>
+</Tabs>
+
 ### Dependencies Fail to Install on New Python Version
 
 Some packages may not yet support the newest Python version:
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```bash
+# Check which packages fail
+uv sync 2>&1 | grep -i error
+
+# Check package compatibility on PyPI
+uv pip index versions <package_name>
+```
+
+</Fragment>
+<Fragment slot="pipenv">
 
 ```bash
 # Check which packages fail
@@ -224,12 +326,38 @@ pipenv install 2>&1 | grep -i error
 pip index versions <package_name>
 ```
 
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+# Check which packages fail
+poetry install 2>&1 | grep -i error
+
+# Check package compatibility on PyPI
+pip index versions <package_name>
+```
+
+</Fragment>
+</Tabs>
+
 Consider temporarily pinning to the previous Python version until all your dependencies
 support the new one.
 
 ### "Python version not found"
 
-If Pipenv cannot find the Python version specified in your `Pipfile`:
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```bash
+# Install directly with uv
+uv python install <version>
+
+# Or install via pyenv
+pyenv install <version>
+```
+
+</Fragment>
+<Fragment slot="pipenv">
 
 ```bash
 # Verify it is installed
@@ -242,9 +370,45 @@ pyenv install <version>
 pyenv rehash
 ```
 
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+# Install the version
+pyenv install <version>
+
+# Ensure pyenv shims are up to date
+pyenv rehash
+
+# Tell Poetry to use it
+poetry env use python<version>
+```
+
+</Fragment>
+</Tabs>
+
 ### Virtual Environment Still References Old Python
 
 After upgrading, verify the environment uses the correct Python:
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```bash
+uv run python -V
+uv run which python
+```
+
+If it still shows the old version, remove and recreate:
+
+```bash
+rm -rf .venv
+uv venv --python 3.12
+uv sync
+```
+
+</Fragment>
+<Fragment slot="pipenv">
 
 ```bash
 pipenv shell
@@ -260,6 +424,25 @@ pipenv --rm
 pipenv install
 ```
 
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+poetry run python -V
+poetry run which python
+```
+
+If it still shows the old version, remove and recreate:
+
+```bash
+poetry env remove --all
+poetry env use python3.12
+poetry install
+```
+
+</Fragment>
+</Tabs>
+
 ## Resources
 
 <LinkCard
@@ -268,9 +451,19 @@ pipenv install
   description="Status of all Python branches including end-of-life dates"
 />
 <LinkCard
+  href="https://docs.astral.sh/uv/"
+  title="uv Documentation"
+  description="Fast Python package installer and project manager"
+/>
+<LinkCard
   href="https://pipenv.pypa.io/"
   title="Pipenv Documentation"
   description="Official Pipenv documentation for managing virtual environments"
+/>
+<LinkCard
+  href="https://python-poetry.org/docs/managing-environments/"
+  title="Poetry Managing Environments"
+  description="Poetry documentation for creating and managing virtual environments"
 />
 <LinkCard
   href="https://github.com/pyenv/pyenv"

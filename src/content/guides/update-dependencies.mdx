@@ -2,15 +2,16 @@
 title: Update Dependencies
 description:
   Check for outdated packages, update individual or all dependencies, and understand
-  version specifiers in Pipenv projects
+  version specifiers across uv, pipenv, and poetry projects
 category: Languages
 order: 26
-tags: [python, pipenv, dependencies, versioning, packages]
+tags: [python, uv, pipenv, poetry, dependencies, versioning, packages]
 difficulty: intermediate
 ---
 
 import LinkBadge from '../../components/LinkBadge.astro';
 import LinkCard from '../../components/LinkCard.astro';
+import Tabs from '../../components/Tabs.astro';
 
 ## What is Dependency Updating?
 
@@ -23,13 +24,31 @@ versions get installed.
 
 <div class="badge-group">
   <LinkBadge href="/guides/python/" />
-  <LinkBadge href="/guides/pipenv/" />
   <LinkBadge href="/guides/virtual-environments/" />
 </div>
 
 ## Check What Is Outdated
 
 Before updating, check which packages have newer versions available:
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```bash
+uv pip list --outdated
+```
+
+If you use `uv.lock`, check whether the lockfile is up to date with the latest
+compatible versions:
+
+```bash
+uv lock --check
+```
+
+This reports whether `uv.lock` would change if you re-resolved dependencies.
+
+</Fragment>
+<Fragment slot="pipenv">
 
 ```bash
 pipenv update --outdated
@@ -48,7 +67,52 @@ Package 'Authlib' out-of-date: '==1.1.0' installed, '==1.2.0' available.
 > automatic updates (such as pinned `==` versions). Packages listed as "out-of-date"
 > are eligible for update based on their current specifier.
 
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+poetry show --outdated
+```
+
+Example output:
+
+```text
+requests  2.28.0  2.31.0  Human friendly HTTP requests
+flask     2.3.0   3.0.0   A simple framework for building web apps
+```
+
+> Poetry shows the current installed version and the latest available version for each
+> outdated package.
+
+</Fragment>
+</Tabs>
+
 ## Update Individual Dependencies
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+To update a specific package to the latest compatible version:
+
+```bash
+uv lock --upgrade-package <package_name>
+uv sync
+```
+
+To change the version constraint in `pyproject.toml` and install:
+
+```bash
+uv add <package_name>@latest
+```
+
+This updates your:
+
+- `pyproject.toml` version constraint (when using `uv add`)
+- `uv.lock` with the resolved version
+- Virtual environment
+
+</Fragment>
+<Fragment slot="pipenv">
 
 ```bash
 pipenv update <package_name>
@@ -109,21 +173,67 @@ pipenv install behave~=1.2
 > Note that the micro version is excluded in the command. Pipenv resolves to the latest
 > compatible version.
 
-This will update your:
+</Fragment>
+<Fragment slot="poetry">
 
-- `Pipfile` version specifier
-- `Pipfile.lock` hashes
-- Other unrelated packages (full lock resolution)
-- Virtual environment
-
-To use inclusive comparison specifiers (`>=`, `*`, `==major.*`), wrap the specifier in
-double quotes:
+To update a specific package within its version constraint:
 
 ```bash
-pipenv install "behave>=1.2"
+poetry update <package_name>
 ```
 
+To change the version constraint and install the latest version:
+
+```bash
+poetry add <package_name>@latest
+```
+
+This updates your:
+
+- `pyproject.toml` version constraint (when using `poetry add`)
+- `poetry.lock` with the resolved version
+- Virtual environment
+
+### Update a Dev Dependency
+
+```bash
+poetry update <package_name> --only dev
+```
+
+Or to change the constraint:
+
+```bash
+poetry add <package_name>@latest --group dev
+```
+
+</Fragment>
+</Tabs>
+
 ## Update All Dependencies
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+To update all packages to their latest compatible versions:
+
+```bash
+uv lock --upgrade
+uv sync
+```
+
+This re-resolves all dependencies while respecting the version constraints in your
+`pyproject.toml`.
+
+To update everything **and** modify the constraints in `pyproject.toml`, you need to
+update packages individually with `uv add <package>@latest`.
+
+This will update your:
+
+- `uv.lock` with new resolved versions
+- Virtual environment
+
+</Fragment>
+<Fragment slot="pipenv">
 
 ```bash
 pipenv update
@@ -146,6 +256,27 @@ change those manually if you want to allow newer major or minor versions.
 > If nothing was updated, ensure your version specifiers in the `Pipfile` match one of
 > the updatable formats: `~=`, `>=`, `*`, `==major.*`, or `==major.minor.*`.
 
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+poetry update
+```
+
+This updates all packages to their latest versions allowed by the constraints in
+`pyproject.toml`.
+
+This will update your:
+
+- `poetry.lock` with new resolved versions
+- Virtual environment
+
+> Poetry will not exceed the version constraints in `pyproject.toml`. To allow newer
+> major versions, update the constraint first (e.g., change `^2.0` to `^3.0`).
+
+</Fragment>
+</Tabs>
+
 ## Understanding Version Specifiers
 
 Package versions follow [Semantic Versioning](https://semver.org/) (SemVer):
@@ -158,6 +289,9 @@ major.minor.micro
 - **major** -- Incremented for breaking changes
 - **minor** -- Incremented for new features (backwards compatible)
 - **micro** (patch) -- Incremented for bug fixes
+
+All Python tools use [PEP 440](https://peps.python.org/pep-0440/) version specifiers.
+The syntax is the same whether you write it in `pyproject.toml` or `Pipfile`:
 
 ### Compatible Release ( ~= )
 
@@ -182,14 +316,28 @@ behave = "==1.2.*"
 > **Best for:** Projects that want compatible updates without breaking changes from major
 > version bumps.
 
+### Caret ( ^ ) -- Poetry Default
+
+```toml
+# pyproject.toml (Poetry)
+[tool.poetry.dependencies]
+behave = "^1.2.6"
+```
+
+Allows changes that do not modify the leftmost non-zero digit. `^1.2.6` is equivalent to
+`>=1.2.6, <2.0.0`. This is Poetry's default specifier when adding packages.
+
+> **Best for:** Poetry projects that want compatible updates. Functionally similar to
+> `~=` for most version numbers.
+
 ### Exact Match ( == )
 
 ```toml
 behave = "==1.2.6"
 ```
 
-Only ever installs the exact version specified. A typical `pipenv update` command will
-**not** install a newer version.
+Only ever installs the exact version specified. A typical update command will **not**
+install a newer version.
 
 > **Best for:** Ensuring a specific known-good version is used. Requires manual version
 > bumps.
@@ -254,7 +402,17 @@ Always installs the latest available version of the package.
 
 ## Good to Know
 
-### Sorting Your Pipfile
+### Sorting Your Dependencies
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+Dependencies in `pyproject.toml` can be sorted manually or with a formatter. uv
+preserves the order you specify. To maintain alphabetical order, sort the `[project.dependencies]`
+list in your editor.
+
+</Fragment>
+<Fragment slot="pipenv">
 
 As you add dependencies, they get appended to the bottom of your `Pipfile`. To keep
 them in alphabetical order, use `pipfile-sort`:
@@ -276,19 +434,40 @@ cd /path/to/your/project
 pipfile-sort
 ```
 
-This rewrites your `Pipfile` with package lists sorted alphabetically.
+</Fragment>
+<Fragment slot="poetry">
+
+Poetry maintains dependency order as you add them. To sort alphabetically, you can
+manually reorder the `[tool.poetry.dependencies]` section in `pyproject.toml` or use
+the `poetry-plugin-sort` plugin.
+
+</Fragment>
+</Tabs>
 
 ### Update Strategy Recommendations
 
-1. **Pin production dependencies** with `==` or `~=` for stability
-2. **Use `~=` for libraries** to allow compatible updates automatically
-3. **Check outdated packages regularly** with `pipenv update --outdated`
+1. **Pin production dependencies** with `==` or `~=` (or `^` in Poetry) for stability
+2. **Use `~=` or `^` for libraries** to allow compatible updates automatically
+3. **Check outdated packages regularly** to stay current with security patches
 4. **Test after every update** to catch regressions early
-5. **Commit your `Pipfile.lock`** to version control for reproducible builds
+5. **Commit your lockfile** (`uv.lock`, `Pipfile.lock`, or `poetry.lock`) to version
+   control for reproducible builds
 
 ## Troubleshooting
 
 ### "Nothing Was Updated"
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+If `uv lock --upgrade` reports no changes:
+
+1. Check your version constraints in `pyproject.toml` -- exact `==` pins will not update
+2. Run `uv pip list --outdated` to see what newer versions are available
+3. Use `uv add <package>@latest` to update the constraint
+
+</Fragment>
+<Fragment slot="pipenv">
 
 If `pipenv update` reports no changes:
 
@@ -297,14 +476,31 @@ If `pipenv update` reports no changes:
 2. Run `pipenv update --outdated` to see what newer versions are available
 3. Manually change the specifier in your `Pipfile` to allow the update
 
-### Package Not Found in Pipfile
+</Fragment>
+<Fragment slot="poetry">
 
-If you see `Warning: <package_name> was not found in your Pipfile! Aborting.`:
+If `poetry update` reports no changes:
 
-The package exists only in `Pipfile.lock` as a transitive dependency. Add it explicitly
-to your `Pipfile` (ensuring version compatibility with other packages) before updating.
+1. Check your version constraints in `pyproject.toml` -- exact `==` pins will not update
+2. Run `poetry show --outdated` to see what newer versions are available
+3. Use `poetry add <package>@latest` to update the constraint
+
+</Fragment>
+</Tabs>
 
 ### Lock Resolution Takes Too Long
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+uv is designed to be fast. If resolution is slow, check for conflicting constraints:
+
+```bash
+uv lock --verbose
+```
+
+</Fragment>
+<Fragment slot="pipenv">
 
 ```bash
 # Clear the Pipenv cache
@@ -314,7 +510,35 @@ pipenv --clear
 pipenv update
 ```
 
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+# Clear the Poetry cache
+poetry cache clear pypi --all
+
+# Retry the update
+poetry update
+```
+
+</Fragment>
+</Tabs>
+
 ### Hash Mismatch Errors
+
+<Tabs tabs={["uv", "pipenv", "poetry"]}>
+<Fragment slot="uv">
+
+```bash
+# Regenerate the lockfile
+uv lock
+
+# Reinstall from the fresh lockfile
+uv sync
+```
+
+</Fragment>
+<Fragment slot="pipenv">
 
 ```bash
 # Regenerate the lockfile
@@ -324,12 +548,26 @@ pipenv lock
 pipenv install --ignore-pipfile
 ```
 
+</Fragment>
+<Fragment slot="poetry">
+
+```bash
+# Regenerate the lockfile
+poetry lock
+
+# Reinstall from the fresh lockfile
+poetry install
+```
+
+</Fragment>
+</Tabs>
+
 ## Resources
 
 <LinkCard
-  href="https://semver.org/"
-  title="Semantic Versioning 2.0.0"
-  description="The specification that defines how package versions are structured"
+  href="https://docs.astral.sh/uv/"
+  title="uv Documentation"
+  description="Fast Python package installer and project manager"
 />
 <LinkCard
   href="https://pipenv.pypa.io/"
@@ -337,12 +575,17 @@ pipenv install --ignore-pipfile
   description="Official Pipenv documentation with dependency management details"
 />
 <LinkCard
+  href="https://python-poetry.org/docs/dependency-specification/"
+  title="Poetry Dependency Specification"
+  description="How Poetry handles version constraints and dependency resolution"
+/>
+<LinkCard
+  href="https://semver.org/"
+  title="Semantic Versioning 2.0.0"
+  description="The specification that defines how package versions are structured"
+/>
+<LinkCard
   href="https://peps.python.org/pep-0440/"
   title="PEP 440 -- Version Identification"
   description="Python standard for version specifiers and dependency resolution"
-/>
-<LinkCard
-  href="https://github.com/monkey-sheng/pipfile-sort"
-  title="pipfile-sort"
-  description="Tool to sort packages in your Pipfile alphabetically"
 />

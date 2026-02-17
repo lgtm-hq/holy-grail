@@ -1,0 +1,152 @@
+---
+/**
+ * Tabs - Interactive tabbed content component
+ *
+ * Uses turbo-themes boxed tab styling with localStorage persistence.
+ * All tab groups on a page with the same labels stay in sync.
+ *
+ * Usage in MDX:
+ *   <Tabs tabs={["uv", "pipenv", "poetry"]}>
+ *     <Fragment slot="uv">uv content</Fragment>
+ *     <Fragment slot="pipenv">pipenv content</Fragment>
+ *     <Fragment slot="poetry">poetry content</Fragment>
+ *   </Tabs>
+ */
+
+interface Props {
+  tabs: string[];
+  defaultTab?: string;
+}
+
+const { tabs, defaultTab } = Astro.props;
+const activeTab = defaultTab || tabs[0];
+
+// Pre-render named slots (Astro requires static slot names in templates)
+const renderedSlots: Record<string, string> = {};
+for (const tab of tabs) {
+  if (Astro.slots.has(tab)) {
+    renderedSlots[tab] = await Astro.slots.render(tab);
+  }
+}
+---
+
+<div class="tabs-container" data-tabs-group={tabs.join(',')}>
+  <div class="tabs tabs-boxed" role="tablist">
+    {tabs.map((tab) => (
+      <button
+        class={`tab ${tab === activeTab ? 'active' : ''}`}
+        role="tab"
+        aria-selected={tab === activeTab ? 'true' : 'false'}
+        aria-controls={`panel-${tab}`}
+        data-tab={tab}
+      >
+        {tab}
+      </button>
+    ))}
+  </div>
+  {tabs.map((tab) => (
+    <div
+      class={`tab-content ${tab === activeTab ? 'active' : ''}`}
+      role="tabpanel"
+      id={`panel-${tab}`}
+      data-tab-content={tab}
+    >
+      <Fragment set:html={renderedSlots[tab] || ''} />
+    </div>
+  ))}
+</div>
+
+<script>
+  function initTabs() {
+    const containers = document.querySelectorAll<HTMLElement>('.tabs-container');
+
+    containers.forEach((container) => {
+      const group = container.dataset.tabsGroup;
+      if (!group) return;
+
+      const storageKey = `tabs-${group}`;
+      const saved = localStorage.getItem(storageKey);
+      const buttons = container.querySelectorAll<HTMLButtonElement>('.tab');
+      const panels = container.querySelectorAll<HTMLElement>('.tab-content');
+
+      // Restore saved tab preference
+      if (saved) {
+        const hasTab = Array.from(buttons).some((b) => b.dataset.tab === saved);
+        if (hasTab) {
+          buttons.forEach((b) => {
+            const isActive = b.dataset.tab === saved;
+            b.classList.toggle('active', isActive);
+            b.setAttribute('aria-selected', String(isActive));
+          });
+          panels.forEach((p) => {
+            p.classList.toggle('active', p.dataset.tabContent === saved);
+          });
+        }
+      }
+
+      buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const tab = button.dataset.tab;
+          if (!tab) return;
+
+          // Update this container
+          buttons.forEach((b) => {
+            const isActive = b.dataset.tab === tab;
+            b.classList.toggle('active', isActive);
+            b.setAttribute('aria-selected', String(isActive));
+          });
+          panels.forEach((p) => {
+            p.classList.toggle('active', p.dataset.tabContent === tab);
+          });
+
+          // Sync all containers with the same group on the page
+          document
+            .querySelectorAll<HTMLElement>(
+              `.tabs-container[data-tabs-group="${group}"]`,
+            )
+            .forEach((other) => {
+              if (other === container) return;
+              other
+                .querySelectorAll<HTMLButtonElement>('.tab')
+                .forEach((b) => {
+                  const isActive = b.dataset.tab === tab;
+                  b.classList.toggle('active', isActive);
+                  b.setAttribute('aria-selected', String(isActive));
+                });
+              other
+                .querySelectorAll<HTMLElement>('.tab-content')
+                .forEach((p) => {
+                  p.classList.toggle('active', p.dataset.tabContent === tab);
+                });
+            });
+
+          // Persist preference
+          localStorage.setItem(storageKey, tab);
+        });
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initTabs);
+  document.addEventListener('astro:after-swap', initTabs);
+</script>
+
+<style>
+  @import '@lgtm-hq/turbo-themes/css/components/tabs.css';
+
+  .tabs-container {
+    margin: var(--space-lg) 0;
+  }
+
+  .tab-content :global(pre) {
+    margin-top: 0;
+  }
+
+  .tab-content :global(> :first-child) {
+    margin-top: 0;
+  }
+
+  .tab-content :global(> :last-child) {
+    margin-bottom: 0;
+  }
+</style>
