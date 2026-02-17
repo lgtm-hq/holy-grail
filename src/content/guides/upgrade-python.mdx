@@ -1,0 +1,279 @@
+---
+title: Upgrade Python Version
+description:
+  Upgrade the Python version used by your project's virtual environment without losing
+  your dependencies
+category: Languages
+order: 27
+tags: [python, pyenv, pipenv, upgrade, virtual-environments]
+difficulty: intermediate
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is a Python Version Upgrade?
+
+When a new Python release is available, you may want to upgrade the Python version used
+by your project's virtual environment. Unlike upgrading a standalone application, there
+is no in-place upgrade path for virtual environments -- you need to create a new one
+with the desired Python version.
+
+This guide walks through the full process: installing the new Python version, removing
+the old virtual environment, and recreating it with your existing dependencies.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/python/" />
+  <LinkBadge href="/guides/pipenv/" />
+  <LinkBadge href="/guides/virtual-environments/" />
+</div>
+
+## Install the New Python Version
+
+First, install the desired Python version using pyenv:
+
+```bash
+# List available versions
+pyenv install --list | grep -E " 3\.(1[0-9])"
+
+# Install the new version
+pyenv install <new-version>
+```
+
+Set it as the global version (or use `pyenv local` for per-project):
+
+```bash
+pyenv global <new-version>
+
+# Verify
+python -V
+```
+
+## Update Your Pipfile
+
+Update the `[requires]` section in your `Pipfile` to reflect the new Python version:
+
+```toml
+[requires]
+python_version = "3.12"
+```
+
+> Change the version to match the new Python version you installed.
+
+## Remove the Old Virtual Environment
+
+You do not have to delete your old virtual environment since Pipenv manages naming
+conventions automatically. Only remove it if you prefer to provide your own names for
+virtual environments and are concerned about naming conflicts.
+
+### Automatic Removal with Pipenv (Recommended)
+
+From your project directory, run:
+
+```bash
+pipenv --rm
+```
+
+This removes the virtual environment associated with the current project.
+
+### Manual Removal
+
+If you need to remove the virtual environment manually, locate it first:
+
+```bash
+# Find the virtual environment location
+pipenv --venv
+```
+
+Or browse the default Pipenv virtual environment directory:
+
+```bash
+ls ~/.local/share/virtualenvs/
+```
+
+Then remove the specific virtual environment:
+
+```bash
+rm -rf ~/.local/share/virtualenvs/<virtual-environment-name>
+```
+
+> Do **not** use `sudo` for this operation. These are user-owned directories.
+
+## Create a New Virtual Environment
+
+With the old environment removed and the new Python version active, recreate the
+virtual environment:
+
+```bash
+pipenv install
+```
+
+This will:
+
+1. Detect the Python version from your updated `Pipfile` (or use the current global
+   version)
+2. Create a new virtual environment with that Python version
+3. Install all dependencies from your `Pipfile`
+4. Generate an updated `Pipfile.lock`
+
+**Verify the new environment:**
+
+```bash
+pipenv shell
+python -V
+```
+
+If you need to explicitly specify the Python version:
+
+```bash
+pipenv --python <new-version>
+pipenv install
+```
+
+## Upgrading with venv
+
+If you use `venv` instead of Pipenv, the process is similar:
+
+```bash
+# Remove the old environment
+rm -rf .venv
+
+# Create a new one with the desired Python version
+python -m venv .venv
+
+# Activate and reinstall dependencies
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## Upgrading with uv
+
+With [uv](https://docs.astral.sh/uv/), you can create a new environment targeting a
+specific Python version:
+
+```bash
+# Remove the old environment
+rm -rf .venv
+
+# Create a new one with the desired version
+uv venv --python 3.12
+
+# Reinstall dependencies
+uv pip install -r requirements.txt
+# Or if using pyproject.toml:
+uv sync
+```
+
+## Good to Know
+
+### Check Python Release Schedule
+
+Python releases follow a predictable annual cycle. Each version receives:
+
+- **Full support** for 2 years after release
+- **Security fixes** for an additional 3 years (5 years total)
+
+Check the [Python Release Schedule](https://devguide.python.org/versions/) to see which
+versions are currently supported.
+
+### When to Upgrade
+
+- **Security patches** (e.g., 3.11.8 to 3.11.9) -- Upgrade promptly; these are
+  backwards compatible
+- **Minor releases** (e.g., 3.11 to 3.12) -- Test your project first; some
+  deprecations may affect your code
+- **End-of-life versions** -- Upgrade as soon as practical to maintain security
+
+### Keep the Old Version Available
+
+You do not need to uninstall the old Python version from pyenv. Having multiple versions
+installed lets you switch back if needed:
+
+```bash
+# List all installed versions
+pyenv versions
+
+# Switch back if needed
+pyenv global <old-version>
+```
+
+## Troubleshooting
+
+### Pipenv Uses the Wrong Python Version
+
+If Pipenv creates the environment with an unexpected Python version:
+
+```bash
+# Explicitly specify the version
+pipenv --rm
+pipenv --python <new-version>
+pipenv install
+```
+
+### Dependencies Fail to Install on New Python Version
+
+Some packages may not yet support the newest Python version:
+
+```bash
+# Check which packages fail
+pipenv install 2>&1 | grep -i error
+
+# Check package compatibility on PyPI
+pip index versions <package_name>
+```
+
+Consider temporarily pinning to the previous Python version until all your dependencies
+support the new one.
+
+### "Python version not found"
+
+If Pipenv cannot find the Python version specified in your `Pipfile`:
+
+```bash
+# Verify it is installed
+pyenv versions
+
+# If not installed, install it
+pyenv install <version>
+
+# Ensure pyenv shims are up to date
+pyenv rehash
+```
+
+### Virtual Environment Still References Old Python
+
+After upgrading, verify the environment uses the correct Python:
+
+```bash
+pipenv shell
+which python
+python -V
+```
+
+If it still shows the old version, remove and recreate:
+
+```bash
+exit
+pipenv --rm
+pipenv install
+```
+
+## Resources
+
+<LinkCard
+  href="https://devguide.python.org/versions/"
+  title="Python Release Schedule"
+  description="Status of all Python branches including end-of-life dates"
+/>
+<LinkCard
+  href="https://pipenv.pypa.io/"
+  title="Pipenv Documentation"
+  description="Official Pipenv documentation for managing virtual environments"
+/>
+<LinkCard
+  href="https://github.com/pyenv/pyenv"
+  title="pyenv on GitHub"
+  description="Simple Python version management for installing and switching between versions"
+/>

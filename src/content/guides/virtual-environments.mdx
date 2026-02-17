@@ -1,0 +1,298 @@
+---
+title: Virtual Environments
+description:
+  Understand and manage Python virtual environments using venv, pipenv, and modern
+  tooling on macOS
+category: Languages
+order: 25
+tags: [python, virtualenv, venv, pipenv, dependencies]
+difficulty: intermediate
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What are Virtual Environments?
+
+A Python virtual environment is an isolated directory tree that contains a Python
+installation and a set of additional packages. Virtual environments prevent dependency
+conflicts between projects by giving each project its own independent set of packages.
+
+Without virtual environments, all projects share the same global Python installation. If
+Project A requires `requests==2.28` and Project B requires `requests==2.31`, they would
+conflict. Virtual environments solve this by isolating each project's dependencies.
+
+> If you upgrade your system Python, virtual environments tied to the old version may
+> break. Always use a version manager like pyenv to control which Python version your
+> virtual environments use.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/python/" />
+  <LinkBadge href="/guides/pipenv/" />
+</div>
+
+## Understanding the Tool Landscape
+
+There are several tools for managing virtual environments. Here is how they relate to
+each other:
+
+| Tool | Purpose | Notes |
+|------|---------|-------|
+| `venv` | Built-in Python module for creating virtual environments | Included with Python 3.3+, no extra install needed |
+| `virtualenv` | Third-party virtual environment creator | Faster than `venv`, supports Python 2 (legacy) |
+| `pyenv` | Python version management | Manages which Python version is active, not virtual environments directly |
+| `pyenv-virtualenv` | pyenv plugin for managing virtualenvs | Combines version management with virtualenv creation |
+| `pipenv` | Dependency management and virtual environments | Replaces `pip` + `virtualenv` + `requirements.txt` workflow |
+| `uv` | Fast Python package installer and resolver | Modern Rust-based alternative to pip and virtualenv |
+
+For most workflows, **pipenv** is the recommended approach as it combines virtual
+environment management with dependency resolution. For new projects,
+[uv](https://docs.astral.sh/uv/) is a modern alternative worth considering.
+
+## Creating Virtual Environments
+
+### Using Pipenv (Recommended)
+
+Pipenv automatically creates and manages virtual environments for your projects. See
+<LinkBadge href="/guides/pipenv/" /> for full installation and usage details.
+
+**Create a virtual environment with dependencies:**
+
+```bash
+pipenv install
+```
+
+**Create a virtual environment without installing dependencies:**
+
+```bash
+pipenv install --ignore-pipfile
+```
+
+> If no `Pipfile` exists, a new virtual environment is created but no dependencies are
+> installed. Pipenv will import from a `requirements.txt` if one exists.
+
+**Optionally name your virtual environment:**
+
+```bash
+export PIPENV_CUSTOM_VENV_NAME=your_venv_name
+pipenv install
+```
+
+**Specify a Python version for the environment:**
+
+```bash
+pipenv --python <version>
+```
+
+> The version you specify must already be installed on your machine via
+> <LinkBadge href="/guides/python/" />.
+
+### Using venv (Built-in)
+
+Python's built-in `venv` module creates lightweight virtual environments without
+requiring any additional tools:
+
+```bash
+python -m venv .venv
+```
+
+This creates a `.venv` directory in your project root containing a fresh Python
+environment.
+
+### Using uv (Modern Alternative)
+
+[uv](https://docs.astral.sh/uv/) is a fast, Rust-based Python package manager that can
+also create virtual environments:
+
+```bash
+uv venv
+```
+
+This creates a `.venv` directory by default. You can specify a Python version:
+
+```bash
+uv venv --python 3.12
+```
+
+## Activating a Virtual Environment
+
+### Pipenv
+
+```bash
+pipenv shell
+```
+
+> This will also create a virtual environment if one does not yet exist.
+
+Keep in mind that `pipenv` replaces the default `pip` command within the environment.
+Both commands still work, but using `pip` directly will only install to the virtual
+environment and will **not** update your `Pipfile` or `Pipfile.lock`.
+
+### venv / virtualenv
+
+```bash
+source .venv/bin/activate
+```
+
+Your terminal prompt will change to show the active environment name.
+
+### uv
+
+With `uv`, you typically do not need to activate the environment manually. Instead,
+run commands through `uv run`:
+
+```bash
+uv run python script.py
+uv run pytest
+```
+
+If you prefer manual activation:
+
+```bash
+source .venv/bin/activate
+```
+
+## Deactivating a Virtual Environment
+
+### Pipenv
+
+```bash
+exit
+```
+
+### venv / virtualenv / uv
+
+```bash
+deactivate
+```
+
+## Good to Know
+
+### How Pipenv Selects Python Versions
+
+- `pipenv install` creates a virtual environment using your current **global** Python
+  version (set via `pyenv global`)
+- If a Python version is specified in your `Pipfile` under `[requires]`, Pipenv will
+  look for that version on your system:
+
+```toml
+# Pipfile
+[requires]
+python_version = "3.12"
+```
+
+- If the required version is **not** installed, Pipenv will fail and inform you that the
+  version is missing. Install it first with `pyenv install <version>`.
+
+### Generated Files
+
+When you create a virtual environment with Pipenv, two files are created in your project
+directory (if not already present):
+
+- **Pipfile** -- Declares your project's dependencies and replaces `requirements.txt`
+- **Pipfile.lock** -- Records the exact versions and hashes of all dependencies
+  (including transitive dependencies) for reproducible installs
+
+### Location of Virtual Environments
+
+Pipenv stores virtual environments in a centralized location:
+
+```bash
+# Find the location for the current project
+pipenv --venv
+
+# Default location
+# ~/.local/share/virtualenvs/
+```
+
+For `venv` and `uv`, the virtual environment is stored in the `.venv` directory within
+your project.
+
+### Choosing Between In-Project and Centralized
+
+To have Pipenv create virtual environments inside your project directory instead:
+
+```bash
+export PIPENV_VENV_IN_PROJECT=1
+pipenv install
+```
+
+This creates a `.venv` folder in your project root, which is easier to manage and
+clean up.
+
+## Troubleshooting
+
+### "No module named venv"
+
+On some systems, the `venv` module may not be included:
+
+```bash
+# Reinstall Python with pyenv to ensure venv is available
+pyenv install <version>
+```
+
+### Pipenv Cannot Find Python Version
+
+If Pipenv reports the required Python version is not installed:
+
+```bash
+# List available versions
+pyenv install --list | grep -E " 3\.(1[0-9])"
+
+# Install the required version
+pyenv install <version>
+
+# Set it as global (or local)
+pyenv global <version>
+```
+
+### Virtual Environment Is Broken After Python Upgrade
+
+Virtual environments are tied to the specific Python binary that created them. If the
+underlying Python version is removed or changed, the environment will break. The
+solution is to recreate it:
+
+```bash
+# Remove the old environment
+pipenv --rm
+
+# Recreate with the new Python version
+pipenv install
+```
+
+See <LinkBadge href="/guides/upgrade-python/" /> for a full walkthrough of upgrading
+Python versions in your projects.
+
+### "pipenv: command not found"
+
+```bash
+brew install pipenv
+```
+
+Ensure Homebrew's bin directory is in your PATH. See
+<LinkBadge href="/guides/homebrew/" /> for setup details.
+
+## Resources
+
+<LinkCard
+  href="https://docs.python.org/3/library/venv.html"
+  title="Python venv Documentation"
+  description="Official documentation for the built-in venv module"
+/>
+<LinkCard
+  href="https://pipenv.pypa.io/"
+  title="Pipenv Documentation"
+  description="Official Pipenv documentation with tutorials and API reference"
+/>
+<LinkCard
+  href="https://docs.astral.sh/uv/"
+  title="uv Documentation"
+  description="Fast Python package installer and virtual environment manager"
+/>
+<LinkCard
+  href="https://stackoverflow.com/questions/41573587/what-is-the-difference-between-venv-pyvenv-pyenv-virtualenv-virtualenvwrapper-pipenv-etc"
+  title="Differences Between venv, pyenv, virtualenv, pipenv"
+  description="Stack Overflow explanation of the Python virtual environment tool ecosystem"
+/>

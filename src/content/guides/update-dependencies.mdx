@@ -1,0 +1,348 @@
+---
+title: Update Dependencies
+description:
+  Check for outdated packages, update individual or all dependencies, and understand
+  version specifiers in Pipenv projects
+category: Languages
+order: 26
+tags: [python, pipenv, dependencies, versioning, packages]
+difficulty: intermediate
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is Dependency Updating?
+
+Keeping your project's package dependencies up to date is essential for security patches,
+bug fixes, and access to new features. This guide covers how to check for outdated
+packages, update them safely, and understand how version specifiers control which
+versions get installed.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/python/" />
+  <LinkBadge href="/guides/pipenv/" />
+  <LinkBadge href="/guides/virtual-environments/" />
+</div>
+
+## Check What Is Outdated
+
+Before updating, check which packages have newer versions available:
+
+```bash
+pipenv update --outdated
+```
+
+Example output:
+
+```text
+Skipped Update of Package charset-normalizer: 2.1.1 installed, 3.0.1 available.
+Skipped Update of Package assertpy: 0.14 installed, 0.14 required (==0.14), 1.1 available.
+Package 'slack-sdk' out-of-date: '==3.19.4' installed, '==3.19.5' available.
+Package 'Authlib' out-of-date: '==1.1.0' installed, '==1.2.0' available.
+```
+
+> Packages listed as "Skipped" have version specifiers in your `Pipfile` that prevent
+> automatic updates (such as pinned `==` versions). Packages listed as "out-of-date"
+> are eligible for update based on their current specifier.
+
+## Update Individual Dependencies
+
+```bash
+pipenv update <package_name>
+```
+
+**Important:** This command will **not** overwrite the version specifier in your
+`Pipfile`. Whether the installed version actually changes depends on your specifier:
+
+**Will NOT update** (version is locked):
+
+- `==` (exact match)
+- `<=` (upper bound)
+
+**Will update** (version range allows newer versions):
+
+- `~=` (compatible release)
+- `>=` (minimum version)
+- `*` (wildcard)
+- `==major.*` (wildcard within major)
+- `==major.minor.*` (wildcard within minor)
+
+This will update your:
+
+- `Pipfile.lock` hashes
+- Other unrelated packages (since it performs a full lock resolution)
+- Virtual environment
+
+### Update a Dev Dependency
+
+If the package is a dev dependency, specify the `--dev` flag:
+
+```bash
+pipenv update <package_name> --dev
+```
+
+> If the package you specify is not in your `Pipfile` (only in `Pipfile.lock` as a
+> transitive dependency), the command will fail with:
+> `Warning: <package_name> was not found in your Pipfile! Aborting.`
+> You will need to explicitly add it to your `Pipfile` first.
+
+### Force-Update a Pinned Package
+
+To change the version specifier in your `Pipfile` and install a newer version, re-install
+the package with a new specifier:
+
+```bash
+pipenv install <package_name>~=<required_version>
+```
+
+For example:
+
+```bash
+# Before: behave = "==1.1.5"
+pipenv install behave~=1.2
+# After:  behave = "~=1.2.6"
+```
+
+> Note that the micro version is excluded in the command. Pipenv resolves to the latest
+> compatible version.
+
+This will update your:
+
+- `Pipfile` version specifier
+- `Pipfile.lock` hashes
+- Other unrelated packages (full lock resolution)
+- Virtual environment
+
+To use inclusive comparison specifiers (`>=`, `*`, `==major.*`), wrap the specifier in
+double quotes:
+
+```bash
+pipenv install "behave>=1.2"
+```
+
+## Update All Dependencies
+
+```bash
+pipenv update
+```
+
+If there are outdated versions in your virtual environment, they will be updated in
+accordance with what is specified in your `Pipfile`.
+
+> If the installed version already matches the specifier in your `Pipfile`, nothing will
+> be updated for that package.
+
+This will update your:
+
+- `Pipfile.lock` hashes
+- Virtual environment
+
+This will **not** overwrite the version specifiers in your `Pipfile`. You will need to
+change those manually if you want to allow newer major or minor versions.
+
+> If nothing was updated, ensure your version specifiers in the `Pipfile` match one of
+> the updatable formats: `~=`, `>=`, `*`, `==major.*`, or `==major.minor.*`.
+
+## Understanding Version Specifiers
+
+Package versions follow [Semantic Versioning](https://semver.org/) (SemVer):
+
+```text
+major.minor.micro
+  1  .  2  .  6
+```
+
+- **major** -- Incremented for breaking changes
+- **minor** -- Incremented for new features (backwards compatible)
+- **micro** (patch) -- Incremented for bug fixes
+
+### Compatible Release ( ~= )
+
+```toml
+behave = "~=1.2.6"
+```
+
+Allows updates within the same major version. Equivalent to `>=1.2.6, <2.0.0`.
+
+| Current | Latest Major | Latest Minor | Latest Micro |
+|---------|-------------|-------------|-------------|
+| 1.2.6 | 2.0.0 | 1.3.0 | 1.3.1 |
+
+In this example, `~=1.2.6` would upgrade to `1.3.1` but **not** to `2.0.0`.
+
+You can restrict updates further to micro versions only:
+
+```toml
+behave = "==1.2.*"
+```
+
+> **Best for:** Projects that want compatible updates without breaking changes from major
+> version bumps.
+
+### Exact Match ( == )
+
+```toml
+behave = "==1.2.6"
+```
+
+Only ever installs the exact version specified. A typical `pipenv update` command will
+**not** install a newer version.
+
+> **Best for:** Ensuring a specific known-good version is used. Requires manual version
+> bumps.
+
+### Less Than ( < )
+
+```toml
+behave = "<1.2.6"
+```
+
+Ensures no version newer than the one specified will be installed.
+
+> **Best for:** Projects where you know that versions above a certain point introduce
+> breaking changes.
+
+### Less Than or Equal ( <= )
+
+```toml
+behave = "<=1.2.6"
+```
+
+Matches versions older than or equal to the specified version. Will not downgrade to an
+older version, but ensures the specified version is the ceiling.
+
+> **Best for:** Applications that support at least the version specified but should
+> remain backwards compatible.
+
+### Greater Than ( > )
+
+```toml
+behave = ">1.2.6"
+```
+
+Ensures any version newer than the one specified will be installed. Sets a minimum
+supported version while excluding it.
+
+> **Best for:** Always getting the latest version when you are not concerned with
+> breaking changes.
+
+### Greater Than or Equal ( >= )
+
+```toml
+behave = ">=1.2.6"
+```
+
+The minimum installed version is the one specified, and any newer version (including new
+major versions) will be installed if available.
+
+> **Best for:** Projects where you are not concerned that major releases will break your
+> implementation, while ensuring support for at least the specified version.
+
+### Wildcard ( * )
+
+```toml
+behave = "*"
+```
+
+Always installs the latest available version of the package.
+
+> **Best for:** Always getting the latest version with no constraints. Use with caution
+> in production projects.
+
+## Good to Know
+
+### Sorting Your Pipfile
+
+As you add dependencies, they get appended to the bottom of your `Pipfile`. To keep
+them in alphabetical order, use `pipfile-sort`:
+
+**Install pipfile-sort globally (not via pipenv):**
+
+```bash
+pip install pipfile-sort
+```
+
+> Do **not** install `pipfile-sort` using Pipenv, as this would add it to the
+> dependencies in your `Pipfile`. Install it with `pip` so it goes under your global
+> Python instance.
+
+**Navigate to your project and run the sort:**
+
+```bash
+cd /path/to/your/project
+pipfile-sort
+```
+
+This rewrites your `Pipfile` with package lists sorted alphabetically.
+
+### Update Strategy Recommendations
+
+1. **Pin production dependencies** with `==` or `~=` for stability
+2. **Use `~=` for libraries** to allow compatible updates automatically
+3. **Check outdated packages regularly** with `pipenv update --outdated`
+4. **Test after every update** to catch regressions early
+5. **Commit your `Pipfile.lock`** to version control for reproducible builds
+
+## Troubleshooting
+
+### "Nothing Was Updated"
+
+If `pipenv update` reports no changes:
+
+1. Check your version specifiers in the `Pipfile` -- pinned `==` versions will not
+   update
+2. Run `pipenv update --outdated` to see what newer versions are available
+3. Manually change the specifier in your `Pipfile` to allow the update
+
+### Package Not Found in Pipfile
+
+If you see `Warning: <package_name> was not found in your Pipfile! Aborting.`:
+
+The package exists only in `Pipfile.lock` as a transitive dependency. Add it explicitly
+to your `Pipfile` (ensuring version compatibility with other packages) before updating.
+
+### Lock Resolution Takes Too Long
+
+```bash
+# Clear the Pipenv cache
+pipenv --clear
+
+# Retry the update
+pipenv update
+```
+
+### Hash Mismatch Errors
+
+```bash
+# Regenerate the lockfile
+pipenv lock
+
+# Reinstall from the fresh lockfile
+pipenv install --ignore-pipfile
+```
+
+## Resources
+
+<LinkCard
+  href="https://semver.org/"
+  title="Semantic Versioning 2.0.0"
+  description="The specification that defines how package versions are structured"
+/>
+<LinkCard
+  href="https://pipenv.pypa.io/"
+  title="Pipenv Documentation"
+  description="Official Pipenv documentation with dependency management details"
+/>
+<LinkCard
+  href="https://peps.python.org/pep-0440/"
+  title="PEP 440 -- Version Identification"
+  description="Python standard for version specifiers and dependency resolution"
+/>
+<LinkCard
+  href="https://github.com/monkey-sheng/pipfile-sort"
+  title="pipfile-sort"
+  description="Tool to sort packages in your Pipfile alphabetically"
+/>
