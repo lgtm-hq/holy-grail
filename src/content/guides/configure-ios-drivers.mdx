@@ -1,0 +1,279 @@
+---
+title: Configure iOS Drivers
+description:
+  Configure the Appium XCUITest driver and WebDriverAgent for iOS test automation
+  on simulators and real devices
+category: Testing
+order: 25
+tags: [appium, ios, testing, xcuitest, webdriveragent, automation]
+difficulty: intermediate
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is Configure iOS Drivers?
+
+The [XCUITest driver](https://github.com/appium/appium-xcuitest-driver) is the
+Appium driver for automating iOS, iPadOS, and tvOS applications. It uses Apple's
+[XCUITest](https://developer.apple.com/documentation/xctest) framework under the
+hood via [WebDriverAgent](https://github.com/appium/WebDriverAgent) (WDA),
+a WebDriver server that runs on the device alongside your app.
+
+> Before you can run iOS UI tests through Appium, the XCUITest driver and its
+> embedded WebDriverAgent project must be properly configured and signed.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/appium/" />
+  <LinkBadge href="/guides/xcode/" />
+</div>
+
+Ensure you have:
+
+- Appium 2.x installed with the `xcuitest` driver (`appium driver install xcuitest`)
+- Xcode installed with Command Line Tools configured
+- An Apple ID signed into Xcode (required for code signing)
+
+## Sign In to Xcode
+
+Before configuring the driver, you need an Apple ID signed into Xcode:
+
+1. Launch **Xcode**
+2. Click **Xcode** in the menu bar, then click **Settings** (or press `Cmd + ,`)
+3. Select the **Accounts** tab
+4. If no accounts are listed, click the **+** button to add one
+5. Select **Apple ID** and sign in with your credentials
+
+> You **must** use an Apple ID to build and sign projects. Other account types
+> (Xcode Server, Bitbucket, etc.) cannot be used for code signing.
+
+## Open the WebDriverAgent Project
+
+Since Appium 2, driver sources are installed under `~/.appium` by default.
+
+### Using the Appium CLI (Recommended)
+
+The XCUITest driver (v4.13.0+) includes a convenience command to open the WDA
+project directly in Xcode:
+
+```bash
+appium driver run xcuitest open-wda
+```
+
+### Manual Navigation
+
+Alternatively, navigate to the project directory and open it manually:
+
+```bash
+cd ~/.appium/node_modules/appium-xcuitest-driver/node_modules/appium-webdriveragent
+```
+
+```bash
+xed WebDriverAgent.xcodeproj
+```
+
+Xcode should open the project with the Project Explorer visible, showing the
+WebDriverAgent folder structure including `WebDriverAgentLib`,
+`WebDriverAgentRunner`, and other sub-folders.
+
+## Configure Code Signing
+
+You need to configure signing for both the **WebDriverAgentLib** and
+**WebDriverAgentRunner** targets.
+
+### Configure WebDriverAgentLib
+
+1. In the Project Explorer, click on **WebDriverAgentLib** under **TARGETS**
+2. Click on the **Signing & Capabilities** tab
+3. Check **Automatically manage signing**
+4. Select your **Team** from the dropdown (your Apple ID / Personal Team)
+5. Modify the **Bundle Identifier** to make it unique (see below)
+
+### Configure WebDriverAgentRunner
+
+1. In the Project Explorer, click on **WebDriverAgentRunner** under **TARGETS**
+2. Click on the **Signing & Capabilities** tab
+3. Check **Automatically manage signing**
+4. Select your **Team** from the dropdown
+5. Modify the **Bundle Identifier** to make it unique (see below)
+
+### Update Bundle Identifiers
+
+The default bundle identifiers will fail to register because they are already
+taken. You need to append a unique suffix to each:
+
+| Target | Default | Updated |
+|--------|---------|---------|
+| `WebDriverAgentLib` | `com.facebook.WebDriverAgentLib` | `com.facebook.WebDriverAgentLib<YourSuffix>` |
+| `WebDriverAgentRunner` | `com.facebook.WebDriverAgentRunner` | `com.facebook.WebDriverAgentRunner<YourSuffix>` |
+
+Replace `<YourSuffix>` with something unique and meaningful (e.g., your name or
+initials).
+
+> If you see a "Failed to register bundle identifier" error, it means the bundle
+> ID is already taken. Change it to something unique and click **Try Again**.
+
+### Capability-Based Signing (Alternative)
+
+Instead of manually configuring signing in Xcode, you can pass signing
+credentials via Appium capabilities:
+
+```json
+{
+  "appium:xcodeOrgId": "<YOUR_TEAM_ID>",
+  "appium:xcodeSigningId": "iPhone Developer"
+}
+```
+
+## Build the Project
+
+After configuring signing for both targets:
+
+1. Click the **Play** button in Xcode to build the project
+2. If successful, you will see a **Build Succeeded** message
+3. Click the **Stop** button to stop the build
+
+> A successful build confirms that code signing is properly configured and the
+> WebDriverAgent can be deployed to your target device.
+
+## Run the Verification Test
+
+The XCUITest driver includes built-in tests to verify that your device
+connection is working correctly.
+
+### Get Your Device UDID
+
+Make sure you have a running Simulator or a physical device connected to your Mac.
+
+**For Simulators:**
+
+```bash
+xcrun simctl list devices booted
+```
+
+**For Physical Devices:**
+
+```bash
+ios-deploy -c
+```
+
+Copy the device UDID from the output.
+
+### Run the Test
+
+Navigate to the WebDriverAgent directory and run the test:
+
+```bash
+cd ~/.appium/node_modules/appium-xcuitest-driver/node_modules/appium-webdriveragent
+```
+
+```bash
+xcodebuild -project WebDriverAgent.xcodeproj \
+  -scheme WebDriverAgentRunner \
+  -destination 'id=<device-udid>' \
+  test
+```
+
+Replace `<device-udid>` with the UDID you copied in the previous step.
+
+Your terminal will fill with build output. When you see **Testing started**, the
+connection is working correctly. Press `Ctrl + C` to stop the tests.
+
+> If the build fails with an error mentioning "Provision", there is an issue with
+> your provisioning profile. Check the error message for specific arguments to
+> add to the command.
+
+## Real Device Requirements
+
+When testing on physical iOS devices, note these additional requirements:
+
+- **iOS/iPadOS 16+**: You must enable **Developer Mode** on the device
+  (Settings > Privacy & Security > Developer Mode)
+- **UI Automation**: Enable **Settings > Developer > Enable UI Automation**
+- **Trust**: When deploying WDA for the first time, you may need to trust the
+  developer certificate on the device (Settings > General > VPN & Device Management)
+
+## Good to Know
+
+### Useful Aliases
+
+Add these aliases to your `~/.zshrc` to quickly check connected devices:
+
+```bash
+# List running simulators
+alias active-sims="xcrun simctl list devices booted"
+
+# List connected physical devices
+alias connected-devices="ios-deploy -c"
+```
+
+### Updating the XCUITest Driver
+
+When you update the XCUITest driver, the WebDriverAgent project is also updated.
+You may need to reconfigure signing after an update:
+
+```bash
+appium driver update xcuitest
+```
+
+## Troubleshooting
+
+### "Failed to register bundle identifier"
+
+The default WDA bundle identifiers are already taken. Update them with a unique
+suffix as described in the [Update Bundle Identifiers](#update-bundle-identifiers)
+section.
+
+### Provisioning Profile Errors
+
+If `xcodebuild` fails with provisioning-related errors:
+
+1. Open the WDA project in Xcode (`appium driver run xcuitest open-wda`)
+2. Verify both targets have **Automatically manage signing** enabled
+3. Confirm your Team is selected for both targets
+4. Ensure bundle identifiers are unique
+
+### "xcodebuild: error: ... requires Xcode"
+
+Ensure the Xcode Command Line Tools path is set correctly:
+
+```bash
+sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+```
+
+### Device Not Detected
+
+For physical devices, ensure:
+
+- The device is connected via USB and trusted
+- <LinkBadge href="/guides/ios-deploy/" /> is installed for device detection
+- <LinkBadge href="/guides/libimobiledevice/" /> is installed for device
+  communication
+
+### Session Creation Errors
+
+Run <LinkBadge href="/guides/appium-doctor/" /> to diagnose environment issues:
+
+```bash
+appium-doctor --ios
+```
+
+## Resources
+
+<LinkCard
+  href="https://github.com/appium/appium-xcuitest-driver"
+  title="Appium XCUITest Driver"
+  description="Official GitHub repository for the Appium XCUITest driver with full documentation"
+/>
+<LinkCard
+  href="https://appium.github.io/appium-xcuitest-driver/latest/preparation/real-device-config/"
+  title="Real Device Configuration"
+  description="Official guide for configuring the XCUITest driver for real iOS devices"
+/>
+<LinkCard
+  href="https://appium.io/docs/en/latest/"
+  title="Appium Documentation"
+  description="Official Appium 2.x documentation with guides, API reference, and examples"
+/>

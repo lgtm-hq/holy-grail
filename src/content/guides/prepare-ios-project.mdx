@@ -1,0 +1,254 @@
+---
+title: Prepare iOS Project
+description:
+  Configure your iOS project build settings and dependencies for UI test
+  automation with Appium
+category: Testing
+order: 26
+tags: [appium, ios, testing, xcode, xcuitest, build-settings, automation]
+difficulty: intermediate
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is Prepare iOS Project?
+
+Before running automated UI tests on an iOS application, the project must be
+configured with the correct build settings and dependencies. This includes
+enabling test automation flags so that element identifiers (accessibility IDs)
+are visible to the test framework, and installing all required project
+dependencies.
+
+> Without these configuration changes, Appium and the XCUITest driver can still
+> discover elements using iOS predicate strings or class chain queries, but these
+> approaches are significantly less reliable and more fragile than using
+> accessibility identifiers.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/xcode/" />
+  <LinkBadge href="/guides/appium/" />
+  <LinkBadge href="/guides/configure-ios-drivers/" />
+</div>
+
+Ensure you have:
+
+- The iOS project cloned from your repository
+- Followed the project's getting-started guide
+- Xcode installed and configured
+- The XCUITest driver configured (see the Configure iOS Drivers guide)
+
+## Open the iOS Project
+
+Open the project's `.xcodeproj` file in Xcode:
+
+```bash
+open <project-name>.xcodeproj
+```
+
+Or navigate to the project directory and open it with Xcode:
+
+```bash
+cd /path/to/your/ios-project
+xed .
+```
+
+You should see the project structure in the Xcode Project Explorer with all
+targets listed under the **TARGETS** section.
+
+## Configure Build Settings
+
+To enable UI test automation, you need to modify the Swift compiler flags in the
+project's build settings.
+
+### Locate the Swift Compiler Flags
+
+1. In the Project Explorer, select the appropriate target under **TARGETS** (e.g.,
+   your app's core framework target)
+2. Click on the **Build Settings** tab
+3. In the search box, type `other swift flags` to filter the settings
+4. Locate the **Other Swift Flags** setting under **Swift Compiler - Custom Flags**
+
+### Modify the Debug Flags
+
+Double-click on the **Debug** row to edit the flags. The specific flags vary by
+project, but the general pattern is:
+
+1. **Remove** any development-only environment flags (e.g., `-DUSE_DEV_ENV`)
+2. **Add** a test automation environment flag (e.g., `-DUSE_TEST_AUTOMATION_ENV`)
+
+Example Debug flags (project-specific — consult your team for exact values):
+
+```
+$(inherited) -DDEBUG -DUSE_TEST_AUTOMATION_ENV
+```
+
+> Leave the **Release** flags unchanged. Only the Debug configuration needs the
+> test automation flag.
+
+> **Important:** Do not commit these build setting changes to your repository.
+> These are local-only changes for running UI tests on your machine.
+
+## Configure Gradle Properties (Android/Hybrid Projects Only)
+
+If your iOS project includes Android or cross-platform components that use
+Gradle, edit `~/.gradle/gradle.properties` and add the following values:
+
+```properties
+nexusUsername=
+nexusPassword=
+googleMapsKey=<your-google-maps-key>
+```
+
+- `nexusUsername` and `nexusPassword` can be left blank
+- `googleMapsKey` **must** have a valid value — ask your team for the key
+
+> If you do not configure these properties, you may encounter build errors related
+> to Google Maps framework linking. Skip this section if your project does not use
+> Gradle.
+
+## Apple Silicon Configuration
+
+Some projects use a custom environment variable to configure CocoaPods for Apple
+Silicon (M1, M2, M3, or M4). Check your project's documentation or `Podfile` for
+architecture-specific settings.
+
+A common pattern is adding the following to your `~/.zshrc`:
+
+```bash
+export IS_M1=1
+```
+
+Then reload your shell:
+
+```bash
+source ~/.zshrc
+```
+
+> This is a project-specific convention, not a standard CocoaPods setting. Consult
+> your team to confirm whether your project requires this variable.
+
+## Install Project Dependencies
+
+### Install Ruby Gems
+
+Navigate to the root of the iOS project and install the required Ruby gems:
+
+```bash
+bundle install
+```
+
+> `bundle install` reads the `Gemfile` and installs all specified gems along with
+> their dependencies, using versions locked in `Gemfile.lock`.
+
+If successful, you should see:
+
+```
+Bundle complete! <x> Gemfile dependencies, <x> gems now installed.
+```
+
+### Install CocoaPods
+
+Install the project's CocoaPods dependencies:
+
+```bash
+bundle exec pod install
+```
+
+> `bundle exec` ensures the correct version of CocoaPods is used. `pod install`
+> reads the `Podfile` and installs all specified pods along with their
+> dependencies.
+
+If successful, you should see:
+
+```
+Pod installation complete! There are <x> dependencies from the Podfile and <x> total pods installed.
+```
+
+### Open the Workspace
+
+After `pod install` completes, always open the `.xcworkspace` file (not the
+`.xcodeproj`) to include the installed pods:
+
+```bash
+open <project-name>.xcworkspace
+```
+
+## Troubleshooting
+
+### Google Maps Architecture Error
+
+If you see the following error:
+
+```
+Building for iOS Simulator, but linking in object file built for iOS,
+file '.../Pods/GoogleMaps/Maps/Frameworks/GoogleMaps.framework/GoogleMaps'
+for architecture arm64
+```
+
+This is caused by missing configuration. Ensure you have:
+
+1. Added the required keys to `~/.gradle/gradle.properties` (especially
+   `googleMapsKey`)
+2. Added `export IS_M1=1` to your `~/.zshrc` (Apple Silicon Macs only)
+3. Reloaded your shell with `source ~/.zshrc`
+4. Run `bundle exec pod install` again after making these changes
+
+### "bundle: command not found"
+
+Install Bundler, the Ruby gem manager:
+
+```bash
+gem install bundler
+```
+
+### Pod Install Fails
+
+If `bundle exec pod install` fails:
+
+1. Try updating the CocoaPods repo:
+   ```bash
+   bundle exec pod repo update
+   ```
+2. Clear the CocoaPods cache:
+   ```bash
+   bundle exec pod cache clean --all
+   ```
+3. Remove existing pods and reinstall:
+   ```bash
+   rm -rf Pods Podfile.lock
+   bundle exec pod install
+   ```
+
+### Build Settings Not Taking Effect
+
+If changes to **Other Swift Flags** do not seem to take effect:
+
+1. Clean the build folder: **Product > Clean Build Folder** (or press
+   `Cmd + Shift + K`)
+2. Delete derived data:
+   ```bash
+   rm -rf ~/Library/Developer/Xcode/DerivedData
+   ```
+3. Close and reopen the workspace
+4. Rebuild the project
+
+## Resources
+
+<LinkCard
+  href="https://appium.github.io/appium-xcuitest-driver/latest/preparation/real-device-config/"
+  title="XCUITest Real Device Configuration"
+  description="Official Appium documentation for configuring iOS real device testing"
+/>
+<LinkCard
+  href="https://guides.cocoapods.org/using/getting-started.html"
+  title="CocoaPods Getting Started"
+  description="Official CocoaPods guide for installing and managing iOS dependencies"
+/>
+<LinkCard
+  href="https://developer.apple.com/documentation/xcode/build-settings-reference"
+  title="Xcode Build Settings Reference"
+  description="Apple's complete reference for all Xcode build settings"
+/>
