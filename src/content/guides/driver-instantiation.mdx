@@ -1,0 +1,325 @@
+---
+title: Driver Instantiation
+description:
+  Create and configure Appium and Selenium driver instances for mobile and web
+  test automation using Options classes
+category: Testing
+order: 29
+tags: [appium, selenium, testing, driver, automation, webdriver]
+difficulty: intermediate
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is Driver Instantiation?
+
+Driver instantiation is the process of creating a WebDriver session that
+connects your test code to the application under test. The driver is the bridge
+between your test scripts and the browser or mobile device -- every interaction
+(tapping, typing, scrolling) goes through this driver instance.
+
+In a typical test framework, two entry points are provided:
+
+- **Selenium WebDriver** for web testing (browsers)
+- **Appium WebDriver** for mobile testing (iOS and Android)
+
+Both follow the same pattern: create an options/capabilities object, then pass
+it to a driver constructor that starts the automation session.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/appium/" />
+  <LinkBadge href="/guides/desired-capabilities/" />
+</div>
+
+## Mobile Driver (Appium)
+
+### Android
+
+```python
+from appium import webdriver
+from appium.options import UiAutomator2Options
+
+options = UiAutomator2Options()
+options.platform_name = "Android"
+options.device_name = "emulator-5554"
+options.automation_name = "UiAutomator2"
+options.app = "/path/to/app.apk"
+
+driver = webdriver.Remote(
+    command_executor="http://127.0.0.1:4723",
+    options=options,
+)
+```
+
+### iOS
+
+```python
+from appium import webdriver
+from appium.options import XCUITestOptions
+
+options = XCUITestOptions()
+options.platform_name = "iOS"
+options.device_name = "iPhone 15"
+options.platform_version = "17.0"
+options.automation_name = "XCUITest"
+options.app = "/path/to/app.ipa"
+
+driver = webdriver.Remote(
+    command_executor="http://127.0.0.1:4723",
+    options=options,
+)
+```
+
+> In Appium 2.x, the server URL is `http://127.0.0.1:4723` (no `/wd/hub` path).
+> The `/wd/hub` prefix was required in Appium 1.x but is no longer needed.
+
+## Web Driver (Selenium)
+
+### Chrome
+
+```python
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+options = Options()
+options.add_argument("--window-size=1920,1080")
+
+driver = webdriver.Chrome(options=options)
+```
+
+### Firefox
+
+```python
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+
+options = Options()
+
+driver = webdriver.Firefox(options=options)
+```
+
+### Headless Mode
+
+For CI environments or when you do not need a visible browser:
+
+```python
+from selenium.webdriver.chrome.options import Options
+
+options = Options()
+options.add_argument("--headless=new")
+options.add_argument("--window-size=1920,1080")
+options.add_argument("--disable-gpu")
+```
+
+## Driver Architecture
+
+The driver follows a layered architecture:
+
+```text
+Test Code (test_login.py)
+    |
+Page Object (LoginPage)
+    |
+Framework Wrapper (AppiumBase / SeleniumBase)
+    |
+Core Driver (appium.webdriver / selenium.webdriver)
+    |
+Automation Server (Appium / Selenium Grid / ChromeDriver)
+    |
+Application Under Test
+```
+
+1. **Core Driver** -- The Appium or Selenium WebDriver instance that manages
+   the session
+2. **Framework Wrapper** -- Optional wrapper classes (e.g., `AppiumBase`,
+   `SeleniumBase`) that add convenience methods for common operations
+3. **Page Object** -- Classes that represent pages/screens and use the driver
+   to interact with elements
+4. **Test Code** -- Test functions that use page objects to verify behavior
+
+> The driver instantiation creates the **Core Driver**. Your page objects should
+> receive this driver instance in their constructor.
+
+## Using Framework Wrappers
+
+If your test framework provides wrapper classes around the core driver, the
+typical pattern is:
+
+```python
+# create the core driver
+from appium import webdriver
+from appium.options import UiAutomator2Options
+
+options = UiAutomator2Options()
+options.platform_name = "Android"
+options.device_name = "emulator-5554"
+options.app = "/path/to/app.apk"
+
+core_driver = webdriver.Remote(
+    command_executor="http://127.0.0.1:4723",
+    options=options,
+)
+
+# wrap it with the framework wrapper
+from framework import AppiumBase
+wrapped_driver = AppiumBase(core_driver)
+
+# pass to page objects
+from screens.login_screen import LoginScreen
+login = LoginScreen(wrapped_driver)
+```
+
+The wrapper adds framework-specific functionality (custom waits, logging,
+screenshot capture) while the page objects remain driver-agnostic.
+
+## Driver Lifecycle
+
+### Setup and Teardown
+
+Always clean up the driver session when tests complete:
+
+```python
+import pytest
+from appium import webdriver
+from appium.options import UiAutomator2Options
+
+
+@pytest.fixture
+def driver():
+    options = UiAutomator2Options()
+    options.platform_name = "Android"
+    options.device_name = "emulator-5554"
+    options.app = "/path/to/app.apk"
+
+    driver = webdriver.Remote(
+        command_executor="http://127.0.0.1:4723",
+        options=options,
+    )
+
+    yield driver
+
+    driver.quit()
+```
+
+### Session Scope
+
+For performance, you can share a single driver session across multiple tests:
+
+```python
+@pytest.fixture(scope="session")
+def driver():
+    # driver is created once for the entire test session
+    ...
+    yield driver
+    driver.quit()
+```
+
+> Use session-scoped drivers carefully. Tests must not depend on state left by
+> previous tests. Use `appium:noReset` and `appium:fullReset` capabilities to
+> control app state between tests.
+
+## Good to Know
+
+### Remote Execution
+
+To run tests against a remote Appium server or Selenium Grid, change the
+`command_executor` URL:
+
+```python
+driver = webdriver.Remote(
+    command_executor="http://remote-server:4723",
+    options=options,
+)
+```
+
+### Implicit vs Explicit Waits
+
+After instantiating the driver, configure wait behavior:
+
+```python
+# implicit wait (applies to all find_element calls)
+driver.implicitly_wait(10)
+
+# explicit wait (recommended -- wait for specific conditions)
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+wait = WebDriverWait(driver, 10)
+element = wait.until(EC.presence_of_element_located((By.ID, "username")))
+```
+
+> Prefer explicit waits over implicit waits. Mixing both can lead to
+> unpredictable timeout behavior.
+
+## Troubleshooting
+
+### "Could not start a new session"
+
+1. Ensure the Appium server is running (`appium` in a separate terminal)
+2. Verify the server URL matches your `command_executor`
+3. Check that the specified driver is installed (`appium driver list --installed`)
+
+### "Connection refused" on Port 4723
+
+The Appium server is not running or is running on a different port:
+
+```bash
+# start the Appium server
+appium
+
+# or on a specific port
+appium --port 4724
+```
+
+### "/wd/hub" Path Errors
+
+If you see errors related to `/wd/hub`:
+
+- **Appium 2.x**: Use `http://127.0.0.1:4723` (no path suffix)
+- **Appium 1.x** (legacy): Used `http://127.0.0.1:4723/wd/hub`
+
+If you must connect to a server that expects `/wd/hub`, start Appium with the
+base path flag:
+
+```bash
+appium --base-path /wd/hub
+```
+
+### Driver Quit Errors
+
+If `driver.quit()` fails or hangs, the session may already be terminated. Wrap
+cleanup in a try/except:
+
+```python
+@pytest.fixture
+def driver():
+    ...
+    yield driver
+
+    try:
+        driver.quit()
+    except Exception:
+        pass
+```
+
+## Resources
+
+<LinkCard
+  href="https://appium.io/docs/en/latest/quickstart/"
+  title="Appium Quickstart"
+  description="Official Appium guide for creating your first automation session"
+/>
+<LinkCard
+  href="https://www.selenium.dev/documentation/webdriver/getting_started/"
+  title="Selenium WebDriver Getting Started"
+  description="Official Selenium documentation for setting up and using WebDriver"
+/>
+<LinkCard
+  href="https://appium.github.io/python-client-sphinx/"
+  title="Appium Python Client"
+  description="API documentation for the Appium Python client library"
+/>

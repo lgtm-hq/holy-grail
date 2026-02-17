@@ -1,0 +1,360 @@
+---
+title: Locator Strategy
+description:
+  Identify and interact with UI elements using locator strategies for web and
+  mobile test automation with Selenium and Appium
+category: Testing
+order: 30
+tags: [testing, locators, selenium, appium, xpath, accessibility-id, automation]
+difficulty: intermediate
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is a Locator Strategy?
+
+A locator is a way to identify elements on a page or screen. It is the argument
+passed to `find_element` methods in Selenium and Appium. The locator tells the
+driver **how** to find the element (by ID, by name, by XPath, etc.) and **what**
+value to match.
+
+Choosing the right locator strategy is critical for writing tests that are
+reliable, readable, and resistant to UI changes.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/appium/" />
+  <LinkBadge href="/guides/page-object-model/" />
+</div>
+
+## Locator Types
+
+### Web Locators (Selenium)
+
+| Strategy | `By` Constant | Example | Reliability |
+|----------|--------------|---------|-------------|
+| ID | `By.ID` | `"login-btn"` | High |
+| Name | `By.NAME` | `"username"` | High |
+| CSS Selector | `By.CSS_SELECTOR` | `".btn-primary"` | High |
+| Class Name | `By.CLASS_NAME` | `"submit-button"` | Medium |
+| Link Text | `By.LINK_TEXT` | `"Sign In"` | Medium |
+| Partial Link Text | `By.PARTIAL_LINK_TEXT` | `"Sign"` | Low |
+| Tag Name | `By.TAG_NAME` | `"input"` | Low |
+| XPath | `By.XPATH` | `"//input[@id='user']"` | Low |
+
+### Mobile Locators (Appium)
+
+| Strategy | `AppiumBy` Constant | Example | Reliability |
+|----------|-------------------|---------|-------------|
+| Accessibility ID | `AppiumBy.ACCESSIBILITY_ID` | `"login_button"` | Highest |
+| ID (resource-id) | `AppiumBy.ID` | `"com.app:id/login"` | High |
+| Class Name | `AppiumBy.CLASS_NAME` | `"android.widget.Button"` | Medium |
+| iOS Class Chain | `AppiumBy.IOS_CLASS_CHAIN` | `"**/XCUIElementTypeButton"` | Medium |
+| iOS Predicate | `AppiumBy.IOS_PREDICATE` | `"label == 'Login'"` | Medium |
+| Android UIAutomator | `AppiumBy.ANDROID_UIAUTOMATOR` | `"new UiSelector().text(\"Login\")"` | Medium |
+| XPath | `AppiumBy.XPATH` | `"//XCUIElementTypeButton"` | Low |
+
+## Recommended Priority
+
+Use the most reliable locator strategy available. Fall back to less reliable
+strategies only when necessary:
+
+1. **Accessibility ID** -- Best for mobile; works cross-platform (iOS + Android)
+2. **ID** -- Best for web; unique and fast
+3. **CSS Selector** -- Flexible and performant for web
+4. **iOS Class Chain / Predicate** -- iOS-specific, more reliable than XPath
+5. **Android UIAutomator** -- Android-specific, more reliable than XPath
+6. **Class Name** -- Useful when combined with index or other filters
+7. **XPath** -- Last resort; fragile and slow
+
+> **Avoid XPath whenever possible.** XPath locators are tightly coupled to the
+> DOM/element hierarchy. Any structural change in the UI will break them. Ask
+> your development team to add unique accessibility IDs to elements instead.
+
+## Defining Locators
+
+### Tuple Approach
+
+The standard way to define locators in Selenium and Appium is as a tuple of
+`(By, value)`:
+
+```python
+from selenium.webdriver.common.by import By
+from appium.webdriver.common.appiumby import AppiumBy
+
+# web
+username_input = (By.ID, "username")
+submit_button = (By.CSS_SELECTOR, "button[type='submit']")
+
+# mobile
+login_button = (AppiumBy.ACCESSIBILITY_ID, "login_button")
+email_field = (AppiumBy.ID, "com.example.app:id/email")
+```
+
+Use the tuple with `find_element`:
+
+```python
+element = driver.find_element(*username_input)
+element.send_keys("user123")
+```
+
+### Data Class Approach
+
+For larger test suites, a data class provides better readability and
+debugging information:
+
+```python
+from dataclasses import dataclass
+from selenium.webdriver.common.by import By
+
+
+@dataclass
+class LocatorDefinition:
+    by: str
+    locator: str
+    description: str = ""
+```
+
+Usage:
+
+```python
+from appium.webdriver.common.appiumby import AppiumBy
+
+# web
+username = LocatorDefinition(
+    by=By.ID,
+    locator="username",
+    description="Username input on the login page",
+)
+
+# mobile
+login_btn = LocatorDefinition(
+    by=AppiumBy.ACCESSIBILITY_ID,
+    locator="login_button",
+    description="Login button on the login screen",
+)
+```
+
+Use with `find_element`:
+
+```python
+element = driver.find_element(username.by, username.locator)
+```
+
+> The data class approach adds a `description` field that makes debugging
+> easier -- when a test fails, you can see exactly which element on which
+> page/screen was not found.
+
+## Finding Locators
+
+### Web Elements
+
+Right-click on any element in a browser and select **Inspect** (or press
+`F12`). The developer tools will open and highlight the element in the DOM.
+
+To copy a locator:
+
+1. Right-click the highlighted element in the DOM tree
+2. Select **Copy**
+3. Choose the locator type: **Copy selector** (CSS), **Copy XPath**,
+   **Copy JS path**, etc.
+
+### Mobile Elements
+
+Use the **Appium Inspector** application to inspect elements on a mobile
+device or simulator:
+
+1. Start an Appium server
+2. Open <LinkBadge href="/guides/appium/" />
+3. Configure the desired capabilities for your device
+4. Start a session
+5. Click on any element to view its properties (accessibility ID, resource-id,
+   class, text, XPath, etc.)
+
+The Appium Inspector shows all available attributes for each element, making
+it easy to choose the best locator strategy.
+
+## Platform-Specific Locators
+
+### iOS Class Chain
+
+iOS Class Chain queries are faster and more reliable than XPath for iOS:
+
+```python
+from appium.webdriver.common.appiumby import AppiumBy
+
+# find a button by label
+button = (AppiumBy.IOS_CLASS_CHAIN, "**/XCUIElementTypeButton[`label == 'Login'`]")
+
+# find the third cell in a table
+cell = (AppiumBy.IOS_CLASS_CHAIN, "**/XCUIElementTypeCell[3]")
+
+# find a text field inside a specific view
+field = (AppiumBy.IOS_CLASS_CHAIN, "**/XCUIElementTypeTextField[`value == 'Email'`]")
+```
+
+### iOS Predicate String
+
+iOS Predicate strings use NSPredicate syntax for attribute matching:
+
+```python
+# exact match
+button = (AppiumBy.IOS_PREDICATE, "label == 'Login'")
+
+# contains
+field = (AppiumBy.IOS_PREDICATE, "name CONTAINS 'email'")
+
+# begins with
+header = (AppiumBy.IOS_PREDICATE, "label BEGINSWITH 'Welcome'")
+
+# combine conditions
+element = (AppiumBy.IOS_PREDICATE, "type == 'XCUIElementTypeButton' AND label == 'Submit'")
+```
+
+### Android UIAutomator
+
+UIAutomator selectors use Android's `UiSelector` API:
+
+```python
+# find by text
+button = (AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().text("Login")')
+
+# find by content-description (accessibility ID)
+icon = (AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().description("settings_icon")')
+
+# find by resource-id
+field = (AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().resourceId("com.app:id/email")')
+
+# scrollable container
+item = (AppiumBy.ANDROID_UIAUTOMATOR,
+    'new UiScrollable(new UiSelector().scrollable(true))'
+    '.scrollIntoView(new UiSelector().text("Item Name"))')
+```
+
+## Page Object Example
+
+Putting it all together in a page object:
+
+```python
+from appium.webdriver.common.appiumby import AppiumBy
+
+
+class LoginScreen:
+
+    USERNAME_INPUT = (AppiumBy.ACCESSIBILITY_ID, "username_field")
+    PASSWORD_INPUT = (AppiumBy.ACCESSIBILITY_ID, "password_field")
+    LOGIN_BUTTON = (AppiumBy.ACCESSIBILITY_ID, "login_button")
+    ERROR_MESSAGE = (AppiumBy.ACCESSIBILITY_ID, "error_label")
+
+    def __init__(self, driver):
+        self.driver = driver
+
+    def enter_username(self, username: str):
+        self.driver.find_element(*self.USERNAME_INPUT).send_keys(username)
+
+    def enter_password(self, password: str):
+        self.driver.find_element(*self.PASSWORD_INPUT).send_keys(password)
+
+    def tap_login(self):
+        self.driver.find_element(*self.LOGIN_BUTTON).click()
+
+    def get_error_message(self) -> str:
+        return self.driver.find_element(*self.ERROR_MESSAGE).text
+```
+
+## Good to Know
+
+### Work With Your Development Team
+
+The most effective way to improve test reliability is to ask developers to add
+**accessibility identifiers** to all interactive elements. This benefits both
+test automation and real accessibility for users with assistive technologies.
+
+### Avoid Dynamic Locators
+
+Locators that change between app builds or sessions are unreliable:
+
+```python
+# bad -- auto-generated IDs change between builds
+button = (By.ID, "button-a1b2c3d4")
+
+# good -- stable, meaningful ID
+button = (By.ID, "submit-order-button")
+```
+
+### Multiple Elements
+
+To find all matching elements (e.g., list items), use `find_elements` (plural):
+
+```python
+from appium.webdriver.common.appiumby import AppiumBy
+
+items = driver.find_elements(AppiumBy.CLASS_NAME, "XCUIElementTypeCell")
+for item in items:
+    print(item.text)
+```
+
+## Troubleshooting
+
+### Element Not Found
+
+1. Verify the locator value in Appium Inspector or browser DevTools
+2. Add an explicit wait before the `find_element` call
+3. Check if the element is inside an iframe (web) or a different context
+   (mobile webview)
+4. Ensure the page/screen has fully loaded
+
+### XPath Is Fragile
+
+If your XPath locators break frequently:
+
+1. Switch to Accessibility ID or ID locators
+2. Use shorter, attribute-based XPath instead of positional XPath:
+   ```python
+   # bad -- positional XPath
+   (By.XPATH, "/html/body/div[3]/form/div[2]/input")
+
+   # better -- attribute-based XPath
+   (By.XPATH, "//input[@name='username']")
+
+   # best -- use ID or Accessibility ID instead
+   (By.ID, "username")
+   ```
+
+### iOS Class Chain Not Working
+
+Ensure you are using backticks (`` ` ``) for predicate expressions within class
+chain queries, not single or double quotes:
+
+```python
+# correct
+(AppiumBy.IOS_CLASS_CHAIN, "**/XCUIElementTypeButton[`label == 'Login'`]")
+
+# incorrect
+(AppiumBy.IOS_CLASS_CHAIN, "**/XCUIElementTypeButton[label == 'Login']")
+```
+
+## Resources
+
+<LinkCard
+  href="https://www.selenium.dev/documentation/webdriver/elements/locators/"
+  title="Selenium Locator Strategies"
+  description="Official Selenium documentation on all available locator strategies"
+/>
+<LinkCard
+  href="https://appium.io/docs/en/latest/guides/migrating-1-to-2/"
+  title="Appium 1.x to 2.x Migration"
+  description="Migration guide including changes to locator APIs in Appium 2.x"
+/>
+<LinkCard
+  href="https://github.com/appium/appium-inspector"
+  title="Appium Inspector"
+  description="Cross-platform GUI inspector for mobile apps to find element locators"
+/>
+<LinkCard
+  href="https://developer.apple.com/documentation/xctest/xcuielementquery"
+  title="XCUIElementQuery (Apple)"
+  description="Apple's documentation on querying UI elements in XCUITest"
+/>

@@ -1,0 +1,311 @@
+---
+title: Page Object Model
+description:
+  Understand the Page Object Model design pattern for structuring UI test
+  automation code with clean separation between test logic and page interactions
+category: Testing
+order: 27
+tags: [testing, design-patterns, page-object-model, selenium, appium, automation]
+difficulty: intermediate
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What is the Page Object Model?
+
+The Page Object Model (POM) is a design pattern used in UI test automation that
+creates a class-based representation of each page or screen in your application.
+Each page class encapsulates the element locators and interaction methods for
+that page, separating **what** is on the page from **how** it is tested.
+
+Without POM, test code mixes element definitions, interactions, and assertions
+into a single file. As the test suite grows, this becomes difficult to maintain
+-- a single UI change can require updating dozens of test files.
+
+> POM is not specific to any framework. It works with Selenium (web), Appium
+> (mobile), and Playwright (web) -- any tool that interacts with UI elements.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/appium/" />
+  <LinkBadge href="/guides/python/" />
+</div>
+
+## The Problem Without POM
+
+Consider a simple login page with a username field, password field, and login
+button. Without POM, the test file contains everything:
+
+```python
+# test_login.py
+from selenium.webdriver.common.by import By
+
+
+def test_login(driver):
+    # element locators are hardcoded in the test
+    driver.find_element(By.ID, "username").send_keys("user123")
+    driver.find_element(By.ID, "password").send_keys("pass123")
+    driver.find_element(By.ID, "login_button").click()
+```
+
+If the `username` field's ID changes, you must update every test that references
+it. With 50 tests interacting with the login page, that is 50 files to change.
+
+## The Solution With POM
+
+POM separates the page structure into its own class:
+
+### Define the Page Object
+
+```python
+# pages/login_page.py
+from selenium.webdriver.common.by import By
+
+
+class LoginPage:
+
+    # locators
+    USERNAME_INPUT = (By.ID, "username")
+    PASSWORD_INPUT = (By.ID, "password")
+    LOGIN_BUTTON = (By.ID, "login_button")
+
+    def __init__(self, driver):
+        self.driver = driver
+
+    # interaction methods
+    def enter_username(self, username: str):
+        self.driver.find_element(*self.USERNAME_INPUT).send_keys(username)
+
+    def enter_password(self, password: str):
+        self.driver.find_element(*self.PASSWORD_INPUT).send_keys(password)
+
+    def click_login(self):
+        self.driver.find_element(*self.LOGIN_BUTTON).click()
+
+    def login(self, username: str, password: str):
+        self.enter_username(username)
+        self.enter_password(password)
+        self.click_login()
+```
+
+### Use It in Tests
+
+```python
+# tests/test_login.py
+from pages.login_page import LoginPage
+
+
+def test_successful_login(driver):
+    login_page = LoginPage(driver)
+
+    login_page.login("user123", "pass123")
+
+    # assertions go here
+    assert driver.current_url == "/dashboard"
+```
+
+Now if the `username` field's ID changes, you update **one file**
+(`login_page.py`) and all 50 tests continue to work.
+
+## Structure
+
+A typical POM project is organized as follows:
+
+```text
+project/
+  pages/               # page objects (one per page/screen)
+    login_page.py
+    home_page.py
+    settings_page.py
+  tests/               # test files
+    test_login.py
+    test_home.py
+    test_settings.py
+  conftest.py           # shared fixtures (driver setup/teardown)
+```
+
+For mobile testing, the `pages/` directory is often called `screens/` to
+reflect that mobile apps have screens rather than pages:
+
+```text
+project/
+  screens/
+    login_screen.py
+    home_screen.py
+  tests/
+    test_login.py
+    test_home.py
+```
+
+## Key Principles
+
+### One Class Per Page
+
+Each page or screen in the application gets its own class. Do not combine
+multiple pages into a single class.
+
+### Locators as Class Attributes
+
+Define element locators as class-level constants (tuples of `By` type and
+value). This makes them easy to find and update:
+
+```python
+from selenium.webdriver.common.by import By
+
+
+class CheckoutPage:
+    CART_TOTAL = (By.CSS_SELECTOR, ".cart-total")
+    CHECKOUT_BUTTON = (By.ID, "checkout-btn")
+    PROMO_INPUT = (By.NAME, "promo_code")
+```
+
+### Methods Represent User Actions
+
+Page methods should represent actions a user would take, not low-level
+element interactions. Name methods from the user's perspective:
+
+```python
+# good -- describes user intent
+def add_item_to_cart(self, item_name: str): ...
+def apply_promo_code(self, code: str): ...
+
+# bad -- describes implementation details
+def click_add_button(self): ...
+def type_in_promo_field(self, text: str): ...
+```
+
+### Return Page Objects for Navigation
+
+When an action navigates to a new page, return the new page object:
+
+```python
+class LoginPage:
+    def login(self, username: str, password: str):
+        self.enter_username(username)
+        self.enter_password(password)
+        self.click_login()
+        return HomePage(self.driver)
+```
+
+This enables fluent test code:
+
+```python
+def test_login_navigates_to_home(driver):
+    home = LoginPage(driver).login("user123", "pass123")
+    assert home.is_welcome_displayed()
+```
+
+## Mobile Example (Appium)
+
+For mobile apps, the pattern is identical but uses `AppiumBy` for locator
+strategies:
+
+```python
+# screens/login_screen.py
+from appium.webdriver.common.appiumby import AppiumBy
+
+
+class LoginScreen:
+
+    USERNAME_INPUT = (AppiumBy.ACCESSIBILITY_ID, "username_field")
+    PASSWORD_INPUT = (AppiumBy.ACCESSIBILITY_ID, "password_field")
+    LOGIN_BUTTON = (AppiumBy.ACCESSIBILITY_ID, "login_button")
+
+    def __init__(self, driver):
+        self.driver = driver
+
+    def login(self, username: str, password: str):
+        self.driver.find_element(*self.USERNAME_INPUT).send_keys(username)
+        self.driver.find_element(*self.PASSWORD_INPUT).send_keys(password)
+        self.driver.find_element(*self.LOGIN_BUTTON).click()
+```
+
+## Good to Know
+
+### Base Page Class
+
+Create a base class with common methods to avoid duplication:
+
+```python
+class BasePage:
+
+    def __init__(self, driver):
+        self.driver = driver
+
+    def find(self, locator: tuple):
+        return self.driver.find_element(*locator)
+
+    def click(self, locator: tuple):
+        self.find(locator).click()
+
+    def type_text(self, locator: tuple, text: str):
+        element = self.find(locator)
+        element.clear()
+        element.send_keys(text)
+
+    def is_displayed(self, locator: tuple) -> bool:
+        try:
+            return self.find(locator).is_displayed()
+        except Exception:
+            return False
+```
+
+Page objects then inherit from this base:
+
+```python
+class LoginPage(BasePage):
+    USERNAME_INPUT = (By.ID, "username")
+
+    def enter_username(self, username: str):
+        self.type_text(self.USERNAME_INPUT, username)
+```
+
+### File Organization
+
+You can store locators and methods in the same class file (recommended for
+most projects), or separate locators into their own files for very large page
+objects. Choose whichever approach your team prefers and apply it consistently.
+
+### POM vs Screenplay Pattern
+
+POM is the most widely used pattern for UI test automation. The Screenplay
+pattern is a more advanced alternative that models tests around actors and
+tasks. For most teams, POM provides the right balance of structure and
+simplicity.
+
+## Troubleshooting
+
+### Element Not Found in Page Object
+
+If elements defined in a page object are not being found:
+
+1. Verify the locator values are correct (inspect the element in the browser
+   or Appium Inspector)
+2. Ensure the page has fully loaded before interacting with elements
+3. Add explicit waits in your base page class
+
+### Tests Fail After UI Changes
+
+This is expected -- the benefit of POM is that you only need to update the
+locator in the page class, not in every test file. Update the locator constant
+and all tests should pass again.
+
+## Resources
+
+<LinkCard
+  href="https://www.selenium.dev/documentation/test_practices/encouraged/page_object_models/"
+  title="Selenium Page Object Models"
+  description="Official Selenium documentation on the Page Object Model design pattern"
+/>
+<LinkCard
+  href="https://martinfowler.com/bliki/PageObject.html"
+  title="Martin Fowler on Page Objects"
+  description="The original description of the Page Object pattern by Martin Fowler"
+/>
+<LinkCard
+  href="https://appium.io/docs/en/latest/guides/migrating-1-to-2/"
+  title="Appium 1.x to 2.x Migration Guide"
+  description="Guide for updating Appium test code from 1.x to 2.x patterns"
+/>
