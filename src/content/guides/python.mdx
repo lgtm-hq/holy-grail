@@ -1023,8 +1023,8 @@ poetry add $(cat requirements.txt)
 
 > This approach fails on files with comments, blank lines, or directives like
 > `-r` or `-e`. For complex `requirements.txt` files, pre-filter with
-> `grep -v '^\s*#\|^\s*$\|^-' requirements.txt | xargs poetry add` or use a
-> migration tool like [poetry-import](https://github.com/brunonicko/poetry-import).
+> `grep -Ev '^[[:space:]]*#|^[[:space:]]*$|^-' requirements.txt | xargs poetry add`
+> or use a migration tool like [poetry-import](https://github.com/brunonicko/poetry-import).
 
 **Export to requirements.txt:**
 

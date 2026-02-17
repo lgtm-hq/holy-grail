@@ -41,6 +41,12 @@ function slugify(str: string): string {
     .replace(/^-|-$/g, '');
 }
 
+// Generate stable, collision-free keys for each tab (index-suffixed)
+const tabKeys = validTabs.map((t, i) => {
+  const s = slugify(t) || 'tab';
+  return `${s}-${i}`;
+});
+
 // Pre-render named slots (Astro requires static slot names in templates)
 const renderedSlots: Record<string, string> = {};
 for (const tab of validTabs) {
@@ -53,16 +59,16 @@ for (const tab of validTabs) {
 {validTabs.length > 0 && (
   <div class="tabs-container" data-tabs-group={validTabs.map(slugify).join(',')}>
     <div class="tabs tabs-boxed" role="tablist">
-      {validTabs.map((tab) => {
-        const slug = slugify(tab);
+      {validTabs.map((tab, i) => {
+        const key = tabKeys[i];
         return (
           <button
             type="button"
-            id={`${instanceId}-tab-${slug}`}
+            id={`${instanceId}-tab-${key}`}
             class={`tab ${tab === activeTab ? 'active' : ''}`}
             role="tab"
             aria-selected={tab === activeTab ? 'true' : 'false'}
-            aria-controls={`${instanceId}-panel-${slug}`}
+            aria-controls={`${instanceId}-panel-${key}`}
             tabindex={tab === activeTab ? '0' : '-1'}
             data-tab={tab}
           >
@@ -71,14 +77,14 @@ for (const tab of validTabs) {
         );
       })}
     </div>
-    {validTabs.map((tab) => {
-      const slug = slugify(tab);
+    {validTabs.map((tab, i) => {
+      const key = tabKeys[i];
       return (
         <div
           class={`tab-content ${tab === activeTab ? 'active' : ''}`}
           role="tabpanel"
-          id={`${instanceId}-panel-${slug}`}
-          aria-labelledby={`${instanceId}-tab-${slug}`}
+          id={`${instanceId}-panel-${key}`}
+          aria-labelledby={`${instanceId}-tab-${key}`}
           data-tab-content={tab}
         >
           <Fragment set:html={renderedSlots[tab] || ''} />
