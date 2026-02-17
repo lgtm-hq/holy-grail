@@ -319,13 +319,10 @@ DevTools proxy that implements the Chrome Remote Debugging Protocol for iOS
 devices. It enables debugging of Safari and web views on real iOS devices using
 Chrome DevTools.
 
-> In **legacy Appium setups (pre-2.x)**, ios-webkit-debug-proxy is required for
-> accessing web views on real iOS devices during mobile automation testing. Appium 2.x
-> with the XCUITest driver uses `appium-ios-device` for real-device Web Inspector
-> access, so ios-webkit-debug-proxy is no longer needed in modern configurations. It
-> remains relevant if you maintain a legacy Appium setup. Consult the
-> [Appium 2.x documentation](https://appium.io/docs/en/latest/) for current guidance
-> on real-device Web Inspector setup.
+> ios-webkit-debug-proxy is required for Appium testing when your app uses web
+> views (hybrid apps) on real iOS devices. The `startIWDP` capability that
+> previously allowed Appium to manage the proxy automatically is deprecated in
+> Appium 2.x — you must start the proxy manually before running your tests.
 
 ### Installation
 
@@ -387,14 +384,8 @@ ios_webkit_debug_proxy -c null:9221,:9222-9322
 
 ### Appium Integration
 
-For Appium testing with web views, you can either start the proxy manually or let
-Appium manage it automatically.
-
-> **Note:** Automatic ios-webkit-debug-proxy management via the `startIWDP`
-> capability is deprecated in Appium 2.x. Start the proxy manually before running
-> your tests instead.
-
-Start the proxy before your tests. Appium will automatically use it for web context
+For Appium testing with web views on real devices, start the proxy manually
+before running your tests. Appium will automatically use it for web context
 switching. Use W3C-compliant namespaced capabilities:
 
 ```json
