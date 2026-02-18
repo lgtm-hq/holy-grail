@@ -1024,7 +1024,7 @@ poetry add $(cat requirements.txt)
 > This approach fails on files with comments, blank lines, or directives like
 > `-r` or `-e`. For complex `requirements.txt` files, pre-filter with
 > `grep -Ev '^[[:space:]]*#|^[[:space:]]*$|^-' requirements.txt | xargs poetry add`
-> or use a migration tool like [poetry-import](https://github.com/brunonicko/poetry-import).
+> or use a migration tool like [poetry-import-plugin](https://github.com/benbenbang/poetry-import-plugin).
 
 **Export to requirements.txt:**
 
@@ -1276,7 +1276,7 @@ rm -rf ~/Library/Caches/pip
   description="Fast Python package installer, resolver, and project manager"
 />
 <LinkCard
-  href="https://pipenv.pypa.io/"
+  href="https://pipenv.pypa.io/en/latest/"
   title="Pipenv Documentation"
   description="Official Pipenv documentation with tutorials and API reference"
 />

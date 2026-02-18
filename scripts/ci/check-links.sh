@@ -21,6 +21,7 @@ echo "Checking external links in ${CONTENT_DIR}/**/*.mdx ..."
 #   your-app(.|$) — placeholder hostnames in guide code examples (your-app, your-app.example.com)
 #   github.com, raw.githubusercontent.com — rate-limited, causes intermittent CI failures
 #   npmjs.com, registry.npmjs.org — rate-limited
+#   java.com — blocks automated requests (403 Forbidden)
 
 lychee \
 	--no-progress \
@@ -33,6 +34,7 @@ lychee \
 	--exclude 'raw\.githubusercontent\.com' \
 	--exclude 'npmjs\.com' \
 	--exclude 'registry\.npmjs\.org' \
+	--exclude 'java\.com' \
 	--timeout 30 \
 	--max-retries 3 \
 	--accept '200..=204' \
