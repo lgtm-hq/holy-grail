@@ -1,0 +1,229 @@
+---
+title: SSH with 1Password
+description:
+  Set up SSH key management with 1Password as your SSH agent for secure,
+  passwordless authentication across machines
+category: Infrastructure
+order: 1
+tags: [ssh, security, 1password, infrastructure]
+difficulty: beginner
+relatedGuides: [ssh-server-hardening, dotfiles, cloudflare-tunnels]
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+import Tabs from '../../components/Tabs.astro';
+
+## What is SSH?
+
+SSH (Secure Shell) is a cryptographic network protocol for secure communication
+between machines over an unsecured network. It is the standard way to remotely
+access servers, push code to Git repositories, and transfer files.
+
+> SSH uses public-key cryptography. You generate a **key pair** — a private key
+> (kept secret) and a public key (shared with servers). When you connect, the
+> server verifies your identity using the public key without ever seeing your
+> private key.
+
+### Ed25519 vs RSA
+
+| Feature     | Ed25519                        | RSA                                 |
+| ----------- | ------------------------------ | ----------------------------------- |
+| Key size    | 256-bit (fixed)                | 2048–4096 bit                       |
+| Performance | Faster signing and verification | Slower, especially at 4096-bit      |
+| Security    | Modern elliptic curve          | Secure at 3072+ bits, but aging     |
+| Adoption    | Supported everywhere since ~2018 | Universal, legacy systems included |
+
+**Use Ed25519 for all new keys.** It is faster, more secure, and produces
+shorter keys. RSA is only needed for compatibility with very old systems.
+
+## Prerequisites
+
+None — this is a foundational guide.
+
+## Generate an SSH Key in 1Password
+
+Instead of managing SSH keys as files on disk, 1Password can generate, store,
+and serve your keys through its built-in SSH agent. This means your private key
+never touches the filesystem.
+
+1. Open **1Password** and create a new **SSH Key** item
+2. Select **Ed25519** as the key type
+3. Give it a descriptive title (e.g., `Personal SSH Key`)
+4. Save the item — 1Password stores both the private and public key
+
+> Copy the **public key** from the item details — you will need it for adding to
+> remote machines and Git hosts.
+
+## Configure the 1Password SSH Agent
+
+<Tabs tabs={["macOS", "Linux"]}>
+<Fragment slot="macOS">
+
+### Enable the SSH Agent
+
+1. Open **1Password > Settings > Developer**
+2. Enable **Use the SSH agent**
+
+The agent socket is located at:
+
+```
+~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock
+```
+
+### Configure `~/.ssh/config`
+
+Create or edit `~/.ssh/config` to point SSH at the 1Password agent:
+
+```bash
+Host *
+  IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+```
+
+</Fragment>
+<Fragment slot="Linux">
+
+### Enable the SSH Agent
+
+1. Open **1Password > Settings > Developer**
+2. Enable **Use the SSH agent**
+
+The agent socket is located at:
+
+```
+~/.1password/agent.sock
+```
+
+### Configure `~/.ssh/config`
+
+Create or edit `~/.ssh/config`:
+
+```bash
+Host *
+  IdentityAgent ~/.1password/agent.sock
+```
+
+> **Important:** You must install 1Password from the `.deb` package or native
+> package manager. The **Snap** and **Flatpak** versions do not support the SSH
+> agent or CLI integration due to sandboxing restrictions.
+
+</Fragment>
+</Tabs>
+
+## Add Your Public Key to Remote Machines
+
+Copy your public key to a remote server:
+
+```bash
+ssh-copy-id -i ~/.ssh/id_ed25519.pub user@remote-host
+```
+
+Or manually append it to the server's `~/.ssh/authorized_keys`:
+
+```bash
+echo "your-public-key" >> ~/.ssh/authorized_keys
+```
+
+For **GitHub** or **GitLab**, add the public key in your account settings under
+**SSH Keys**.
+
+## Verify the Agent Works
+
+List the keys available through the agent:
+
+```bash
+ssh-add -l
+```
+
+You should see your Ed25519 key fingerprint. Test a connection:
+
+```bash
+# GitHub
+ssh -T git@github.com
+
+# Remote server
+ssh user@remote-host
+```
+
+1Password will prompt you to authorize the connection via biometrics or your
+master password.
+
+## Multi-Host SSH Config
+
+In practice, you often access the same server through different networks. Define
+separate host entries for each access path, with `Host *` at the bottom to
+provide shared settings like the 1Password agent:
+
+```bash
+# Local network
+Host homelab-local
+  HostName 192.168.77.100
+  User ha-admin
+  Port 2222
+
+# Tailscale
+Host homelab-ts
+  HostName 100.x.x.x
+  User ha-admin
+  Port 2222
+
+# Cloudflare Tunnel (no Port needed — tunnel handles it)
+Host homelab-cf
+  HostName ssh.yourdomain.com
+  User ha-admin
+  ProxyCommand cloudflared access ssh --hostname %h
+
+# Shared settings (must be last — Host * is a wildcard)
+Host *
+  IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+```
+
+> **`Host *` must come last.** SSH reads the config top-to-bottom and applies
+> the first matching host. Specific entries go first, the wildcard goes last.
+
+> **Non-standard ports:** When the server runs SSH on a port other than 22,
+> add `Port 2222` to the host entry. When using a Cloudflare Tunnel, the port
+> is defined in the tunnel's `config.yml` — the client entry does not need it.
+
+## Troubleshooting
+
+### `Permission denied (publickey)`
+
+- Verify the agent is running: `ssh-add -l` should list your key
+- Check that `~/.ssh/config` has the correct `IdentityAgent` path
+- Ensure your public key is in the server's `~/.ssh/authorized_keys`
+
+### Agent returns no identities
+
+- Confirm 1Password is unlocked
+- Re-enable **Use the SSH agent** in 1Password settings
+- On Linux, verify you are not using the Snap or Flatpak version
+
+### `signing failed for ED25519` on Linux
+
+If SSH operations (like `git pull`) hang or fail with a signing error, 1Password
+is waiting for you to approve the key usage in the GUI. Open the 1Password
+window and approve the prompt. To avoid this in the future, select
+**Approve and Remember** when prompted.
+
+### `Bad owner or permissions on ~/.ssh/config`
+
+SSH requires strict permissions on config files:
+
+```bash
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/config
+```
+
+## Resources
+
+<LinkCard
+  href="https://developer.1password.com/docs/ssh/"
+  title="1Password SSH Documentation"
+  description="Official guide for using 1Password as your SSH agent"
+/>
+<LinkCard
+  href="https://www.openssh.com/"
+  title="OpenSSH"
+  description="The OpenSSH project homepage with documentation and release notes"
+/>

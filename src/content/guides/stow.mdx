@@ -1,0 +1,244 @@
+---
+title: GNU Stow
+description:
+  Install and use GNU Stow to manage symlinks for configuration files,
+  dotfiles, and multi-machine setups
+category: Infrastructure
+order: 3
+tags: [stow, symlinks, configuration, infrastructure]
+difficulty: beginner
+relatedGuides: [dotfiles, zsh]
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+import Tabs from '../../components/Tabs.astro';
+
+## What is GNU Stow?
+
+GNU Stow is a symlink farm manager. It creates symbolic links from a source
+directory into a target directory, letting you keep files organized in one
+location while they appear in their expected paths.
+
+> Stow was originally designed for managing software installed from source in
+> `/usr/local`, but it has become the go-to tool for managing dotfiles. Instead
+> of scattering config files across your filesystem, you keep them in a single
+> directory and let Stow create the symlinks.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/zsh/" />
+</div>
+
+## Installation
+
+<Tabs tabs={["macOS", "Linux"]}>
+<Fragment slot="macOS">
+
+```bash
+brew install stow
+```
+
+</Fragment>
+<Fragment slot="Linux">
+
+```bash
+# Debian / Ubuntu
+sudo apt install stow
+
+# Fedora
+sudo dnf install stow
+
+# Arch
+sudo pacman -S stow
+```
+
+</Fragment>
+</Tabs>
+
+## How Stow Works
+
+Stow operates on **packages** — directories that contain files mirroring the
+structure of a target directory. When you stow a package, Stow creates symlinks
+in the target so the files appear where they belong.
+
+```
+# Source (your repo)
+my-dotfiles/
+└── zsh/
+    └── .zshrc
+
+# After: stow -t ~ zsh
+~/.zshrc → ~/my-dotfiles/zsh/.zshrc
+```
+
+The key insight: the files inside a Stow package must mirror the directory
+structure they should have **relative to the target directory**.
+
+### Nested Directories
+
+For configs in subdirectories, replicate the full path inside the package:
+
+```
+my-dotfiles/
+└── starship/
+    └── .config/
+        └── starship.toml
+
+# After: stow -t ~ starship
+~/.config/starship.toml → ~/my-dotfiles/starship/.config/starship.toml
+```
+
+## Core Commands
+
+### Stow a Package
+
+```bash
+# Stow into home directory
+stow -t ~ zsh
+
+# Stow from a specific source directory
+stow -d shared -t ~ zsh
+```
+
+The `-d` flag specifies the directory containing your packages. The `-t` flag
+specifies the target directory where symlinks are created.
+
+### Unstow (Remove Symlinks)
+
+```bash
+stow -t ~ -D zsh
+```
+
+This removes the symlinks but leaves the original files in your repo untouched.
+
+### Re-stow (Update)
+
+```bash
+stow -t ~ -R zsh
+```
+
+Re-stow is equivalent to unstow + stow. Use it after reorganizing files within
+a package.
+
+### Dry Run (Preview)
+
+```bash
+stow -t ~ -n -v zsh
+```
+
+The `-n` flag simulates the operation without making changes. Combined with
+`-v` (verbose), it shows exactly what Stow would do.
+
+## Working with Multiple Packages
+
+Stow multiple packages at once:
+
+```bash
+stow -t ~ zsh git starship
+```
+
+Or use the `-d` flag to stow from a subdirectory:
+
+```bash
+# Stow all shared configs
+stow -d shared -t ~ zsh ssh git
+
+# Stow machine-specific configs
+stow -d machines/my-laptop -t ~ .
+```
+
+## Handling Conflicts
+
+Stow will refuse to create a symlink if a real file already exists at the
+target location:
+
+```
+WARNING! stowing zsh would cause conflicts:
+  * existing target is neither a link nor a directory: .zshrc
+```
+
+To resolve this, back up or remove the existing file first:
+
+```bash
+mv ~/.zshrc ~/.zshrc.backup
+stow -t ~ zsh
+```
+
+### Adopting Existing Files
+
+Use `--adopt` to move existing files into the Stow package and replace them
+with symlinks in one step:
+
+```bash
+stow -t ~ --adopt zsh
+```
+
+> **Warning:** `--adopt` modifies your package directory by overwriting its
+> files with the target's versions. Use with caution — review with
+> `git diff` afterwards.
+
+## File Permissions
+
+Stow creates symlinks, so the **original file's permissions** are what matter.
+This is particularly important for SSH configs:
+
+```bash
+# SSH requires strict permissions
+chmod 600 ~/my-dotfiles/ssh/.ssh/config
+chmod 700 ~/my-dotfiles/ssh/.ssh
+```
+
+The symlink itself does not have separate permissions — it inherits from the
+target file.
+
+## Ignoring Files
+
+Create a `.stow-local-ignore` file in a package to exclude files from being
+stowed:
+
+```bash
+# .stow-local-ignore
+README.md
+LICENSE
+\.git
+```
+
+Or create a global `.stow-global-ignore` in your home directory.
+
+## Troubleshooting
+
+### `BUG IN STOW: a]`
+
+This usually means Stow encountered an unexpected file type or a broken
+symlink. Check for broken symlinks in the target directory:
+
+```bash
+find ~ -maxdepth 1 -type l -xtype l
+```
+
+### Stow creates directories instead of symlinks
+
+This happens when the target directory already exists. Stow will create
+individual file symlinks inside the directory rather than symlinking the
+directory itself. This is normally fine — it allows other packages to contribute
+files to the same directory.
+
+### `stow: ERROR: Stow directory does not exist`
+
+Ensure you are running the command from the correct working directory, or use
+the `-d` flag to specify the source directory explicitly.
+
+## Resources
+
+<LinkCard
+  href="https://www.gnu.org/software/stow/manual/"
+  title="GNU Stow Manual"
+  description="Official GNU Stow documentation with complete usage reference"
+/>
+<LinkCard
+  href="https://brandon.invergo.net/news/2012-05-26-using-gnu-stow-to-manage-your-dotfiles.html"
+  title="Using GNU Stow to Manage Dotfiles"
+  description="A practical introduction to dotfile management with Stow"
+/>

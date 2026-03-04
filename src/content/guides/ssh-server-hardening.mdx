@@ -1,0 +1,225 @@
+---
+title: SSH Server Hardening
+description:
+  Harden your SSH server by restricting host key algorithms to Ed25519,
+  removing unnecessary keys, and validating your configuration
+category: Infrastructure
+order: 2
+tags: [ssh, security, server, hardening, infrastructure]
+difficulty: intermediate
+relatedGuides: [ssh, cloudflare-tunnels]
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## Why Harden SSH?
+
+A default SSH server installation generates multiple host key types (RSA, ECDSA,
+Ed25519) and accepts a broad range of algorithms. Hardening reduces the attack
+surface by restricting to only the strongest option: **Ed25519**.
+
+> Host keys identify your server to connecting clients. If an attacker
+> compromises a weak host key, they can impersonate your server (man-in-the-middle
+> attack). Removing unused key types eliminates this risk.
+
+> **Before you begin:** Ensure you have an alternative access method (console,
+> AnyDesk, IPMI) in case SSH becomes inaccessible during hardening. Always keep
+> an existing SSH session open while making changes.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/ssh/" />
+</div>
+
+## Audit Your SSH Configuration
+
+Start by reviewing what is currently in `/etc/ssh/`:
+
+```bash
+ls -la /etc/ssh/
+```
+
+You will likely see multiple host key files:
+
+```
+ssh_host_rsa_key / ssh_host_rsa_key.pub
+ssh_host_ecdsa_key / ssh_host_ecdsa_key.pub
+ssh_host_ed25519_key / ssh_host_ed25519_key.pub
+```
+
+Check your current `sshd_config` for host key directives:
+
+```bash
+grep -i "HostKey" /etc/ssh/sshd_config
+```
+
+On Ubuntu 24.04, also check for drop-in configs that may override the main
+file:
+
+```bash
+ls /etc/ssh/sshd_config.d/
+grep -r "HostKey" /etc/ssh/sshd_config.d/
+```
+
+> The main `sshd_config` includes `Include /etc/ssh/sshd_config.d/*.conf` at
+> the top, so drop-in files can override your settings. Remove or edit any
+> conflicting directives in that directory.
+
+## Restrict to Ed25519 Only
+
+### 1. Edit the SSH Server Config
+
+Open `/etc/ssh/sshd_config`:
+
+```bash
+sudo nano /etc/ssh/sshd_config
+```
+
+Set a single `HostKey` directive and remove or comment out the others:
+
+```bash
+# Host keys — Ed25519 only
+HostKey /etc/ssh/ssh_host_ed25519_key
+
+# Disable password authentication (use key-based auth)
+PasswordAuthentication no
+
+# Disable root login
+PermitRootLogin no
+```
+
+### 2. Remove Unnecessary Host Keys
+
+Back up and then remove RSA and ECDSA host keys:
+
+```bash
+# Backup first
+sudo mkdir -p /etc/ssh/old_keys
+sudo mv /etc/ssh/ssh_host_rsa_key* /etc/ssh/old_keys/
+sudo mv /etc/ssh/ssh_host_ecdsa_key* /etc/ssh/old_keys/
+```
+
+### 3. Regenerate the Ed25519 Host Key (if needed)
+
+If the Ed25519 host key does not exist or you want to start fresh:
+
+```bash
+sudo rm -f /etc/ssh/ssh_host_ed25519_key*
+sudo ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -N ""
+```
+
+### 4. Validate the Configuration
+
+Always validate before restarting:
+
+```bash
+sudo sshd -t
+```
+
+If the command exits silently (no output), the configuration is valid.
+
+### 5. Restart SSH
+
+```bash
+# Ubuntu / Debian
+sudo systemctl restart ssh
+
+# RHEL / Fedora / Arch
+sudo systemctl restart sshd
+```
+
+> **Keep your current session open** while restarting. Open a second terminal
+> and verify you can still connect before closing the original session.
+
+### 6. Change the Default Port (Optional)
+
+Changing the SSH port from `22` to a non-standard port reduces noise from
+automated scanners:
+
+```bash
+# In /etc/ssh/sshd_config
+Port 2222
+```
+
+> This is not a security measure on its own — it only reduces log noise. Always
+> combine with key-based authentication and disabled password login.
+
+When using a non-standard port, `known_hosts` entries are stored as
+`[hostname]:port`, so clearing stale entries requires:
+
+```bash
+ssh-keygen -R "[your-server]:2222"
+```
+
+## Verify the Hardening
+
+From a client machine, connect and check which host key algorithm is used:
+
+```bash
+ssh -v user@your-server 2>&1 | grep "Server host key"
+```
+
+You should see:
+
+```
+debug1: Server host key: ssh-ed25519 SHA256:...
+```
+
+## Troubleshooting
+
+### `sshd_t` fails with "Missing privilege separation directory"
+
+Create the required directory:
+
+```bash
+sudo mkdir -p /run/sshd
+```
+
+### `sshd_t` reports syntax errors
+
+Common causes:
+- Duplicate directives — ensure each setting appears only once
+- Trailing whitespace or invalid characters
+- Include files with conflicting settings — check `/etc/ssh/sshd_config.d/`
+
+```bash
+# Check for conflicting drop-in configs
+ls /etc/ssh/sshd_config.d/
+```
+
+### `client_input_hostkeys: received duplicated ssh-ed25519 host key`
+
+This warning means the same `HostKey` directive appears more than once in your
+`sshd_config`. Check for duplicates:
+
+```bash
+grep "^HostKey" /etc/ssh/sshd_config
+```
+
+Remove the duplicate line, validate with `sshd -t`, and restart.
+
+### Clients get `Host key verification failed`
+
+After changing host keys, clients that previously connected will have the old
+key fingerprint cached in `~/.ssh/known_hosts`. Remove the stale entry:
+
+```bash
+ssh-keygen -R your-server-hostname
+```
+
+Then reconnect and accept the new fingerprint.
+
+## Resources
+
+<LinkCard
+  href="https://man.openbsd.org/sshd_config"
+  title="sshd_config Manual"
+  description="Complete reference for all SSH server configuration options"
+/>
+<LinkCard
+  href="https://www.ssh-audit.com/"
+  title="SSH Audit"
+  description="Online tool and CLI utility to audit SSH server security"
+/>

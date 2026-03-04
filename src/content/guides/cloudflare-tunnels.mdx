@@ -1,0 +1,386 @@
+---
+title: Cloudflare Tunnels
+description:
+  Set up Cloudflare Tunnels to securely expose your SSH server and other
+  services without opening ports or configuring firewall rules
+category: Infrastructure
+order: 6
+tags: [cloudflare, tunnels, networking, ssh, infrastructure]
+difficulty: intermediate
+relatedGuides: [ssh, ssh-server-hardening, dotfiles]
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+import Tabs from '../../components/Tabs.astro';
+
+## What are Cloudflare Tunnels?
+
+Cloudflare Tunnels create an outbound-only connection from your server to
+Cloudflare's edge network. This lets you expose services (SSH, web apps, APIs)
+without opening inbound ports on your firewall or configuring port forwarding.
+
+> Your server connects **out** to Cloudflare. Clients connect to Cloudflare.
+> Cloudflare routes traffic between them. No public IP or open ports required on
+> your end.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/ssh/" />
+</div>
+
+You also need:
+- A Cloudflare account with a domain added to it
+- Docker installed on the server (for the Docker approach)
+
+## Token vs Config File Approach
+
+Cloudflare supports two ways to configure tunnels:
+
+| Approach     | Pros                                                  | Cons                               |
+| ------------ | ----------------------------------------------------- | ---------------------------------- |
+| Token-based  | Quick setup, managed via Cloudflare dashboard         | Less portable, harder to version   |
+| Config file  | Version-controllable, multi-service, full flexibility | Requires local config management   |
+
+**We recommend the config file approach** for long-term use — it is more
+transparent, reproducible, and easier to manage alongside your dotfiles.
+
+> **Important:** Token-based tunnels are **always remotely managed** by the
+> Cloudflare dashboard. Even if you add a local `config.yml`, the dashboard
+> config will override it. To use a truly local config, you must create the
+> tunnel via `cloudflared tunnel create` (config file approach).
+
+<Tabs tabs={["Config File (Recommended)", "Token-Based"]}>
+<Fragment slot="Config File (Recommended)">
+
+## Server Setup with Docker (Config File)
+
+### 1. Authenticate with Cloudflare
+
+Run the login flow to generate a certificate. The `cloudflared` container runs
+as `nonroot`, so ensure the mount directory is writable:
+
+```bash
+chmod 777 /path/to/cloudflared/data
+docker run --rm -v /path/to/cloudflared/data:/home/nonroot/.cloudflared \
+  cloudflare/cloudflared:latest tunnel login
+```
+
+This opens a URL in the logs — open it in your browser, select your domain,
+and authorize. The certificate is saved as `cert.pem`.
+
+> After the cert is saved, tighten permissions: `chmod 755 /path/to/cloudflared/data`
+
+### 2. Create a Tunnel
+
+```bash
+docker run --rm -v /path/to/cloudflared/data:/home/nonroot/.cloudflared \
+  cloudflare/cloudflared:latest tunnel create my-tunnel
+```
+
+Note the **Tunnel ID** from the output — you will need it for the config file
+and DNS setup. This also creates a `<TUNNEL_ID>.json` credentials file.
+
+> **Keep the credentials file secret.** Add `*.json` to your `.gitignore` if
+> you are tracking the cloudflared config in your dotfiles repo.
+
+### 3. Create the Config File
+
+Create `config.yml` in your cloudflared data directory:
+
+```yaml
+tunnel: <TUNNEL_ID>
+credentials-file: /home/nonroot/.cloudflared/<TUNNEL_ID>.json
+
+ingress:
+  - hostname: ssh.yourdomain.com
+    service: ssh://localhost:2222
+  - service: http_status:404
+```
+
+> The `credentials-file` path must use the **container path** (`/home/nonroot/...`),
+> not the host path. The last `ingress` rule is a **catch-all** — it is required
+> by Cloudflare and handles any requests that do not match a specific hostname.
+
+### 4. Add DNS Records
+
+Create a CNAME record for each hostname:
+
+```bash
+docker run --rm -v /path/to/cloudflared/data:/home/nonroot/.cloudflared \
+  cloudflare/cloudflared:latest tunnel route dns my-tunnel ssh.yourdomain.com
+```
+
+### 5. Run the Tunnel
+
+Using docker compose (recommended):
+
+```yaml
+services:
+  cloudflared:
+    container_name: cloudflared-tunnel
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    volumes:
+      - /path/to/cloudflared/data:/home/nonroot/.cloudflared/
+    network_mode: host
+    command:
+      - tunnel
+      - --no-autoupdate
+      - --config
+      - /home/nonroot/.cloudflared/config.yml
+      - run
+```
+
+> The `--config` flag is required to tell cloudflared to use your local config
+> file. Without it, the tunnel may still look for remote configuration.
+> Using `network_mode: host` allows the tunnel to reach services on `localhost`.
+
+Or with `docker run`:
+
+```bash
+docker run -d --name cloudflared --restart unless-stopped \
+  --network host \
+  -v /path/to/cloudflared/data:/home/nonroot/.cloudflared \
+  cloudflare/cloudflared:latest tunnel --no-autoupdate \
+  --config /home/nonroot/.cloudflared/config.yml run
+```
+
+</Fragment>
+<Fragment slot="Token-Based">
+
+## Server Setup with Docker (Token-Based)
+
+The token-based approach is quicker to set up and managed entirely through the
+Cloudflare Zero Trust dashboard.
+
+### 1. Create a Tunnel in the Dashboard
+
+1. Go to **Cloudflare Zero Trust** → **Networks** → **Tunnels**
+2. Click **Create a tunnel**
+3. Choose **Cloudflared** as the connector
+4. Name your tunnel and click **Save**
+5. Copy the tunnel token from the install instructions
+
+### 2. Add Public Hostnames
+
+In the tunnel configuration, add public hostnames for each service:
+
+| Subdomain | Domain | Service |
+|-----------|--------|---------|
+| ssh | yourdomain.com | ssh://localhost:22 |
+| app | yourdomain.com | http://localhost:3000 |
+
+### 3. Run the Tunnel
+
+Using docker compose:
+
+```yaml
+services:
+  cloudflared:
+    container_name: cloudflared-tunnel
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARED_TOKEN}
+    command:
+      - tunnel
+      - --no-autoupdate
+      - run
+```
+
+Add the token to your `.env` file:
+
+```bash
+CLOUDFLARED_TOKEN=your-tunnel-token-here
+```
+
+Or with `docker run`:
+
+```bash
+docker run -d --name cloudflared --restart unless-stopped \
+  --network host \
+  -e TUNNEL_TOKEN=your-tunnel-token-here \
+  cloudflare/cloudflared:latest tunnel --no-autoupdate run
+```
+
+> **Note:** With the token approach, all ingress rules are managed in the
+> Cloudflare dashboard. Any local `config.yml` will be ignored. This is simpler
+> for quick setups but less portable and harder to version control.
+
+</Fragment>
+</Tabs>
+
+## Verify the Tunnel Works
+
+Check the tunnel logs to confirm all connections registered:
+
+```bash
+docker logs cloudflared-tunnel --tail 10
+```
+
+You should see `INF Registered tunnel connection` for each connector (typically
+4 connections). For config-file tunnels, you should **not** see an
+`Updated to new configuration` line — that indicates dashboard override.
+
+Test an HTTP service through the tunnel:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}" https://app.yourdomain.com
+```
+
+## Client-Side Setup
+
+> **HTTP vs SSH:** HTTP services (web apps, dashboards) work through the
+> browser without any client-side setup. SSH is **not HTTP** — it requires
+> `cloudflared` installed on the client machine to proxy the connection.
+
+To connect to your SSH server through the tunnel, install `cloudflared` on
+your client machine and use it as a proxy.
+
+### 1. Install cloudflared
+
+```bash
+# macOS
+brew install cloudflared
+
+# Debian / Ubuntu
+curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg \
+  | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
+echo "deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared $(lsb_release -cs) main" \
+  | sudo tee /etc/apt/sources.list.d/cloudflared.list
+sudo apt update && sudo apt install cloudflared
+```
+
+### 2. Configure SSH to Use the Tunnel
+
+Add a host entry to your `~/.ssh/config`:
+
+```bash
+Host my-server
+  HostName ssh.yourdomain.com
+  User your-username
+  ProxyCommand cloudflared access ssh --hostname %h
+
+# No Port directive needed — the tunnel config handles the port mapping
+```
+
+### 3. Connect
+
+```bash
+ssh my-server
+```
+
+Cloudflared proxies the connection through the tunnel. Combined with 1Password's
+SSH agent, this gives you end-to-end secure access without exposed ports.
+
+## Adding More Services
+
+Extend your `config.yml` to expose additional services:
+
+```yaml
+ingress:
+  - hostname: ssh.yourdomain.com
+    service: ssh://localhost:2222
+  - hostname: app.yourdomain.com
+    service: http://localhost:3000
+  - hostname: api.yourdomain.com
+    service: http://localhost:8080
+  - service: http_status:404
+```
+
+Remember to add DNS records for each new hostname:
+
+```bash
+docker run --rm -v ~/.cloudflared:/home/nonroot/.cloudflared \
+  cloudflare/cloudflared:latest tunnel route dns my-tunnel app.yourdomain.com
+```
+
+Then restart the tunnel container:
+
+```bash
+docker restart cloudflared
+```
+
+## Migrating from Token-Based to Config File
+
+If you started with a token-based tunnel and want to switch to config-file
+management:
+
+1. **Stop the existing container:**
+
+```bash
+docker compose stop cloudflared
+```
+
+2. **Authenticate with Cloudflare** to get a `cert.pem`:
+
+```bash
+chmod 777 /path/to/cloudflared/data
+docker run --rm -v /path/to/cloudflared/data:/home/nonroot/.cloudflared \
+  cloudflare/cloudflared:latest tunnel login
+chmod 755 /path/to/cloudflared/data
+```
+
+3. **Delete the old tunnel** (token-based tunnels are always remotely managed):
+
+```bash
+docker run --rm -v /path/to/cloudflared/data:/home/nonroot/.cloudflared \
+  cloudflare/cloudflared:latest tunnel delete <OLD_TUNNEL_ID>
+```
+
+4. **Delete public hostnames** from the Cloudflare Zero Trust dashboard for
+   the old tunnel.
+
+5. **Create a new tunnel:**
+
+```bash
+docker run --rm -v /path/to/cloudflared/data:/home/nonroot/.cloudflared \
+  cloudflare/cloudflared:latest tunnel create my-tunnel
+```
+
+6. **Create your `config.yml`** and **add DNS routes** as described above.
+
+7. **Update docker compose** — remove `TUNNEL_TOKEN` env var and add the
+   `--config` flag to the command.
+
+8. **Start the new tunnel:**
+
+```bash
+docker compose up -d cloudflared
+```
+
+## Troubleshooting
+
+### Tunnel shows "inactive" in Cloudflare dashboard
+
+- Check the container is running: `docker ps | grep cloudflared`
+- View logs: `docker logs cloudflared`
+- Verify the credentials file path in `config.yml` matches the container mount
+
+### `connection refused` when connecting via SSH
+
+- Ensure SSH is running on the server: `sudo systemctl status sshd`
+- Verify the `service` URL in `config.yml` matches your SSH port
+- Check that `--network host` is used in the Docker run command
+
+### DNS not resolving
+
+- Confirm the CNAME record exists in your Cloudflare DNS dashboard
+- Wait a few minutes for DNS propagation
+- Test with: `dig ssh.yourdomain.com`
+
+## Resources
+
+<LinkCard
+  href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/"
+  title="Cloudflare Tunnels Documentation"
+  description="Official documentation for setting up and managing Cloudflare Tunnels"
+/>
+<LinkCard
+  href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/"
+  title="SSH Through Cloudflare Tunnels"
+  description="Step-by-step guide for exposing SSH through a Cloudflare Tunnel"
+/>
