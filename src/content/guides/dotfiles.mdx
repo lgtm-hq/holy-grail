@@ -34,7 +34,7 @@ The key to multi-machine dotfiles is separating **shared** configs from
 **machine-specific** ones:
 
 ```
-~/turbo-dotfiles/
+~/my-dotfiles/
 ├── shared/
 │   └── zsh/
 │       └── .zshrc
@@ -69,8 +69,8 @@ The key to multi-machine dotfiles is separating **shared** configs from
 ### 1. Create the Repository
 
 ```bash
-mkdir -p ~/turbo-dotfiles/{shared,machines}
-cd ~/turbo-dotfiles
+mkdir -p ~/my-dotfiles/{shared,machines}
+cd ~/my-dotfiles
 git init
 ```
 
@@ -105,7 +105,7 @@ cp /opt/docker-compose.yaml machines/my-server/docker-compose.yaml
 On your Mac:
 
 ```bash
-cd ~/turbo-dotfiles
+cd ~/my-dotfiles
 stow -d shared -t ~ zsh
 stow -d machines/my-macbook -t ~ ssh
 ```
@@ -113,7 +113,7 @@ stow -d machines/my-macbook -t ~ ssh
 On your server:
 
 ```bash
-cd ~/turbo-dotfiles
+cd ~/my-dotfiles
 stow -d shared -t ~ zsh
 stow -d machines/my-server -t ~ ssh
 ```
@@ -124,7 +124,7 @@ If your existing dotfiles repo has configs at the root:
 
 ```bash
 # Before: flat structure
-turbo-dotfiles/
+my-dotfiles/
 ├── .zshrc
 └── .gitconfig
 
@@ -245,13 +245,13 @@ After making changes on one machine:
 
 ```bash
 # On the machine where you made changes
-cd ~/turbo-dotfiles
+cd ~/my-dotfiles
 git add -A
 git commit -m "update: cross-platform zshrc guards"
 git push
 
 # On the other machine
-cd ~/turbo-dotfiles
+cd ~/my-dotfiles
 git pull
 ```
 
@@ -284,6 +284,6 @@ SSH requires strict permissions. Even though Stow creates symlinks, the
 underlying file must have correct permissions:
 
 ```bash
-chmod 600 ~/turbo-dotfiles/machines/my-macbook/ssh/.ssh/config
-chmod 700 ~/turbo-dotfiles/machines/my-macbook/ssh/.ssh
+chmod 600 ~/my-dotfiles/machines/my-macbook/ssh/.ssh/config
+chmod 700 ~/my-dotfiles/machines/my-macbook/ssh/.ssh
 ```

@@ -157,20 +157,20 @@ provide shared settings like the 1Password agent:
 ```bash
 # Local network
 Host homelab-local
-  HostName 192.168.77.100
-  User ha-admin
+  HostName 192.168.1.100
+  User your-username
   Port 2222
 
 # Tailscale
 Host homelab-ts
   HostName 100.x.x.x
-  User ha-admin
+  User your-username
   Port 2222
 
 # Cloudflare Tunnel (no Port needed — tunnel handles it)
 Host homelab-cf
   HostName ssh.yourdomain.com
-  User ha-admin
+  User your-username
   ProxyCommand cloudflared access ssh --hostname %h
 
 # Shared settings (must be last — Host * is a wildcard)
