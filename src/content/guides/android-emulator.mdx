@@ -210,7 +210,7 @@ set avds to paragraphs of (do shell script "~/Library/Android/sdk/emulator/emula
 set avd to (choose from list avds with prompt "Select an AVD to start" default items "None" OK button name {"Start"} cancel button name {"Cancel"})
 if avd is false then return
 set avdSelected to item 1 of avd
-do shell script "~/Library/Android/sdk/emulator/emulator -avd " & avdSelected & " -no-boot-anim > /dev/null 2>&1 &"
+do shell script "~/Library/Android/sdk/emulator/emulator -avd " & quoted form of avdSelected & " -no-boot-anim > /dev/null 2>&1 &"
 ```
 
 > If your Android SDK is installed elsewhere, update the path to the

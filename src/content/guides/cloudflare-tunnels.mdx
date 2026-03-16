@@ -67,7 +67,7 @@ single-user setups:
 # Create the data directory and set ownership to the cloudflared container user (UID 65532)
 sudo mkdir -p /opt/cloudflared/data
 sudo chown 65532:65532 /opt/cloudflared/data
-sudo chmod 755 /opt/cloudflared/data
+sudo chmod 700 /opt/cloudflared/data
 
 docker run --rm -v /opt/cloudflared/data:/home/nonroot/.cloudflared \
   cloudflare/cloudflared:latest tunnel login
