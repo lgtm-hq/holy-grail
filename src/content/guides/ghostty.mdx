@@ -73,7 +73,7 @@ brew install --cask ghostty
 <Fragment slot="Linux">
 
 Ghostty provides packages for major distributions. See the
-[Ghostty installation docs](https://ghostty.org/docs/install) for your distro.
+[Ghostty installation docs](https://ghostty.org/docs/install/binary) for your distro.
 
 </Fragment>
 </Tabs>
@@ -102,6 +102,7 @@ To manage Ghostty config with GNU Stow:
 ```bash
 mkdir -p ~/my-dotfiles/shared/ghostty/.config/ghostty
 mv ~/.config/ghostty/config ~/my-dotfiles/shared/ghostty/.config/ghostty/config
+cd ~/my-dotfiles
 stow -d shared -t ~ ghostty
 ```
 

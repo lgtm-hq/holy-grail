@@ -64,19 +64,17 @@ convention is `/opt/cloudflared/data` for servers or `~/.cloudflared` for
 single-user setups:
 
 ```bash
-# Create the data directory
+# Create the data directory and set ownership to the cloudflared container user (UID 65532)
 sudo mkdir -p /opt/cloudflared/data
+sudo chown 65532:65532 /opt/cloudflared/data
+sudo chmod 755 /opt/cloudflared/data
 
-# Temporarily open permissions for the nonroot container user
-chmod 777 /opt/cloudflared/data
 docker run --rm -v /opt/cloudflared/data:/home/nonroot/.cloudflared \
   cloudflare/cloudflared:latest tunnel login
 ```
 
 This opens a URL in the logs — open it in your browser, select your domain,
 and authorize. The certificate is saved as `cert.pem`.
-
-> After the cert is saved, tighten permissions: `chmod 755 /opt/cloudflared/data`
 
 > **Important:** The `cloudflared` container runs as an unprivileged user (UID
 > 65532). This user **cannot follow symlinks** that point outside the

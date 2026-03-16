@@ -168,14 +168,14 @@ docker:
 
 # Copy configs that cannot be symlinked (e.g., unprivileged containers)
 copy-configs:
-    cp machines/my-server/cloudflared/config.yml /opt/cloudflared/data/config.yml
+    sudo cp machines/my-server/cloudflared/config.yml /opt/cloudflared/data/config.yml
 
 # Deploy everything for a specific machine
 setup target: shared (machine target)
 
 # Lint all shell scripts
 lint:
-    shellcheck **/*.sh
+    find . -name '*.sh' -print0 | xargs -0 shellcheck
 ```
 
 Run with `just shared`, `just setup my-server`, etc.

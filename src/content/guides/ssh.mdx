@@ -144,16 +144,24 @@ vault = "Private"
 
 ## Add Your Public Key to Remote Machines
 
-Copy your public key to a remote server:
+> When using 1Password as your SSH agent, the public key file may not exist on
+> disk. You can either save it from 1Password or paste it directly.
+
+**Option 1:** Save the public key from 1Password, then use `ssh-copy-id`:
 
 ```bash
+# Copy your public key from 1Password and save it to disk
+echo "ssh-ed25519 AAAA...your-public-key" > ~/.ssh/id_ed25519.pub
+
+# Copy it to the remote server
 ssh-copy-id -i ~/.ssh/id_ed25519.pub user@remote-host
 ```
 
-Or manually append it to the server's `~/.ssh/authorized_keys`:
+**Option 2:** Paste the public key directly on the remote server:
 
 ```bash
-echo "your-public-key" >> ~/.ssh/authorized_keys
+# On the remote server, append your public key
+echo "ssh-ed25519 AAAA...your-public-key" >> ~/.ssh/authorized_keys
 ```
 
 For **GitHub** or **GitLab**, add the public key in your account settings under
@@ -206,9 +214,19 @@ Host homelab-cf
   ProxyCommand cloudflared access ssh --hostname %h
 
 # Shared settings (must be last — Host * is a wildcard)
+# macOS:
 Host *
   IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+# Linux:
+# Host *
+#   IdentityAgent ~/.1password/agent.sock
 ```
+
+> **Platform-specific:** The `IdentityAgent` path differs between macOS and
+> Linux. Use the macOS path shown above, or the Linux path
+> (`~/.1password/agent.sock`). See the
+> [Configure the 1Password SSH Agent](#configure-the-1password-ssh-agent)
+> section for both paths.
 
 > **Tailscale** provides a WireGuard-based VPN overlay that assigns each device
 > a stable `100.x.x.x` address. This lets you SSH to your server from anywhere

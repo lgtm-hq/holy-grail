@@ -106,7 +106,9 @@ Infrastructure configs can also live here:
 # Server infrastructure
 mkdir -p machines/my-server/cloudflared
 cp /opt/cloudflared/data/config.yml machines/my-server/cloudflared/
-cp /opt/docker-compose.yaml machines/my-server/docker-compose.yaml
+
+mkdir -p machines/my-server/docker/opt
+cp /opt/docker-compose.yaml machines/my-server/docker/opt/docker-compose.yaml
 ```
 
 ### 3. Stow on Each Machine

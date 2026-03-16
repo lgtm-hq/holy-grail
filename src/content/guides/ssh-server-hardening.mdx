@@ -220,7 +220,7 @@ debug1: Server host key: ssh-ed25519 SHA256:...
 
 ## Troubleshooting
 
-### `sshd_t` fails with "Missing privilege separation directory"
+### `sshd -t` fails with "Missing privilege separation directory"
 
 Create the required directory:
 
@@ -228,7 +228,7 @@ Create the required directory:
 sudo mkdir -p /run/sshd
 ```
 
-### `sshd_t` reports syntax errors
+### `sshd -t` reports syntax errors
 
 Common causes:
 - Duplicate directives — ensure each setting appears only once

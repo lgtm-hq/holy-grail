@@ -208,7 +208,9 @@ it. Save it as an app via Script Editor or Automator for one-click access:
 ```applescript
 set avds to paragraphs of (do shell script "~/Library/Android/sdk/emulator/emulator -list-avds")
 set avd to (choose from list avds with prompt "Select an AVD to start" default items "None" OK button name {"Start"} cancel button name {"Cancel"})
-do shell script "~/Library/Android/sdk/emulator/emulator -avd " & avd & " -no-boot-anim > /dev/null 2>&1 &"
+if avd is false then return
+set avdSelected to item 1 of avd
+do shell script "~/Library/Android/sdk/emulator/emulator -avd " & avdSelected & " -no-boot-anim > /dev/null 2>&1 &"
 ```
 
 > If your Android SDK is installed elsewhere, update the path to the

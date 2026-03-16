@@ -129,6 +129,7 @@ To manage Starship config with GNU Stow:
 ```bash
 mkdir -p ~/my-dotfiles/shared/starship/.config
 mv ~/.config/starship.toml ~/my-dotfiles/shared/starship/.config/starship.toml
+cd ~/my-dotfiles
 stow -d shared -t ~ starship
 ```
 
@@ -194,6 +195,10 @@ brew install eza
 ```bash
 sudo apt install eza
 ```
+
+> If eza is not available in your distro's repositories, install via cargo
+> (`cargo install eza`) or download a pre-built binary from the
+> [eza releases page](https://github.com/eza-community/eza/releases).
 
 </Fragment>
 </Tabs>

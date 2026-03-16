@@ -280,12 +280,18 @@ caps = {
 }
 ```
 
-If the issue persists, try quitting and reinstalling WDA:
+If the issue persists, manually remove WDA so Appium can reinstall it on the
+next session:
 
 ```bash
-# Remove WDA from the device/simulator, then let Appium reinstall it
-appium driver doctor xcuitest
+# For simulators — uninstall the WDA bundle
+xcrun simctl uninstall booted com.facebook.WebDriverAgentRunner.xctrunner
+
+# For real devices — go to Settings > General > VPN & Device Management
+# and remove the WebDriverAgent profile
 ```
+
+Appium will automatically reinstall WDA when you start the next test session.
 
 ### Slow iOS Test Execution
 
