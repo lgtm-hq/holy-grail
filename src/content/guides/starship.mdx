@@ -1,13 +1,13 @@
 ---
-title: Starship & Ghostty
+title: Starship
 description:
-  Set up a modern terminal with Ghostty as your terminal emulator and Starship
-  as your cross-shell prompt, with Nerd Fonts, zoxide, and eza
+  Set up Starship, a fast cross-shell prompt, with presets, custom modules,
+  and companion CLI tools like zoxide and eza
 category: Infrastructure
-order: 5
-tags: [terminal, starship, ghostty, prompt, infrastructure]
+order: 6
+tags: [terminal, starship, prompt, zoxide, eza, infrastructure]
 difficulty: beginner
-relatedGuides: [zsh, dotfiles, stow]
+relatedGuides: [zsh, ghostty, dotfiles, stow]
 ---
 
 import LinkBadge from '../../components/LinkBadge.astro';
@@ -21,88 +21,16 @@ written in Rust and works across Bash, Zsh, Fish, and more. It replaces
 theme-based prompt systems (like Oh My Zsh themes or Powerlevel10k) with a
 single, cross-shell configuration.
 
-## What is Ghostty?
-
-Ghostty is a GPU-accelerated terminal emulator focused on speed, correctness,
-and native platform integration. It supports ligatures, true color, and custom
-themes out of the box.
-
 ## Prerequisites
 
 <div class="badge-group">
   <LinkBadge href="/guides/zsh/" />
 </div>
 
-## Install Nerd Fonts
+A terminal emulator with Nerd Font support (such as [Ghostty](/guides/ghostty/))
+is recommended but not required.
 
-Starship uses special glyphs for Git status, language icons, and other
-indicators. You need a patched **Nerd Font** to render them properly.
-
-<Tabs tabs={["macOS", "Linux"]}>
-<Fragment slot="macOS">
-
-```bash
-brew install --cask font-meslo-lg-nerd-font
-```
-
-Other popular choices:
-
-```bash
-brew install --cask font-jetbrains-mono-nerd-font
-brew install --cask font-fira-code-nerd-font
-```
-
-</Fragment>
-<Fragment slot="Linux">
-
-```bash
-# Download and install manually
-mkdir -p ~/.local/share/fonts
-cd ~/.local/share/fonts
-curl -fLO https://github.com/ryanoasis/nerd-fonts/releases/latest/download/Meslo.tar.xz
-tar -xf Meslo.tar.xz
-fc-cache -fv
-```
-
-</Fragment>
-</Tabs>
-
-## Install Ghostty
-
-<Tabs tabs={["macOS", "Linux"]}>
-<Fragment slot="macOS">
-
-```bash
-brew install --cask ghostty
-```
-
-</Fragment>
-<Fragment slot="Linux">
-
-Ghostty provides packages for major distributions. See the
-[Ghostty installation docs](https://ghostty.org/docs/install) for your distro.
-
-</Fragment>
-</Tabs>
-
-### Configure Ghostty
-
-Create `~/.config/ghostty/config`:
-
-```
-font-family = MesloLGS Nerd Font
-font-size = 14
-
-theme = Argonaut
-background-opacity = 0.95
-
-window-padding-x = 8
-window-padding-y = 8
-```
-
-> Browse available themes with `ghostty +list-themes` in terminal.
-
-## Install Starship
+## Installation
 
 <Tabs tabs={["macOS", "Linux"]}>
 <Fragment slot="macOS">
@@ -123,7 +51,7 @@ This installs to `/usr/local/bin/starship`.
 </Fragment>
 </Tabs>
 
-### Initialize Starship
+## Initialize Starship
 
 Add to your `~/.zshrc`:
 
@@ -134,7 +62,28 @@ command -v starship &>/dev/null && eval "$(starship init zsh)"
 > Using a `command -v` guard ensures the shell does not error if Starship is not
 > installed on a particular machine. This is important for shared dotfiles.
 
-### Choose a Preset
+## Lazy-Loading Shell Integrations
+
+The `command -v` + `eval` pattern used above is fast for tools like Starship
+and zoxide. But heavier tools — language version managers like `nvm`, `pyenv`,
+or `rbenv` — can add 200–500ms each to shell startup. For those, defer
+initialization until first use:
+
+```bash
+# Lazy-load nvm — only runs init when you first call nvm
+nvm() {
+  unfunction nvm
+  source "$NVM_DIR/nvm.sh"
+  nvm "$@"
+}
+```
+
+Use lazy-loading for tools you do not invoke in every shell session. Keep tools
+you use constantly (like Starship and zoxide) eager. See the
+[Dotfiles guide](/guides/dotfiles/) for more on cross-platform shell
+optimization.
+
+## Choose a Preset
 
 Starship includes several presets to get started quickly:
 
@@ -146,7 +95,7 @@ starship preset --list
 starship preset tokyo-night -o ~/.config/starship.toml
 ```
 
-### Customize Starship
+## Customize Starship
 
 Edit `~/.config/starship.toml` to tailor the prompt:
 
@@ -173,7 +122,7 @@ format = "[$time]($style) "
 time_format = "%H:%M"
 ```
 
-### Manage with Dotfiles
+## Manage with Dotfiles
 
 To manage Starship config with GNU Stow:
 
@@ -185,7 +134,8 @@ stow -d shared -t ~ starship
 
 ## Companion CLI Tools
 
-These modern CLI tools integrate well with a Starship + Ghostty setup.
+These modern CLI tools complement Starship and integrate well with a shared
+dotfiles setup.
 
 ### zoxide — Smarter `cd`
 
@@ -256,13 +206,6 @@ command -v eza &>/dev/null && alias ls='eza -la --icons'
 
 ## Troubleshooting
 
-### Icons display as squares or question marks
-
-You are missing a Nerd Font or your terminal is not configured to use it.
-Verify:
-1. A Nerd Font is installed (`fc-list | grep -i nerd` on Linux)
-2. Your terminal's font is set to the Nerd Font (Ghostty: `font-family` in config)
-
 ### `command not found: starship` after install
 
 On Linux, the installer places Starship in `/usr/local/bin`. Ensure this is on
@@ -291,17 +234,7 @@ disabled = true
   description="Complete reference for all Starship prompt modules and options"
 />
 <LinkCard
-  href="https://ghostty.org/docs"
-  title="Ghostty Documentation"
-  description="Official Ghostty terminal emulator documentation"
-/>
-<LinkCard
   href="https://www.bitdoze.com/starship-ghostty-terminal/"
   title="Mac Terminal Setup with Ghostty and Starship"
   description="Step-by-step guide for configuring a modern terminal environment"
-/>
-<LinkCard
-  href="https://www.nerdfonts.com/"
-  title="Nerd Fonts"
-  description="Patched fonts with developer icons and glyphs"
 />
