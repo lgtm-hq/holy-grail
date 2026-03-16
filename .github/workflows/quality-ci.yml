@@ -26,8 +26,9 @@ jobs:
       - name: Run lintro
         id: lintro
         env:
-          # py-lintro image pinned to specific digest for reproducibility
-          LINTRO_IMAGE: ghcr.io/lgtm-hq/py-lintro@sha256:199fb6d4141751622e5b363a5d5c05aca0e10fbf76295f911cae88453581d474
+          # py-lintro CI build tag — OCI index digests are broken in ghcr,
+          # so we pin to a ci-* tag with a direct Docker v2 manifest
+          LINTRO_IMAGE: ghcr.io/lgtm-hq/py-lintro:ci-23152510162
         run: |
           set +e
           docker run --rm -v "${{ github.workspace }}:/code" \
