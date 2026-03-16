@@ -153,6 +153,57 @@ When using a non-standard port, `known_hosts` entries are stored as
 ssh-keygen -R "[your-server]:2222"
 ```
 
+## Firewall Configuration
+
+### UFW Basics
+
+UFW (Uncomplicated Firewall) is the standard firewall on Ubuntu. Allow your
+SSH port before enabling it:
+
+```bash
+sudo ufw allow 2222/tcp comment "SSH"
+sudo ufw enable
+sudo ufw status verbose
+```
+
+> **Before enabling UFW**, always add a rule for your SSH port first. If you
+> skip this step, you will lock yourself out of remote access.
+
+### Docker and UFW: The Bypass Problem
+
+Docker modifies `iptables` directly, bypassing UFW rules entirely. A container
+publishing a port is accessible from the internet **even if UFW blocks that
+port**. This happens because Docker inserts its own chains (`DOCKER`,
+`DOCKER-USER`) that are evaluated before UFW's chains.
+
+### Securing Docker with DOCKER-USER
+
+The `DOCKER-USER` chain is the correct place to add firewall rules that Docker
+will respect:
+
+```bash
+# Allow traffic from your local network to Docker containers
+# Replace with your LAN subnet (e.g., 192.168.1.0/24 or 10.0.0.0/24)
+sudo iptables -I DOCKER-USER -s <your-lan-subnet>/24 -j ACCEPT
+
+# Allow established connections (required for outbound traffic)
+sudo iptables -I DOCKER-USER -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Drop all other external traffic to Docker containers
+sudo iptables -A DOCKER-USER -j DROP
+```
+
+Make the rules persistent across reboots:
+
+```bash
+sudo apt install iptables-persistent
+sudo netfilter-persistent save
+```
+
+> **Important:** Test these rules carefully. Overly restrictive `DOCKER-USER`
+> rules can break container-to-container communication and outbound traffic
+> from containers. Always verify your services still work after applying rules.
+
 ## Verify the Hardening
 
 From a client machine, connect and check which host key algorithm is used:
@@ -199,6 +250,23 @@ grep "^HostKey" /etc/ssh/sshd_config
 ```
 
 Remove the duplicate line, validate with `sshd -t`, and restart.
+
+### Docker containers accessible despite UFW deny rules
+
+If `ufw status` shows a port as blocked but the service is still reachable
+from outside, Docker is bypassing UFW via its own iptables chains. Use the
+`DOCKER-USER` chain as described in the Firewall Configuration section above.
+
+### Locked out after enabling UFW
+
+If you enabled UFW without first allowing your SSH port, access the server
+via console, IPMI, or a remote desktop tool and run:
+
+```bash
+sudo ufw allow <your-ssh-port>/tcp
+# Or disable UFW entirely to regain access
+sudo ufw disable
+```
 
 ### Clients get `Host key verification failed`
 

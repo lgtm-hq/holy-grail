@@ -4,7 +4,7 @@ description:
   Set up Cloudflare Tunnels to securely expose your SSH server and other
   services without opening ports or configuring firewall rules
 category: Infrastructure
-order: 6
+order: 7
 tags: [cloudflare, tunnels, networking, ssh, infrastructure]
 difficulty: intermediate
 relatedGuides: [ssh, ssh-server-hardening, dotfiles]
@@ -58,24 +58,37 @@ transparent, reproducible, and easier to manage alongside your dotfiles.
 
 ### 1. Authenticate with Cloudflare
 
-Run the login flow to generate a certificate. The `cloudflared` container runs
-as `nonroot`, so ensure the mount directory is writable:
+Run the login flow to generate a certificate. First, choose a directory on the
+host to store cloudflared's config, credentials, and certificate. A common
+convention is `/opt/cloudflared/data` for servers or `~/.cloudflared` for
+single-user setups:
 
 ```bash
-chmod 777 /path/to/cloudflared/data
-docker run --rm -v /path/to/cloudflared/data:/home/nonroot/.cloudflared \
+# Create the data directory
+sudo mkdir -p /opt/cloudflared/data
+
+# Temporarily open permissions for the nonroot container user
+chmod 777 /opt/cloudflared/data
+docker run --rm -v /opt/cloudflared/data:/home/nonroot/.cloudflared \
   cloudflare/cloudflared:latest tunnel login
 ```
 
 This opens a URL in the logs — open it in your browser, select your domain,
 and authorize. The certificate is saved as `cert.pem`.
 
-> After the cert is saved, tighten permissions: `chmod 755 /path/to/cloudflared/data`
+> After the cert is saved, tighten permissions: `chmod 755 /opt/cloudflared/data`
+
+> **Important:** The `cloudflared` container runs as an unprivileged user (UID
+> 65532). This user **cannot follow symlinks** that point outside the
+> container's filesystem. If you manage cloudflared config in a dotfiles repo,
+> use `cp` to copy the config file into the mounted volume rather than
+> symlinking with Stow. See the [Stow guide](/guides/stow/) for the copy
+> fallback pattern.
 
 ### 2. Create a Tunnel
 
 ```bash
-docker run --rm -v /path/to/cloudflared/data:/home/nonroot/.cloudflared \
+docker run --rm -v /opt/cloudflared/data:/home/nonroot/.cloudflared \
   cloudflare/cloudflared:latest tunnel create my-tunnel
 ```
 
@@ -108,7 +121,7 @@ ingress:
 Create a CNAME record for each hostname:
 
 ```bash
-docker run --rm -v /path/to/cloudflared/data:/home/nonroot/.cloudflared \
+docker run --rm -v /opt/cloudflared/data:/home/nonroot/.cloudflared \
   cloudflare/cloudflared:latest tunnel route dns my-tunnel ssh.yourdomain.com
 ```
 
@@ -123,7 +136,7 @@ services:
     image: cloudflare/cloudflared:latest
     restart: unless-stopped
     volumes:
-      - /path/to/cloudflared/data:/home/nonroot/.cloudflared/
+      - /opt/cloudflared/data:/home/nonroot/.cloudflared/
     network_mode: host
     command:
       - tunnel
@@ -131,7 +144,23 @@ services:
       - --config
       - /home/nonroot/.cloudflared/config.yml
       - run
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "cloudflared",
+          "tunnel",
+          "--config",
+          "/home/nonroot/.cloudflared/config.yml",
+          "ready",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 ```
+
+The healthcheck uses cloudflared's built-in `ready` command to verify the
+tunnel has established its connections to Cloudflare's edge network.
 
 > The `--config` flag is required to tell cloudflared to use your local config
 > file. Without it, the tunnel may still look for remote configuration.
@@ -142,7 +171,7 @@ Or with `docker run`:
 ```bash
 docker run -d --name cloudflared --restart unless-stopped \
   --network host \
-  -v /path/to/cloudflared/data:/home/nonroot/.cloudflared \
+  -v /opt/cloudflared/data:/home/nonroot/.cloudflared \
   cloudflare/cloudflared:latest tunnel --no-autoupdate \
   --config /home/nonroot/.cloudflared/config.yml run
 ```
@@ -189,6 +218,11 @@ services:
       - tunnel
       - --no-autoupdate
       - run
+    healthcheck:
+      test: ["CMD", "cloudflared", "tunnel", "ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 ```
 
 Add the token to your `.env` file:
@@ -242,17 +276,26 @@ your client machine and use it as a proxy.
 
 ### 1. Install cloudflared
 
-```bash
-# macOS
-brew install cloudflared
+<Tabs tabs={["macOS", "Linux"]}>
+<Fragment slot="macOS">
 
-# Debian / Ubuntu
+```bash
+brew install cloudflared
+```
+
+</Fragment>
+<Fragment slot="Linux">
+
+```bash
 curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg \
   | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
 echo "deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared $(lsb_release -cs) main" \
   | sudo tee /etc/apt/sources.list.d/cloudflared.list
 sudo apt update && sudo apt install cloudflared
 ```
+
+</Fragment>
+</Tabs>
 
 ### 2. Configure SSH to Use the Tunnel
 
@@ -278,30 +321,66 @@ SSH agent, this gives you end-to-end secure access without exposed ports.
 
 ## Adding More Services
 
-Extend your `config.yml` to expose additional services:
+Extend your `config.yml` to expose additional services. A simple convention is
+to use the service name as the subdomain — this keeps DNS records predictable
+and self-documenting:
 
 ```yaml
 ingress:
+  # Remote access
   - hostname: ssh.yourdomain.com
     service: ssh://localhost:2222
+
+  # Web applications
   - hostname: app.yourdomain.com
     service: http://localhost:3000
-  - hostname: api.yourdomain.com
+
+  # Dashboards & monitoring
+  - hostname: dashboard.yourdomain.com
     service: http://localhost:8080
+  - hostname: monitoring.yourdomain.com
+    service: http://localhost:9090
+
+  # Media services
+  - hostname: media.yourdomain.com
+    service: http://localhost:8096
+
+  # Catch-all (required)
   - service: http_status:404
 ```
+
+### Connecting to HTTPS Services
+
+When an upstream service uses HTTPS with a self-signed certificate (common with
+network controllers, reverse proxies, and admin panels), cloudflared will
+reject the connection by default. Add `noTLSVerify` to skip certificate
+verification for the local connection:
+
+```yaml
+  - hostname: controller.yourdomain.com
+    service: https://localhost:8443
+    originRequest:
+      noTLSVerify: true
+```
+
+> This is safe because the traffic between cloudflared and the upstream service
+> is local (localhost or the same Docker network). The connection from the
+> client to Cloudflare's edge is still fully encrypted.
+
+### DNS Records and Restart
 
 Remember to add DNS records for each new hostname:
 
 ```bash
-docker run --rm -v ~/.cloudflared:/home/nonroot/.cloudflared \
+docker run --rm -v /opt/cloudflared/data:/home/nonroot/.cloudflared \
   cloudflare/cloudflared:latest tunnel route dns my-tunnel app.yourdomain.com
 ```
 
-Then restart the tunnel container:
+Then restart the tunnel container — cloudflared does not hot-reload config
+changes:
 
 ```bash
-docker restart cloudflared
+docker restart cloudflared-tunnel
 ```
 
 ## Migrating from Token-Based to Config File
@@ -318,16 +397,16 @@ docker compose stop cloudflared
 2. **Authenticate with Cloudflare** to get a `cert.pem`:
 
 ```bash
-chmod 777 /path/to/cloudflared/data
-docker run --rm -v /path/to/cloudflared/data:/home/nonroot/.cloudflared \
+chmod 777 /opt/cloudflared/data
+docker run --rm -v /opt/cloudflared/data:/home/nonroot/.cloudflared \
   cloudflare/cloudflared:latest tunnel login
-chmod 755 /path/to/cloudflared/data
+chmod 755 /opt/cloudflared/data
 ```
 
 3. **Delete the old tunnel** (token-based tunnels are always remotely managed):
 
 ```bash
-docker run --rm -v /path/to/cloudflared/data:/home/nonroot/.cloudflared \
+docker run --rm -v /opt/cloudflared/data:/home/nonroot/.cloudflared \
   cloudflare/cloudflared:latest tunnel delete <OLD_TUNNEL_ID>
 ```
 
@@ -337,7 +416,7 @@ docker run --rm -v /path/to/cloudflared/data:/home/nonroot/.cloudflared \
 5. **Create a new tunnel:**
 
 ```bash
-docker run --rm -v /path/to/cloudflared/data:/home/nonroot/.cloudflared \
+docker run --rm -v /opt/cloudflared/data:/home/nonroot/.cloudflared \
   cloudflare/cloudflared:latest tunnel create my-tunnel
 ```
 
@@ -365,6 +444,30 @@ docker compose up -d cloudflared
 - Ensure SSH is running on the server: `sudo systemctl status sshd`
 - Verify the `service` URL in `config.yml` matches your SSH port
 - Check that `--network host` is used in the Docker run command
+
+### SSL errors connecting to HTTPS upstream
+
+If cloudflared logs show `x509: certificate signed by unknown authority`, the
+upstream service is using a self-signed certificate. Add `noTLSVerify` to that
+ingress rule:
+
+```yaml
+  - hostname: service.yourdomain.com
+    service: https://localhost:8443
+    originRequest:
+      noTLSVerify: true
+```
+
+### Config changes not taking effect
+
+Cloudflared does not hot-reload its config file. After editing `config.yml`,
+restart the container:
+
+```bash
+docker restart cloudflared-tunnel
+```
+
+Check the healthcheck or logs to verify the tunnel reconnected successfully.
 
 ### DNS not resolving
 

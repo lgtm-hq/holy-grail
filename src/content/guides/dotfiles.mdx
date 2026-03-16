@@ -7,7 +7,7 @@ category: Infrastructure
 order: 4
 tags: [dotfiles, configuration, cross-platform, infrastructure]
 difficulty: intermediate
-relatedGuides: [stow, zsh, ssh]
+relatedGuides: [stow, just, zsh, ssh]
 ---
 
 import LinkBadge from '../../components/LinkBadge.astro';
@@ -36,8 +36,13 @@ The key to multi-machine dotfiles is separating **shared** configs from
 ```
 ~/my-dotfiles/
 ├── shared/
-│   └── zsh/
-│       └── .zshrc
+│   ├── zsh/
+│   │   └── .zshrc
+│   └── scripts/
+│       └── bin/
+│           ├── system-update
+│           ├── docker-cleanup
+│           └── list-services
 ├── machines/
 │   ├── my-macbook/
 │   │   └── ssh/
@@ -47,8 +52,12 @@ The key to multi-machine dotfiles is separating **shared** configs from
 │       │   └── config         # Linux 1Password agent path
 │       ├── cloudflared/
 │       │   └── config.yml     # tunnel ingress rules
-│       ├── docker-compose.yaml
+│       ├── docker/
+│       │   └── opt/
+│       │       ├── docker-compose.yaml
+│       │       └── .env.example
 │       └── .env.example
+├── Justfile
 ├── .gitignore
 └── README.md
 ```
@@ -57,7 +66,7 @@ The key to multi-machine dotfiles is separating **shared** configs from
 
 | Type | Examples | Why |
 |------|----------|-----|
-| Shared | `.zshrc`, `.gitconfig`, `starship.toml` | Same config works everywhere (with guards) |
+| Shared | `.zshrc`, `.gitconfig`, `starship.toml`, `scripts/` | Same config works everywhere (with guards) |
 | Machine-specific | SSH config, cloudflared config, docker-compose | Paths, ports, or services differ per machine |
 
 > **SSH config is machine-specific**, not shared. The `IdentityAgent` path
@@ -118,7 +127,79 @@ stow -d shared -t ~ zsh
 stow -d machines/my-server -t ~ ssh
 ```
 
-### 4. Migrating from a Flat Structure
+### 4. Utility Scripts Package
+
+A `scripts/` stow package deploys reusable shell scripts to `~/bin` — giving
+you the same helper tools on every machine:
+
+```bash
+mkdir -p shared/scripts/bin
+```
+
+Add your scripts (system updates, container cleanup, service status checks),
+then stow:
+
+```bash
+stow -d shared -t ~ scripts
+```
+
+Ensure `~/bin` is on your `PATH` in `.zshrc`:
+
+```bash
+[[ -d "$HOME/bin" ]] && export PATH="$HOME/bin:$PATH"
+```
+
+An alias for listing available scripts is also handy:
+
+```bash
+alias scripts='ls ~/bin'
+```
+
+> Scripts must have a shebang (`#!/usr/bin/env bash`) and executable
+> permissions (`chmod +x`) before stowing.
+
+### 5. Docker Compose as a Stow Package
+
+If your server runs Docker services, the compose file and related configs can
+live in a machine-specific stow package targeting `/opt` instead of `~`:
+
+```bash
+# Package structure mirrors the target
+machines/my-server/docker/opt/docker-compose.yaml
+machines/my-server/docker/opt/prometheus/prometheus.yml
+
+# Stow to root (maps opt/ → /opt/)
+sudo stow -d machines/my-server -t / docker
+```
+
+> Some containerized services (like `cloudflared`) run as unprivileged users
+> and cannot follow symlinks. For those, use `cp` instead of stow. See the
+> [Stow guide](/guides/stow/) for the copy fallback pattern.
+
+### 6. Automating Deployments
+
+As your dotfiles grow, a task runner keeps deployment commands in one place.
+Add a `Justfile` at your repo root:
+
+```just
+# Deploy shared configs (all machines)
+shared:
+    stow -d shared -t ~ zsh git starship scripts
+
+# Deploy machine-specific configs
+machine target:
+    stow -d machines/{{target}} -t ~ ssh
+
+# Deploy everything for the server
+server: shared (machine "my-server")
+    sudo stow -d machines/my-server -t / docker
+    cp machines/my-server/cloudflared/config.yml /opt/cloudflared/data/config.yml
+```
+
+Run with `just shared` or `just server`. See the
+[Stow guide](/guides/stow/) for more on task runner patterns.
+
+### 7. Migrating from a Flat Structure
 
 If your existing dotfiles repo has configs at the root:
 
@@ -163,12 +244,39 @@ command -v eza &>/dev/null && alias ls='eza -la --icons'
 command -v rbenv &>/dev/null && eval "$(rbenv init - zsh)"
 ```
 
+### Lazy-Loading Heavy Tools
+
+Some tools like `pyenv`, `nvm`, and `rbenv` run initialization scripts that
+add 200–500ms each to shell startup. Wrap them in a function that defers init
+until first use:
+
+```bash
+# Lazy-load nvm — only initializes when you first run nvm
+nvm() {
+  unfunction nvm
+  source "$NVM_DIR/nvm.sh"
+  nvm "$@"
+}
+```
+
+Use lazy-loading for tools you do not use in every shell session. Keep tools
+you use constantly (like `starship` and `zoxide`) eager — their init is fast
+enough that deferred loading adds no benefit.
+
 ### OS-Specific Blocks
 
 ```bash
 if [[ "$(uname)" == "Darwin" ]]; then
   alias active_sims="xcrun simctl list 'devices' 'booted'"
   alias connected_devices="ios-deploy -c"
+fi
+```
+
+For Docker on Apple Silicon or ARM servers, set the default platform:
+
+```bash
+if [[ "$(uname -m)" == "arm64" ]] || [[ "$(uname -m)" == "aarch64" ]]; then
+  export DOCKER_DEFAULT_PLATFORM="linux/arm64"
 fi
 ```
 
@@ -226,11 +334,27 @@ For machine-specific secrets, provide templates:
 
 ```bash
 # machines/my-server/.env.example
+
+# System
 TZ=
 PUID=
 PGID=
-HA_IP=
-PORT_HA=
+LAN_IP=
+
+# Networking
+DOMAIN=
+TUNNEL_TOKEN=
+
+# Service ports
+PORT_DASHBOARD=
+PORT_MONITORING=
+PORT_DNS=
+PORT_MEDIA=
+
+# Credentials (generate unique values for each)
+DB_PASSWORD=
+ADMIN_PASSWORD=
+API_KEY=
 ```
 
 Anyone setting up a new machine copies the template and fills in values:

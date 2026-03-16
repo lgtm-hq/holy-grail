@@ -110,6 +110,38 @@ Host *
 </Fragment>
 </Tabs>
 
+### Configure Which Keys the Agent Exposes
+
+By default, the 1Password SSH agent exposes all SSH keys across all your
+vaults. If you have multiple vaults or want to restrict which keys are
+available, create an agent config file:
+
+```bash
+mkdir -p ~/.config/1password/ssh
+```
+
+Edit `~/.config/1password/ssh/agent.toml`:
+
+```toml
+[[ssh-keys]]
+vault = "Private"
+
+[[ssh-keys]]
+vault = "Work"
+```
+
+Each `[[ssh-keys]]` entry specifies a vault to draw keys from. You can also
+pin a specific key by its item name:
+
+```toml
+[[ssh-keys]]
+item = "Personal SSH Key"
+vault = "Private"
+```
+
+> Without this file, the agent serves all SSH keys from all vaults. If you
+> only have one vault, you do not need to create this file.
+
 ## Add Your Public Key to Remote Machines
 
 Copy your public key to a remote server:
@@ -157,7 +189,7 @@ provide shared settings like the 1Password agent:
 ```bash
 # Local network
 Host homelab-local
-  HostName 192.168.1.100
+  HostName <your-server-lan-ip>
   User your-username
   Port 2222
 
@@ -178,12 +210,103 @@ Host *
   IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
 ```
 
+> **Tailscale** provides a WireGuard-based VPN overlay that assigns each device
+> a stable `100.x.x.x` address. This lets you SSH to your server from anywhere
+> without exposing ports to the public internet. On the server, enable the
+> Tailscale service:
+>
+> ```bash
+> sudo systemctl enable --now tailscaled
+> tailscale up
+> ```
+>
+> Once connected, use the Tailscale IP in your SSH config as shown in the
+> `homelab-ts` entry above.
+
 > **`Host *` must come last.** SSH reads the config top-to-bottom and applies
 > the first matching host. Specific entries go first, the wildcard goes last.
 
 > **Non-standard ports:** When the server runs SSH on a port other than 22,
 > add `Port 2222` to the host entry. When using a Cloudflare Tunnel, the port
 > is defined in the tunnel's `config.yml` — the client entry does not need it.
+
+## Sign Git Commits with Your SSH Key
+
+Since 1Password already manages your SSH key, you can use the same key to sign
+Git commits and tags. This proves that commits came from you — GitHub and
+GitLab display a **Verified** badge next to signed commits.
+
+### 1. Configure Git to Sign with SSH
+
+<Tabs tabs={["macOS", "Linux"]}>
+<Fragment slot="macOS">
+
+```bash
+git config --global gpg.format ssh
+git config --global gpg.ssh.program "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+git config --global commit.gpgsign true
+git config --global tag.gpgSign true
+```
+
+</Fragment>
+<Fragment slot="Linux">
+
+```bash
+git config --global gpg.format ssh
+git config --global gpg.ssh.program "/opt/1Password/op-ssh-sign"
+git config --global commit.gpgsign true
+git config --global tag.gpgSign true
+```
+
+> The path to `op-ssh-sign` varies by installation method. Check with
+> `find / -name op-ssh-sign 2>/dev/null` if the path above does not work.
+
+</Fragment>
+</Tabs>
+
+### 2. Set Your Signing Key
+
+Copy your **public key** from 1Password (the same one you use for SSH) and set
+it as your signing key:
+
+```bash
+git config --global user.signingkey "ssh-ed25519 AAAA...your-public-key"
+```
+
+### 3. Create an Allowed Signers File
+
+Git needs an allowed signers file to verify signatures locally. This maps
+email addresses to trusted public keys:
+
+```bash
+# Create the file with your email and public key
+echo "your-email@example.com ssh-ed25519 AAAA...your-public-key" > ~/.ssh/allowed_signers
+
+# Tell Git where to find it
+git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
+```
+
+### 4. Upload Your Signing Key to GitHub
+
+1. Go to **GitHub** → **Settings** → **SSH and GPG keys**
+2. Click **New SSH key**
+3. Set **Key type** to **Signing Key**
+4. Paste your public key and save
+
+> You can use the same public key for both authentication and signing. Add it
+> twice — once as an **Authentication Key** and once as a **Signing Key**.
+
+### 5. Verify It Works
+
+Make a commit and check the signature:
+
+```bash
+git commit --allow-empty -m "test: verify commit signing"
+git log --show-signature -1
+```
+
+You should see `Good "git" signature for your-email@example.com` in the
+output. On GitHub, the commit will display a **Verified** badge.
 
 ## Troubleshooting
 

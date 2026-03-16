@@ -7,7 +7,7 @@ category: Infrastructure
 order: 3
 tags: [stow, symlinks, configuration, infrastructure]
 difficulty: beginner
-relatedGuides: [dotfiles, zsh]
+relatedGuides: [dotfiles, just, zsh]
 ---
 
 import LinkBadge from '../../components/LinkBadge.astro';
@@ -27,9 +27,7 @@ location while they appear in their expected paths.
 
 ## Prerequisites
 
-<div class="badge-group">
-  <LinkBadge href="/guides/zsh/" />
-</div>
+None — GNU Stow works with any shell and operating system.
 
 ## Installation
 
@@ -149,6 +147,87 @@ stow -d shared -t ~ zsh ssh git
 stow -d machines/my-laptop -t ~ .
 ```
 
+## Non-Home Targets
+
+So far, every example has used `~` as the target directory. But Stow's `-t`
+flag can point anywhere — which is useful when configs belong outside your home
+directory.
+
+Stow scripts into `~/bin`:
+
+```bash
+# Package structure: scripts/bin/system-update, scripts/bin/docker-cleanup
+stow -d shared -t ~ scripts
+```
+
+```
+my-dotfiles/shared/scripts/
+└── bin/
+    ├── system-update
+    └── docker-cleanup
+
+# After: stow -d shared -t ~ scripts
+~/bin/system-update → ~/my-dotfiles/shared/scripts/bin/system-update
+```
+
+Stow Docker configs into `/opt`:
+
+```bash
+# Package structure: docker/opt/docker-compose.yaml, docker/opt/config/...
+sudo stow -d machines/my-server -t / docker
+```
+
+> **Note:** System directories like `/opt` and `/usr/local` require `sudo`
+> when stowing because Stow needs write access to the target.
+
+## When Stow Won't Work
+
+Some programs cannot follow symlinks — particularly Docker containers running
+as unprivileged users. If a service runs as a restricted user inside a
+container, it may not be able to read symlinks that point outside the
+container's filesystem view.
+
+In these cases, use `cp` to deploy the file but keep the source of truth in
+your dotfiles repo:
+
+```bash
+cp ~/my-dotfiles/machines/my-server/cloudflared/config.yml /opt/cloudflared/data/config.yml
+```
+
+You can wrap these copy commands in a task runner alongside your stow commands
+so that all deployments stay in one place.
+
+## Automating with a Task Runner
+
+As your package count grows, running individual stow commands becomes tedious.
+A task runner like [Just](https://github.com/casey/just) or Make can wrap all
+your deployment commands into simple recipes:
+
+```just
+# Justfile (lives at the root of your dotfiles repo)
+
+# Deploy shared configs
+shared:
+    stow -d shared -t ~ zsh git starship scripts
+
+# Deploy machine-specific configs
+machine target:
+    stow -d machines/{{target}} -t ~ ssh
+
+# Deploy Docker configs to /opt
+docker:
+    sudo stow -d machines/my-server -t / docker
+
+# Copy configs that cannot be symlinked
+copy-configs:
+    cp machines/my-server/cloudflared/config.yml /opt/cloudflared/data/config.yml
+
+# Deploy everything
+all: shared (machine "my-server") docker copy-configs
+```
+
+Run with `just shared`, `just all`, etc.
+
 ## Handling Conflicts
 
 Stow will refuse to create a symlink if a real file already exists at the
@@ -225,6 +304,17 @@ individual file symlinks inside the directory rather than symlinking the
 directory itself. This is normally fine — it allows other packages to contribute
 files to the same directory.
 
+### Permission denied when stowing to system directories
+
+System directories like `/opt` or `/usr/local` are owned by root:
+
+```bash
+sudo stow -d machines/my-server -t / docker
+```
+
+Alternatively, change ownership of the target directory to your user if
+appropriate for your setup.
+
 ### `stow: ERROR: Stow directory does not exist`
 
 Ensure you are running the command from the correct working directory, or use
@@ -241,4 +331,9 @@ the `-d` flag to specify the source directory explicitly.
   href="https://brandon.invergo.net/news/2012-05-26-using-gnu-stow-to-manage-your-dotfiles.html"
   title="Using GNU Stow to Manage Dotfiles"
   description="A practical introduction to dotfile management with Stow"
+/>
+<LinkCard
+  href="https://www.bitdoze.com/starship-ghostty-terminal/"
+  title="Mac Terminal Setup with Ghostty and Starship"
+  description="Step-by-step terminal setup guide covering Stow-managed dotfiles"
 />
