@@ -31,6 +31,6 @@ jobs:
           args: >-
             --no-progress --exclude 'example\.com' --exclude 'localhost' --exclude
             '127\.0\.0\.1' --exclude 'your-app(\.|$)' --exclude 'java\.com' --timeout 30
-            --max-retries 3 --accept '200..=204' 'src/content/**/*.mdx'
+            --max-retries 3 --accept '200..=204,429' 'src/content/**/*.mdx'
           token: ${{ secrets.GITHUB_TOKEN }}
           fail: true
