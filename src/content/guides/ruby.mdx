@@ -1,0 +1,218 @@
+---
+title: Ruby
+description:
+  Install and manage Ruby versions with chruby and ruby-install for
+  development with Bundler, Jekyll, and other Ruby tools
+category: Languages
+order: 7
+tags: [ruby, chruby, bundler, languages]
+difficulty: beginner
+relatedGuides: [homebrew, zsh]
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+import Tabs from '../../components/Tabs.astro';
+
+## What is Ruby?
+
+Ruby is a dynamic, general-purpose programming language. It is commonly used
+for web development (Rails), static sites (Jekyll), automation scripts, and
+development tooling like CocoaPods and Fastlane.
+
+> macOS ships with a system Ruby, but it is outdated and modifying it requires
+> `sudo`. Always install and manage your own Ruby versions separately.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/homebrew/" />
+</div>
+
+## Install chruby and ruby-install
+
+**chruby** is a lightweight Ruby version manager — it switches between Ruby
+versions by modifying your shell environment. Unlike rbenv (which uses shims)
+or RVM (which overrides `cd`), chruby is minimal and does only one thing.
+
+**ruby-install** is a companion tool that compiles and installs Ruby versions.
+
+<Tabs tabs={["macOS", "Linux"]}>
+<Fragment slot="macOS">
+
+```bash
+brew install chruby ruby-install
+```
+
+</Fragment>
+<Fragment slot="Linux">
+
+```bash
+# Install build dependencies
+sudo apt install -y build-essential libssl-dev libreadline-dev zlib1g-dev
+
+# Install ruby-install
+wget https://github.com/postmodern/ruby-install/releases/latest/download/ruby-install-0.9.4.tar.gz
+tar -xzvf ruby-install-0.9.4.tar.gz
+cd ruby-install-0.9.4/
+sudo make install
+
+# Install chruby
+wget https://github.com/postmodern/chruby/releases/latest/download/chruby-0.3.9.tar.gz
+tar -xzvf chruby-0.3.9.tar.gz
+cd chruby-0.3.9/
+sudo make install
+```
+
+</Fragment>
+</Tabs>
+
+## Install a Ruby Version
+
+List available versions and install one:
+
+```bash
+# List available versions
+ruby-install
+
+# Install a specific version
+ruby-install ruby 3.3
+```
+
+This compiles Ruby from source — it may take a few minutes.
+
+## Configure Your Shell
+
+Add chruby to your `~/.zshrc`:
+
+```bash
+# Load chruby
+source $(brew --prefix)/opt/chruby/share/chruby/chruby.sh
+
+# Enable auto-switching based on .ruby-version files
+source $(brew --prefix)/opt/chruby/share/chruby/auto.sh
+
+# Set a default Ruby version
+chruby ruby-3.3
+```
+
+> On Linux, replace `$(brew --prefix)/opt/chruby` with `/usr/local/share/chruby`.
+
+Reload your shell and verify:
+
+```bash
+source ~/.zshrc
+ruby -v
+which ruby
+```
+
+`which ruby` should show a path under `~/.rubies/`, **not** `/usr/bin/ruby`.
+
+## Per-Project Ruby Versions
+
+Create a `.ruby-version` file in your project root to automatically switch
+Ruby versions when you enter the directory:
+
+```bash
+echo "ruby-3.3" > .ruby-version
+```
+
+With `auto.sh` loaded, chruby reads this file and switches automatically.
+
+## Bundler and Gems
+
+Bundler manages Ruby project dependencies (gems). It is included with modern
+Ruby versions:
+
+```bash
+# Verify Bundler is available
+gem install bundler
+
+# Install project dependencies
+bundle install
+
+# Run a command through Bundler
+bundle exec jekyll serve
+```
+
+### Useful Aliases
+
+Add to your `~/.zshrc`:
+
+```bash
+# Clean and reinstall Jekyll dependencies
+alias jekyll_clean="rm -rf .jekyll-cache Gemfile.lock vendor/bundle _site && bundle clean --force"
+alias clean_install="jekyll_clean && bundle install"
+
+# Serve Jekyll site
+alias jekyll_serve="bundle exec jekyll serve"
+```
+
+## Why Not RVM?
+
+RVM is a heavier Ruby version manager that overrides shell builtins (like
+`cd`), modifies your shell initialization extensively, and requires GPG key
+imports during installation. **chruby is recommended** because it is simpler,
+does not modify core shell behavior, and is easier to debug.
+
+## Troubleshooting
+
+### `ruby` still points to the system Ruby
+
+Verify chruby is loaded and a version is selected:
+
+```bash
+chruby
+```
+
+The active version should have an asterisk. If no version is selected, set one:
+
+```bash
+chruby ruby-3.3
+```
+
+If chruby itself is not found, ensure the `source` lines are in your
+`~/.zshrc` and reload your shell.
+
+### Build fails during `ruby-install`
+
+Missing build dependencies are the most common cause. On Linux, install them
+first:
+
+```bash
+sudo apt install -y build-essential libssl-dev libreadline-dev zlib1g-dev libyaml-dev
+```
+
+On macOS, ensure Xcode Command Line Tools are installed:
+
+```bash
+xcode-select --install
+```
+
+### `Bundler::GemNotFound` or dependency errors
+
+Clean and reinstall from scratch:
+
+```bash
+rm -rf .jekyll-cache Gemfile.lock vendor/bundle _site
+bundle clean --force
+bundle install
+```
+
+## Resources
+
+<LinkCard
+  href="https://github.com/postmodern/chruby"
+  title="chruby"
+  description="A lightweight Ruby version manager that modifies only shell environment variables"
+/>
+<LinkCard
+  href="https://github.com/postmodern/ruby-install"
+  title="ruby-install"
+  description="Install Ruby, JRuby, or TruffleRuby from source with one command"
+/>
+<LinkCard
+  href="https://bundler.io/"
+  title="Bundler"
+  description="Manage Ruby gem dependencies for your projects"
+/>

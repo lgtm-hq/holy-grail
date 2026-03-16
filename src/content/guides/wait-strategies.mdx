@@ -1,0 +1,206 @@
+---
+title: Wait Strategies
+description:
+  Understand implicit, explicit, fluent, and expected condition waits in
+  Selenium and Appium to write reliable, non-flaky test automation
+category: Testing
+order: 31
+tags: [testing, selenium, appium, waits, automation]
+difficulty: intermediate
+relatedGuides: [locator-strategy, driver-instantiation, desired-capabilities]
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## Why Waits Matter
+
+Web and mobile applications load content dynamically — elements appear after
+API calls, animations, or JavaScript execution. If your test tries to interact
+with an element before it exists, it fails. Wait strategies tell your test
+**how** and **how long** to wait for conditions to be met before proceeding.
+
+> The goal is to wait **just long enough** — not too short (flaky tests) and
+> not too long (slow tests). Never use a fixed sleep to solve timing issues.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/driver-instantiation/" />
+  <LinkBadge href="/guides/locator-strategy/" />
+</div>
+
+## Implicit Wait
+
+An implicit wait sets a **global timeout** for all `find_element` calls in the
+session. If the element is not immediately present, WebDriver polls the DOM
+repeatedly until the timeout expires:
+
+```python
+driver.implicitly_wait(10)
+
+# Every find_element call now waits up to 10 seconds
+element = driver.find_element(By.ID, "my-element")
+```
+
+> WebDriver polls the DOM for a certain duration when trying to find any
+> element. This applies to **every** element lookup for the entire session.
+
+**Why implicit waits are not recommended:**
+
+- You cannot control the wait per element — the same timeout applies everywhere
+- You cannot wait for specific conditions (e.g., clickable, visible)
+- If an element is genuinely missing, every lookup silently waits the full
+  timeout before failing, making test runs slow
+
+## Explicit Wait
+
+An explicit wait pauses execution until a **specific condition** is met, with
+a timeout. Unlike implicit waits, this applies only to the single check where
+you use it:
+
+```python
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+# Wait up to 3 seconds for a specific element
+element = WebDriverWait(driver, timeout=3).until(
+    lambda d: d.find_element(By.TAG_NAME, "p")
+)
+```
+
+The lambda (or any callable) is evaluated repeatedly. As long as it returns a
+falsy value, the wait keeps trying. Once it returns a truthy value, execution
+continues.
+
+You can use **any custom function** — not just built-in conditions:
+
+```python
+# Wait until a custom condition is met
+def page_has_loaded(driver):
+    return driver.execute_script("return document.readyState") == "complete"
+
+WebDriverWait(driver, timeout=10).until(page_has_loaded)
+```
+
+## Expected Conditions
+
+Expected conditions are **built-in convenience functions** for common wait
+scenarios. They are used with explicit waits:
+
+```python
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+
+# Wait for an element to be clickable
+wait = WebDriverWait(driver, timeout=10)
+button = wait.until(EC.element_to_be_clickable((By.ID, "submit-btn")))
+button.click()
+```
+
+Common expected conditions:
+
+| Condition | Use when |
+|-----------|----------|
+| `presence_of_element_located` | Element exists in the DOM (may not be visible) |
+| `visibility_of_element_located` | Element is visible on the page |
+| `element_to_be_clickable` | Element is visible **and** enabled |
+| `element_to_be_selected` | Checkbox or radio button is selected |
+| `text_to_be_present_in_element` | Element contains specific text |
+| `invisibility_of_element_located` | Element has disappeared (e.g., a loading spinner) |
+| `alert_is_present` | A browser alert dialog has appeared |
+
+## Fluent Wait
+
+A fluent wait is an explicit wait with **fine-grained control** over polling
+behavior and exception handling:
+
+```python
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import (
+    ElementNotVisibleException,
+    ElementNotSelectableException,
+)
+
+wait = WebDriverWait(
+    driver,
+    timeout=10,
+    poll_frequency=1,
+    ignored_exceptions=[
+        ElementNotVisibleException,
+        ElementNotSelectableException,
+    ],
+)
+element = wait.until(EC.element_to_be_clickable((By.XPATH, "//div")))
+```
+
+| Parameter | What it controls |
+|-----------|-----------------|
+| `timeout` | Maximum time to wait before raising a `TimeoutException` |
+| `poll_frequency` | How often (in seconds) to re-check the condition |
+| `ignored_exceptions` | Exceptions to suppress while polling (instead of failing immediately) |
+
+> A fluent wait is the same as an explicit wait — it just exposes additional
+> configuration. Use it when you need to control poll intervals or ignore
+> specific transient exceptions.
+
+## Never Use `time.sleep()`
+
+A hard sleep pauses execution for a fixed duration with **no exit criteria**.
+It cannot finish early even if the condition is already met:
+
+```python
+import time
+
+# Bad — always waits 5 seconds, even if the element appears instantly
+time.sleep(5)
+element = driver.find_element(By.ID, "my-element")
+
+# Good — waits up to 5 seconds, returns as soon as the element appears
+element = WebDriverWait(driver, timeout=5).until(
+    EC.presence_of_element_located((By.ID, "my-element"))
+)
+```
+
+If you find yourself reaching for `time.sleep()`, refactor the test to use an
+explicit wait with the right condition instead.
+
+## Do Not Mix Implicit and Explicit Waits
+
+From the official Selenium documentation:
+
+> **Warning:** Do not mix implicit and explicit waits. Doing so can cause
+> unpredictable wait times. For example, setting an implicit wait of 10
+> seconds and an explicit wait of 15 seconds could cause a timeout to occur
+> after 20 seconds.
+
+The two wait mechanisms interact in unexpected ways because they operate at
+different layers. Stick to **explicit waits only** for predictable behavior.
+
+## Summary
+
+| Wait Type | Scope | Recommended |
+|-----------|-------|-------------|
+| Implicit | Global — all `find_element` calls | No |
+| Explicit | Single condition | Yes |
+| Expected Conditions | Single condition (built-in helpers) | Yes |
+| Fluent | Single condition (custom polling) | Yes |
+| `time.sleep()` | Fixed duration, no exit criteria | Never |
+
+**Best practice:** Use explicit waits with expected conditions. Use fluent
+waits when you need custom polling. Avoid implicit waits and hard sleeps.
+
+## Resources
+
+<LinkCard
+  href="https://www.selenium.dev/documentation/webdriver/waits/"
+  title="Selenium Waits Documentation"
+  description="Official Selenium guide to implicit, explicit, and fluent waits"
+/>
+<LinkCard
+  href="https://appium.io/docs/en/latest/guides/execute-methods/"
+  title="Appium Execute Methods"
+  description="Appium-specific commands and wait strategies for mobile testing"
+/>

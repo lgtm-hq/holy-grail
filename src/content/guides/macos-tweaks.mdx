@@ -1,0 +1,175 @@
+---
+title: macOS Tweaks
+description:
+  Useful macOS system tweaks using defaults write commands to customize Dock
+  behavior, notifications, and other system settings
+category: Foundation
+order: 4
+tags: [macos, defaults, customization, foundation]
+difficulty: beginner
+relatedGuides: [homebrew, zsh]
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## What are macOS Defaults?
+
+macOS stores system and application preferences in property list (plist) files.
+The `defaults` command lets you read and write these preferences from the
+terminal — enabling tweaks that are not exposed in System Settings.
+
+> **Important:** Some changes require a logout, restart, or killing a system
+> process to take effect. Each tweak below notes what is needed.
+
+## Prerequisites
+
+None — these commands work on any macOS installation.
+
+## Dock
+
+### Faster Dock Auto-Hide
+
+By default, the Dock has a noticeable delay before it appears when you move
+your cursor to the edge of the screen. Remove the delay and speed up the
+animation:
+
+```bash
+# Remove auto-hide delay
+defaults write com.apple.dock autohide-delay -float 0
+
+# Speed up the hide/show animation
+defaults write com.apple.dock autohide-time-modifier -int 0
+
+# Restart Dock to apply
+killall Dock
+```
+
+### Revert to Default Dock Speed
+
+```bash
+defaults write com.apple.dock autohide-delay -float 0.5
+defaults write com.apple.dock autohide-time-modifier -float 0.5
+killall Dock
+```
+
+> You can also delete the keys entirely to restore the system default:
+> `defaults delete com.apple.dock autohide-delay`
+
+## Disks & Storage
+
+### Disable Disk Eject Warning
+
+macOS shows an annoying notification when a disk is not properly ejected. If
+you use external drives frequently, you can suppress it:
+
+```bash
+sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.DiskArbitration.diskarbitrationd.plist \
+  DADisableEjectNotification -bool YES
+sudo pkill diskarbitrationd
+```
+
+**Requires a restart to take full effect.**
+
+### Re-Enable Disk Eject Warning
+
+```bash
+sudo defaults delete /Library/Preferences/SystemConfiguration/com.apple.DiskArbitration.diskarbitrationd.plist \
+  DADisableEjectNotification
+sudo pkill diskarbitrationd
+```
+
+## Finder
+
+### Show Hidden Files
+
+```bash
+defaults write com.apple.finder AppleShowAllFiles -bool YES
+killall Finder
+```
+
+### Show File Extensions
+
+```bash
+defaults write NSGlobalDomain AppleShowAllExtensions -bool YES
+killall Finder
+```
+
+### Show Full Path in Title Bar
+
+```bash
+defaults write com.apple.finder _FXShowPosixPathInTitle -bool YES
+killall Finder
+```
+
+## Keyboard & Input
+
+### Faster Key Repeat
+
+Make held keys repeat faster — useful for Vim-style navigation:
+
+```bash
+# Shorter delay before repeat starts (default: 25)
+defaults write NSGlobalDomain InitialKeyRepeat -int 15
+
+# Faster repeat rate (default: 6)
+defaults write NSGlobalDomain KeyRepeat -int 2
+```
+
+**Requires a logout to take effect.**
+
+### Disable Press-and-Hold for Accented Characters
+
+If you prefer key repeat over the accent character picker:
+
+```bash
+defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool NO
+```
+
+**Requires a logout to take effect.**
+
+## Screenshots
+
+### Change Screenshot Location
+
+```bash
+defaults write com.apple.screencapture location -string "$HOME/Screenshots"
+mkdir -p "$HOME/Screenshots"
+killall SystemUIServer
+```
+
+### Change Screenshot Format
+
+```bash
+# Options: png, jpg, pdf, tiff, gif
+defaults write com.apple.screencapture type -string "png"
+killall SystemUIServer
+```
+
+## Reverting Changes
+
+Any `defaults write` can be undone with `defaults delete`:
+
+```bash
+# Revert a specific key
+defaults delete com.apple.dock autohide-delay
+
+# Read the current value of a key
+defaults read com.apple.dock autohide-delay
+```
+
+> If you are unsure what a tweak does, read the current value first with
+> `defaults read` before changing it.
+
+## Resources
+
+<LinkCard
+  href="https://macos-defaults.com/"
+  title="macOS Defaults"
+  description="A comprehensive list of macOS defaults commands with explanations and screenshots"
+/>
+<LinkCard
+  href="https://github.com/mathiasbynens/dotfiles/blob/main/.macos"
+  title="Mathias Bynens .macos Script"
+  description="The most popular collection of macOS defaults tweaks"
+/>
