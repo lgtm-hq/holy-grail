@@ -1,0 +1,7 @@
+<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <title>Desired Capabilities</title>
+  <path fill="#f9e2af" d="M3 5a1 1 0 0 1 1-1h16a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1zm0 7a1 1 0 0 1 1-1h16a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1zm0 7a1 1 0 0 1 1-1h16a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1z"/>
+  <circle fill="#fab387" cx="8" cy="5" r="2.5"/>
+  <circle fill="#fab387" cx="16" cy="12" r="2.5"/>
+  <circle fill="#fab387" cx="10" cy="19" r="2.5"/>
+</svg>
