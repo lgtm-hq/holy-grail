@@ -224,8 +224,7 @@ emulator gets into a bad state and you want a clean reset:
 
 ```bash
 #!/usr/bin/env bash
-avds=$(emulator -list-avds)
-IFS=$'\n' read -rd '' -a avd_list <<< "$avds"
+mapfile -t avd_list < <(emulator -list-avds)
 
 select avd in "${avd_list[@]}"; do
   if [[ -n "$avd" ]]; then
@@ -249,8 +248,8 @@ AVDs:
 ```bash
 #!/usr/bin/env bash
 find ~/.android/avd -name "config.ini" | while read -r config; do
-  # Remove existing audio lines
-  awk '!/audio/' "$config" > "$config.tmp"
+  # Remove existing audio config keys
+  grep -v '^hw\.audioInput\|^hw\.audioOutput\|^avd\.audio\|^audio\.device\|^hw\.audio' "$config" > "$config.tmp"
   mv "$config.tmp" "$config"
   # Disable audio
   echo "hw.audioInput = no" >> "$config"

@@ -191,7 +191,7 @@ In these cases, use `cp` to deploy the file but keep the source of truth in
 your dotfiles repo:
 
 ```bash
-cp ~/my-dotfiles/machines/my-server/cloudflared/config.yml /opt/cloudflared/data/config.yml
+sudo cp ~/my-dotfiles/machines/my-server/cloudflared/config.yml /opt/cloudflared/data/config.yml
 ```
 
 You can wrap these copy commands in a task runner alongside your stow commands

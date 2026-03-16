@@ -241,8 +241,10 @@ Host *
 > Once connected, use the Tailscale IP in your SSH config as shown in the
 > `homelab-ts` entry above.
 
-> **`Host *` must come last.** SSH reads the config top-to-bottom and applies
-> the first matching host. Specific entries go first, the wildcard goes last.
+> **Put `Host *` last.** SSH reads the config top-to-bottom and multiple
+> `Host` stanzas can match. For each setting, the first matching value wins.
+> Placing `Host *` at the end ensures specific entries take precedence over
+> the wildcard defaults.
 
 > **Non-standard ports:** When the server runs SSH on a port other than 22,
 > add `Port 2222` to the host entry. When using a Cloudflare Tunnel, the port
@@ -276,8 +278,9 @@ git config --global commit.gpgsign true
 git config --global tag.gpgSign true
 ```
 
-> The path to `op-ssh-sign` varies by installation method. Check with
-> `find / -name op-ssh-sign 2>/dev/null` if the path above does not work.
+> The path to `op-ssh-sign` varies by installation method. Verify with
+> `git config --get gpg.ssh.program` or check the 1Password installation
+> directory if the path above does not work.
 
 </Fragment>
 </Tabs>

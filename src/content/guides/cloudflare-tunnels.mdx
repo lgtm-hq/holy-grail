@@ -196,7 +196,7 @@ In the tunnel configuration, add public hostnames for each service:
 
 | Subdomain | Domain | Service |
 |-----------|--------|---------|
-| ssh | yourdomain.com | ssh://localhost:22 |
+| ssh | yourdomain.com | ssh://localhost:2222 |
 | app | yourdomain.com | http://localhost:3000 |
 
 ### 3. Run the Tunnel
@@ -395,10 +395,9 @@ docker compose stop cloudflared
 2. **Authenticate with Cloudflare** to get a `cert.pem`:
 
 ```bash
-chmod 777 /opt/cloudflared/data
+sudo chown 65532:65532 /opt/cloudflared/data
 docker run --rm -v /opt/cloudflared/data:/home/nonroot/.cloudflared \
   cloudflare/cloudflared:latest tunnel login
-chmod 755 /opt/cloudflared/data
 ```
 
 3. **Delete the old tunnel** (token-based tunnels are always remotely managed):

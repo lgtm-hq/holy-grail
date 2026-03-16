@@ -175,7 +175,7 @@ setup target: shared (machine target)
 
 # Lint all shell scripts
 lint:
-    find . -name '*.sh' -print0 | xargs -0 shellcheck
+    find . -name '*.sh' -exec shellcheck {} +
 ```
 
 Run with `just shared`, `just setup my-server`, etc.

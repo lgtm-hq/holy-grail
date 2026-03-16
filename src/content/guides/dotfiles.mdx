@@ -195,7 +195,7 @@ machine target:
 # Deploy everything for the server
 server: shared (machine "my-server")
     sudo stow -d machines/my-server -t / docker
-    cp machines/my-server/cloudflared/config.yml /opt/cloudflared/data/config.yml
+    sudo cp machines/my-server/cloudflared/config.yml /opt/cloudflared/data/config.yml
 ```
 
 Run with `just shared` or `just server`. See the

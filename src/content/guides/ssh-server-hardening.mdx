@@ -183,8 +183,8 @@ will respect:
 
 ```bash
 # Allow traffic from your local network to Docker containers
-# Replace with your LAN subnet (e.g., 192.168.1.0/24 or 10.0.0.0/24)
-sudo iptables -I DOCKER-USER -s <your-lan-subnet>/24 -j ACCEPT
+# Replace with your LAN CIDR (e.g., 192.168.1.0/24 or 10.0.0.0/24)
+sudo iptables -I DOCKER-USER -s <your-lan-cidr> -j ACCEPT
 
 # Allow established connections (required for outbound traffic)
 sudo iptables -I DOCKER-USER -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT

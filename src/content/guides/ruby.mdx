@@ -49,7 +49,7 @@ brew install chruby ruby-install
 
 ```bash
 # Install build dependencies
-sudo apt install -y build-essential libssl-dev libreadline-dev zlib1g-dev
+sudo apt install -y build-essential libssl-dev libreadline-dev zlib1g-dev libyaml-dev
 
 # Install ruby-install (check https://github.com/postmodern/ruby-install/releases for latest)
 wget https://github.com/postmodern/ruby-install/releases/download/v0.9.4/ruby-install-0.9.4.tar.gz
@@ -126,7 +126,7 @@ Bundler manages Ruby project dependencies (gems). It is included with modern
 Ruby versions:
 
 ```bash
-# Verify Bundler is available
+# Install or update Bundler
 gem install bundler
 
 # Install project dependencies
