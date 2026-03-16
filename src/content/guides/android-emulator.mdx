@@ -2,7 +2,7 @@
 title: Android Emulator
 description:
   Create and configure Android emulators for development and testing
-category: Testing
+category: Android Tools
 order: 17
 tags: [android, emulator, mobile, testing]
 difficulty: intermediate
@@ -197,6 +197,66 @@ For testing, configure your AVD with:
 
 Enable Quick Boot in AVD settings to save emulator state and reduce startup
 time.
+
+## Tips & Scripts
+
+### Launch an AVD with a Picker (macOS)
+
+This AppleScript prompts you to select from your available AVDs and launches
+it. Save it as an app via Script Editor or Automator for one-click access:
+
+```applescript
+set avds to paragraphs of (do shell script "~/Library/Android/sdk/emulator/emulator -list-avds")
+set avd to (choose from list avds with prompt "Select an AVD to start" default items "None" OK button name {"Start"} cancel button name {"Cancel"})
+do shell script "~/Library/Android/sdk/emulator/emulator -avd " & avd & " -no-boot-anim > /dev/null 2>&1 &"
+```
+
+> If your Android SDK is installed elsewhere, update the path to the
+> `emulator` binary. Find it with `which emulator` or check
+> `$ANDROID_HOME/emulator/`.
+
+### Wipe AVD Data with a Picker
+
+This script lists your AVDs and lets you select one to wipe — useful when an
+emulator gets into a bad state and you want a clean reset:
+
+```bash
+#!/usr/bin/env bash
+avds=$(emulator -list-avds)
+IFS=$'\n' read -rd '' -a avd_list <<< "$avds"
+
+select avd in "${avd_list[@]}"; do
+  if [[ -n "$avd" ]]; then
+    echo "Wiping data for AVD: $avd"
+    emulator -avd "$avd" -wipe-data
+    break
+  else
+    echo "No AVD selected. Exiting..."
+    exit
+  fi
+done
+```
+
+### Disable Emulator Audio
+
+Running an emulator with audio enabled can distort or degrade audio playback
+on the host machine — music, calls, and other audio become garbled while the
+emulator is running. This script disables audio input and output for **all**
+AVDs:
+
+```bash
+#!/usr/bin/env bash
+find ~/.android/avd -name "config.ini" | while read -r config; do
+  # Remove existing audio lines
+  awk '!/audio/' "$config" > "$config.tmp"
+  mv "$config.tmp" "$config"
+  # Disable audio
+  echo "hw.audioInput = no" >> "$config"
+  echo "hw.audioOutput = no" >> "$config"
+done
+```
+
+> Restart any running emulators for the change to take effect.
 
 ## Troubleshooting
 
