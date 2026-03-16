@@ -220,7 +220,7 @@ docker:
 
 # Copy configs that cannot be symlinked
 copy-configs:
-    cp machines/my-server/cloudflared/config.yml /opt/cloudflared/data/config.yml
+    sudo cp machines/my-server/cloudflared/config.yml /opt/cloudflared/data/config.yml
 
 # Deploy everything
 all: shared (machine "my-server") docker copy-configs
@@ -323,7 +323,7 @@ the `-d` flag to specify the source directory explicitly.
 ## Resources
 
 <LinkCard
-  href="https://www.gnu.org/software/stow/manual/"
+  href="https://www.gnu.org/software/stow/manual/html_node/index.html"
   title="GNU Stow Manual"
   description="Official GNU Stow documentation with complete usage reference"
 />
