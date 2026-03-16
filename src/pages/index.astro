@@ -9,9 +9,11 @@ import FeaturedGuides from '../components/home/FeaturedGuides.astro';
 import CTASection from '../components/home/CTASection.astro';
 import { getCollection } from 'astro:content';
 import { withBase } from '../lib/paths';
+import { getAllCategories } from '../lib/categories';
 
 const allGuides = await getCollection('guides');
 const featuredGuides = allGuides.slice(0, 6);
+const categoryCount = getAllCategories().length;
 const currentPath = withBase('');
 ---
 
@@ -19,7 +21,7 @@ const currentPath = withBase('');
   <Header slot="header" currentPath={currentPath} />
 
   <div data-pagefind-ignore="all">
-    <HeroSection guideCount={allGuides.length} />
+    <HeroSection guideCount={allGuides.length} categoryCount={categoryCount} />
     <QuestSteps />
     <CategoriesGrid />
     <FeaturedGuides guides={featuredGuides} />
