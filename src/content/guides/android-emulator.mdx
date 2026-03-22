@@ -230,6 +230,11 @@ emulator gets into a bad state and you want a clean reset:
 #!/usr/bin/env bash
 mapfile -t avd_list < <(emulator -list-avds)
 
+if [[ ${#avd_list[@]} -eq 0 ]]; then
+  echo "No AVDs found. Create one in Android Studio first."
+  exit 1
+fi
+
 select avd in "${avd_list[@]}"; do
   if [[ -n "$avd" ]]; then
     echo "Wiping data for AVD: $avd"

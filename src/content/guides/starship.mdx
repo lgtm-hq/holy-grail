@@ -92,6 +92,7 @@ Starship includes several presets to get started quickly:
 starship preset --list
 
 # Apply a preset (e.g., Tokyo Night)
+mkdir -p ~/.config
 starship preset tokyo-night -o ~/.config/starship.toml
 ```
 
@@ -223,7 +224,7 @@ export PATH="/usr/local/bin:$PATH"
 ### Starship prompt is slow
 
 Starship scans the current directory for language files, Git status, etc. In
-very large repos, this can be slow. Disable expensive modules:
+large repos, this can be slow. Disable expensive modules:
 
 ```toml
 # ~/.config/starship.toml
