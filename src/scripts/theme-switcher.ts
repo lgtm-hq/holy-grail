@@ -5,15 +5,16 @@
  * but the bundled CSS uses [data-theme="..."] attribute selectors.
  * This script syncs class → attribute and updates the trigger label.
  *
- * Initialization is always explicit via initSelector() to ensure consistent
- * lifecycle handling on both first load and Astro view transitions.
+ * First load: the turbo-themes module auto-init (side effect of import)
+ * handles wireFlavorSelector on DOMContentLoaded. We only sync/observe.
+ * View transitions: initSelector() re-initializes on fresh DOM after swap.
  */
 
 import { initTheme, wireFlavorSelector } from "@lgtm-hq/turbo-themes/selector";
 
-// Suppress the module's auto-init DOMContentLoaded listener by using our own
-// explicit initialization. The auto-init still registers but initSelector()
-// guards against double-init via cleanup tracking.
+// The import triggers auto-init on DOMContentLoaded (module-level side effect).
+// We cannot prevent this, so first-load only does sync + observe.
+// initSelector() is reserved for astro:after-swap where the DOM is fresh.
 
 let selectorCleanup: (() => void) | null = null;
 let classObserver: MutationObserver | null = null;
@@ -40,13 +41,11 @@ function syncTheme() {
   const themeId = getThemeFromClass();
   if (!themeId) return;
 
-  // Sync class → attribute (the bundled CSS uses [data-theme="..."] selectors)
   const current = document.documentElement.getAttribute("data-theme");
   if (current !== themeId) {
     document.documentElement.setAttribute("data-theme", themeId);
   }
 
-  // Update trigger label
   const label = document.getElementById("theme-trigger-label");
   if (label) {
     label.textContent = getThemeLabel(themeId);
@@ -66,10 +65,15 @@ function observeClassChanges() {
   });
 }
 
+/** Full re-initialization for Astro view transitions (fresh DOM after swap) */
 async function initSelector() {
   if (selectorCleanup) {
     selectorCleanup();
     selectorCleanup = null;
+  }
+  if (classObserver) {
+    classObserver.disconnect();
+    classObserver = null;
   }
 
   try {
@@ -83,12 +87,17 @@ async function initSelector() {
   }
 }
 
-// Explicit initialization on first load
+// First load: auto-init handles the selector via module side effect.
+// We sync theme and start observing after it completes.
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initSelector);
+  document.addEventListener("DOMContentLoaded", () => {
+    syncTheme();
+    observeClassChanges();
+  });
 } else {
-  initSelector();
+  syncTheme();
+  observeClassChanges();
 }
 
-// Re-initialize after Astro view transitions
+// View transitions: full re-init on fresh DOM
 document.addEventListener("astro:after-swap", initSelector);
