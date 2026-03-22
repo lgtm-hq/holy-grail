@@ -17,8 +17,8 @@ sync_pagefind() {
 sync_theme_css() {
   local src="node_modules/@lgtm-hq/turbo-themes/packages/css/dist/themes"
   if [[ ! -d "$src" ]]; then
-    echo "[sync-assets] turbo-themes CSS not found at $src — skipping" >&2
-    return 1
+    echo "[sync-assets] turbo-themes CSS not found at $src — skipping (deps may not be installed yet)" >&2
+    return 0
   fi
   rm -rf public/packages/css/dist/themes
   mkdir -p public/packages/css/dist

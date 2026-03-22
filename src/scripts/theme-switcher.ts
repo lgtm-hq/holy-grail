@@ -76,12 +76,11 @@ async function initSelector() {
     await initTheme(document, window);
     const { cleanup } = await wireFlavorSelector(document, window);
     selectorCleanup = cleanup;
+    syncTheme();
+    observeClassChanges();
   } catch (e) {
     console.error("[theme-switcher]", e);
   }
-
-  syncTheme();
-  observeClassChanges();
 }
 
 // Explicit initialization on first load
