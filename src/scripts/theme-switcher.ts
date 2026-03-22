@@ -84,6 +84,9 @@ async function initSelector() {
     observeClassChanges();
   } catch (e) {
     console.error("[theme-switcher]", e);
+    // Restore syncing even if selector init failed so themes still work
+    syncTheme();
+    observeClassChanges();
   }
 }
 
