@@ -30,6 +30,87 @@ interface Section {
 
 const sections: Section[] = [
   {
+    id: 'daily-drivers',
+    title: 'My Daily Drivers',
+    icon: '⭐',
+    note: 'The apps I actually use every single day.',
+    groups: [
+      {
+        label: 'Security & Auth',
+        apps: [
+          { name: '1Password', href: 'https://1password.com/', description: 'Built-in authenticator, family/team sharing', badge: 'Paid', badgeType: 'paid', priceBadge: '~$4/mo' },
+          { name: 'Ente Auth', href: 'https://ente.io/auth/', description: 'Open source, end-to-end encrypted, all platforms', badge: 'Free', badgeType: 'free' },
+        ],
+      },
+      {
+        label: 'System & Utilities',
+        apps: [
+          { name: 'AltTab', href: 'https://alt-tab-macos.netlify.app/', description: 'Windows-style alt-tab window switcher', badge: 'Free', badgeType: 'free' },
+          { name: 'AppCleaner', href: 'https://freemacsoft.net/appcleaner/', description: 'Thoroughly uninstall apps and their leftover files', badge: 'Free', badgeType: 'free' },
+          { name: 'Updatest', href: 'https://updatest.app/', description: 'Your home for Mac updates — Homebrew, App Store, Sparkle, GitHub Releases', badge: 'Free', badgeType: 'free' },
+          { name: 'Raycast', href: 'https://www.raycast.com/', description: 'Launcher and productivity tool (replaces Spotlight)', badge: 'Free', badgeType: 'free' },
+          { name: 'Shottr', href: 'https://shottr.cc/', description: 'Screenshot tool with annotations', badge: 'Free', badgeType: 'free' },
+          { name: 'Velja', href: 'https://sindresorhus.com/velja', description: 'Browser picker for opening links', badge: 'Free', badgeType: 'free' },
+          { name: 'Ice', href: 'https://github.com/jordanbaird/Ice', description: 'Menu bar management — hide and show items', badge: 'Free', badgeType: 'free' },
+          { name: 'Keyclu', href: 'https://github.com/Anze/KeyCluCask', description: 'Shows keyboard shortcuts for the active app', badge: 'Free', badgeType: 'free' },
+          { name: 'Dato', href: 'https://sindresorhus.com/dato', description: 'Menu bar clock with calendar, time zones, and events', badge: 'Paid', badgeType: 'paid', priceBadge: '~$17' },
+          { name: 'Alcove', href: 'https://tryalcove.com/', description: 'Enhance the MacBook notch with useful utilities', badge: 'Paid', badgeType: 'paid', priceBadge: '~$17' },
+        ],
+      },
+      {
+        label: 'Development',
+        apps: [
+          { name: 'Cursor', href: 'https://cursor.com/', description: 'AI-powered code editor, fork of VS Code', badge: 'Freemium', badgeType: 'freemium', priceBadge: '~$20/mo' },
+          { name: 'SuperWhisper', href: 'https://superwhisper.com/privacy', description: 'Voice-to-text powered by AI, runs locally', badge: 'Paid', badgeType: 'paid', priceBadge: '~$8/mo' },
+          { name: 'Ghostty', href: 'https://ghostty.org/', description: 'GPU-accelerated terminal emulator', badge: 'Free', badgeType: 'free' },
+          { name: 'Docker Desktop', href: 'https://www.docker.com/products/docker-desktop/', description: 'Container management', badge: 'Freemium', badgeType: 'freemium' },
+          { name: 'GitHub Desktop', href: 'https://desktop.github.com/', description: 'Git GUI client', badge: 'Free', badgeType: 'free' },
+          { name: 'Claude Code', href: 'https://docs.anthropic.com/en/docs/claude-code', description: 'Anthropic\'s agentic CLI for coding with Claude', badge: 'Paid', badgeType: 'paid' },
+          { name: 'Codex', href: 'https://openai.com/codex/', description: 'Cloud-based AI coding agent by OpenAI', badge: 'Paid', badgeType: 'paid' },
+          { name: 'CodexBar', href: 'https://github.com/steipete/CodexBar', description: 'Menu bar app monitoring AI coding assistant usage and quotas', badge: 'Free', badgeType: 'free' },
+          { name: 'CMux', href: 'https://cmux.com/', description: 'Native terminal for managing multiple AI coding agents with split panes', badge: 'Free', badgeType: 'free' },
+          { name: 'DevToys', href: 'https://devtoys.app/', description: 'Developer Swiss army knife — JSON, Base64, regex, hash tools', badge: 'Free', badgeType: 'free' },
+        ],
+      },
+      {
+        label: 'Productivity & Documents',
+        apps: [
+          { name: 'PDFgear', href: 'https://www.pdfgear.com/', description: 'Full-featured PDF editor, reader, and converter', badge: 'Free', badgeType: 'free' },
+          { name: 'Paperless NGX', href: 'https://github.com/paperless-ngx/paperless-ngx?tab=readme-ov-file#getting-started', description: 'Open-source document management system', badge: 'Free', badgeType: 'free' },
+        ],
+      },
+      {
+        label: 'Media & Entertainment',
+        apps: [
+          { name: 'Spotify', href: 'https://spotify.com/', description: 'Music and podcast streaming', badge: 'Freemium', badgeType: 'freemium', priceBadge: '~$13/mo' },
+          { name: 'Stremio', href: 'https://www.stremio.com/', description: 'Media center with streaming aggregation and add-ons', badge: 'Free', badgeType: 'free' },
+        ],
+      },
+      {
+        label: 'Display & Hardware',
+        apps: [
+          { name: 'Batteries', href: 'https://www.fadel.io/batteries', description: 'Track battery levels of all your Apple devices', badge: 'Paid', badgeType: 'paid', priceBadge: '~$9' },
+          { name: 'BetterDisplay', href: 'https://github.com/waydabber/BetterDisplay', description: 'Custom resolutions, XDR brightness, display management', badge: 'Freemium', badgeType: 'freemium', priceBadge: '~$22' },
+          { name: 'DisplayLink Manager', href: 'https://www.synaptics.com/products/displaylink-graphics/downloads/macos', description: 'Driver for DisplayLink docking stations and adapters', badge: 'Free', badgeType: 'free' },
+        ],
+      },
+      {
+        label: 'Networking & Remote',
+        apps: [
+          { name: 'RustDesk', href: 'https://rustdesk.com/', description: 'Open-source remote desktop, self-hostable', badge: 'Free', badgeType: 'free' },
+          { name: 'Home Assistant', href: 'https://companion.home-assistant.io/', description: 'Open-source home automation companion app', badge: 'Free', badgeType: 'free' },
+          { name: 'Tailscale', href: 'https://tailscale.com/', description: 'Zero-config mesh VPN built on WireGuard', badge: 'Freemium', badgeType: 'freemium' },
+        ],
+      },
+      {
+        label: 'Browsers',
+        apps: [
+          { name: 'Zen', href: 'https://zen-browser.app/', description: 'Privacy-focused browser built on Firefox', badge: 'Free', badgeType: 'free' },
+        ],
+      },
+    ],
+  },
+  {
     id: 'password-managers',
     title: 'Password Managers',
     icon: '🔐',
@@ -38,7 +119,7 @@ const sections: Section[] = [
     apps: [
       { name: '1Password', href: 'https://1password.com/', description: 'Built-in authenticator, family/team sharing', badge: 'Paid', badgeType: 'paid', priceBadge: '~$4/mo' },
       { name: 'Bitwarden', href: 'https://bitwarden.com/', description: 'Open source, self-hostable', badge: 'Free / Paid', badgeType: 'free' },
-      { name: 'Dashlane', href: 'https://www.dashlane.com/', description: 'VPN included in premium', badge: 'Paid', badgeType: 'paid', priceBadge: '~$5/mo' },
+
       { name: 'Apple Keychain', description: 'Built into macOS, syncs via iCloud', badge: 'Free', badgeType: 'free' },
     ],
   },
@@ -76,6 +157,7 @@ const sections: Section[] = [
           { name: 'DevToys', href: 'https://devtoys.app/', description: 'Developer Swiss army knife — JSON, Base64, regex, hash tools', badge: 'Free', badgeType: 'free' },
           { name: 'Ice', href: 'https://github.com/jordanbaird/Ice', description: 'Menu bar management — hide and show items', badge: 'Free', badgeType: 'free' },
           { name: 'Keyclu', href: 'https://github.com/Anze/KeyCluCask', description: 'Shows keyboard shortcuts for the active app', badge: 'Free', badgeType: 'free' },
+          { name: 'Updatest', href: 'https://updatest.app/', description: 'Your home for Mac updates — Homebrew, App Store, Sparkle, GitHub Releases', badge: 'Free', badgeType: 'free' },
           { name: 'Find Any File', href: 'https://findanyfile.app/', description: 'Search for files the way Spotlight cannot', badge: 'Paid', badgeType: 'paid', priceBadge: '~$6' },
           { name: 'GrandPerspective', href: 'https://grandperspectiv.sourceforge.net/', description: 'Visualize disk usage with treemaps', badge: 'Free', badgeType: 'free' },
         ],
@@ -116,6 +198,10 @@ const sections: Section[] = [
       { name: 'Upscayl', href: 'https://upscayl.org/', description: 'Open-source AI image upscaler, runs locally', badge: 'Free', badgeType: 'free' },
       { name: 'MacWhisper', href: 'https://goodsnooze.gumroad.com/l/macwhisper', description: 'Audio transcription, runs locally', badge: 'Freemium', badgeType: 'freemium' },
       { name: 'SuperWhisper', href: 'https://superwhisper.com/privacy', description: 'Voice-to-text powered by AI, runs locally', badge: 'Paid', badgeType: 'paid', priceBadge: '~$8/mo' },
+      { name: 'Claude Code', href: 'https://docs.anthropic.com/en/docs/claude-code', description: 'Anthropic\'s agentic CLI for coding with Claude', badge: 'Paid', badgeType: 'paid' },
+      { name: 'Codex', href: 'https://openai.com/codex/', description: 'Cloud-based AI coding agent by OpenAI', badge: 'Paid', badgeType: 'paid' },
+      { name: 'CodexBar', href: 'https://github.com/steipete/CodexBar', description: 'Menu bar app monitoring AI coding assistant usage and quotas', badge: 'Free', badgeType: 'free' },
+      { name: 'CMux', href: 'https://cmux.com/', description: 'Native terminal for managing multiple AI coding agents with split panes', badge: 'Free', badgeType: 'free' },
     ],
   },
   {
@@ -249,6 +335,7 @@ const sections: Section[] = [
       { name: 'Encrypto', href: 'https://macpaw.audw.net/BXomB1', description: 'Encrypt files before sending with AES-256', badge: 'Free', badgeType: 'free' },
       { name: 'NordVPN', href: 'https://nordvpn.com/', description: 'VPN for privacy, security, and geo-unblocking', badge: 'Paid', badgeType: 'paid', priceBadge: '~$3/mo' },
       { name: 'Clyde', href: 'https://theclyde.app/', description: 'Privacy-focused Mac cleaner and optimizer', badge: 'Paid', badgeType: 'paid' },
+      { name: 'Tailscale', href: 'https://tailscale.com/', description: 'Zero-config mesh VPN built on WireGuard', badge: 'Freemium', badgeType: 'freemium' },
     ],
   },
   {
@@ -321,7 +408,7 @@ const sections: Section[] = [
       {
         label: 'Recommended',
         apps: [
-          { name: 'Arc', href: 'https://arc.net/', description: 'Chromium-based, tab management, spaces, built-in tools', badge: 'Free', badgeType: 'free' },
+          { name: 'Helium', href: 'https://helium.computer/', description: 'Privacy-focused browser, blocks ads and trackers by default', badge: 'Free', badgeType: 'free' },
           { name: 'Google Chrome', href: 'https://www.google.com/chrome/', description: 'Most widely used, strong DevTools', badge: 'Free', badgeType: 'free' },
           { name: 'Firefox', href: 'https://www.mozilla.org/firefox/', description: 'Privacy-focused, independent engine', badge: 'Free', badgeType: 'free' },
           { name: 'Safari', href: 'https://www.apple.com/safari/', description: 'Built into macOS, battery efficient', badge: 'Free', badgeType: 'free' },
