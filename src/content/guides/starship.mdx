@@ -1,0 +1,246 @@
+---
+title: Starship
+description:
+  Set up Starship, a fast cross-shell prompt, with presets, custom modules,
+  and companion CLI tools like zoxide and eza
+category: Infrastructure
+order: 6
+tags: [terminal, starship, prompt, zoxide, eza, infrastructure]
+difficulty: beginner
+relatedGuides: [zsh, ghostty, dotfiles, stow]
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+import Tabs from '../../components/Tabs.astro';
+
+## What is Starship?
+
+Starship is a minimal, fast, and customizable prompt for any shell. It is
+written in Rust and works across Bash, Zsh, Fish, and more. It replaces
+theme-based prompt systems (like Oh My Zsh themes or Powerlevel10k) with a
+single, cross-shell configuration.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/zsh/" />
+</div>
+
+A terminal emulator with Nerd Font support (such as [Ghostty](/guides/ghostty/))
+is recommended but not required.
+
+## Installation
+
+<Tabs tabs={["macOS", "Linux"]}>
+<Fragment slot="macOS">
+
+```bash
+brew install starship
+```
+
+</Fragment>
+<Fragment slot="Linux">
+
+```bash
+curl -sS https://starship.rs/install.sh | sh
+```
+
+This installs to `/usr/local/bin/starship`.
+
+</Fragment>
+</Tabs>
+
+## Initialize Starship
+
+Add to your `~/.zshrc`:
+
+```bash
+command -v starship &>/dev/null && eval "$(starship init zsh)"
+```
+
+> Using a `command -v` guard ensures the shell does not error if Starship is not
+> installed on a particular machine. This is important for shared dotfiles.
+
+## Lazy-Loading Shell Integrations
+
+The `command -v` + `eval` pattern used above is fast for tools like Starship
+and zoxide. But heavier tools — language version managers like `nvm`, `pyenv`,
+or `rbenv` — can add 200–500ms each to shell startup. For those, defer
+initialization until first use:
+
+```bash
+# Lazy-load nvm — only runs init when you first call nvm (Zsh-only)
+nvm() {
+  unfunction nvm  # Zsh builtin; use "unset -f nvm" in Bash
+  source "$NVM_DIR/nvm.sh"
+  nvm "$@"
+}
+```
+
+Use lazy-loading for tools you do not invoke in every shell session. Keep tools
+you use constantly (like Starship and zoxide) eager. See the
+[Dotfiles guide](/guides/dotfiles/) for more on cross-platform shell
+optimization.
+
+## Choose a Preset
+
+Starship includes several presets to get started quickly:
+
+```bash
+# List available presets
+starship preset --list
+
+# Apply a preset (e.g., Tokyo Night)
+mkdir -p ~/.config
+starship preset tokyo-night -o ~/.config/starship.toml
+```
+
+## Customize Starship
+
+Edit `~/.config/starship.toml` to tailor the prompt:
+
+```toml
+[directory]
+truncation_length = 3
+truncation_symbol = "…/"
+
+[git_branch]
+symbol = " "
+
+[git_status]
+conflicted = "⚡"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+
+[cmd_duration]
+min_time = 500
+format = "took [$duration](bold yellow) "
+
+[time]
+disabled = false
+format = "[$time]($style) "
+time_format = "%H:%M"
+```
+
+## Manage with Dotfiles
+
+To manage Starship config with GNU Stow:
+
+```bash
+mkdir -p ~/my-dotfiles/shared/starship/.config
+mv ~/.config/starship.toml ~/my-dotfiles/shared/starship/.config/starship.toml
+cd ~/my-dotfiles
+stow -d shared -t ~ starship
+```
+
+## Companion CLI Tools
+
+These modern CLI tools complement Starship and integrate well with a shared
+dotfiles setup.
+
+### zoxide — Smarter `cd`
+
+zoxide learns your most-used directories and lets you jump to them with
+partial names.
+
+<Tabs tabs={["macOS", "Linux"]}>
+<Fragment slot="macOS">
+
+```bash
+brew install zoxide
+```
+
+</Fragment>
+<Fragment slot="Linux">
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
+```
+
+Installs to `~/.local/bin`. Ensure this is on your `PATH`.
+
+</Fragment>
+</Tabs>
+
+Add to your `~/.zshrc`:
+
+```bash
+command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
+```
+
+Usage:
+
+```bash
+# Jump to a frequently-used directory
+z projects
+
+# Interactive selection
+zi
+```
+
+### eza — Modern `ls`
+
+eza is a modern replacement for `ls` with colors, icons, and Git integration.
+
+<Tabs tabs={["macOS", "Linux"]}>
+<Fragment slot="macOS">
+
+```bash
+brew install eza
+```
+
+</Fragment>
+<Fragment slot="Linux">
+
+```bash
+sudo apt install eza
+```
+
+> If eza is not available in your distro's repositories, install via cargo
+> (`cargo install eza`) or download a pre-built binary from the
+> [eza releases page](https://github.com/eza-community/eza/releases).
+
+</Fragment>
+</Tabs>
+
+Add an alias to your `~/.zshrc`:
+
+```bash
+command -v eza &>/dev/null && alias ls='eza -la --icons'
+```
+
+## Troubleshooting
+
+### `command not found: starship` after install
+
+On Linux, the installer places Starship in `/usr/local/bin`. Ensure this is on
+your `PATH`:
+
+```bash
+export PATH="/usr/local/bin:$PATH"
+```
+
+### Starship prompt is slow
+
+Starship scans the current directory for language files, Git status, etc. In
+large repos, this can be slow. Disable expensive modules:
+
+```toml
+# ~/.config/starship.toml
+[git_status]
+disabled = true
+```
+
+## Resources
+
+<LinkCard
+  href="https://starship.rs/config/"
+  title="Starship Configuration"
+  description="Complete reference for all Starship prompt modules and options"
+/>
+<LinkCard
+  href="https://www.bitdoze.com/starship-ghostty-terminal/"
+  title="Mac Terminal Setup with Ghostty and Starship"
+  description="Step-by-step guide for configuring a modern terminal environment"
+/>

@@ -11,6 +11,7 @@ import { getCategoryIcon, getCategoryColor, getCategorySlug } from '../../lib/ca
 import { getDifficulty } from '../../lib/difficulties';
 import { withBase } from '../../lib/paths';
 import { getToolIcon } from '../../lib/toolIcons';
+import ToolIcon from '../../components/ToolIcon.astro';
 
 // Guide data shape for type assertions (matches content.config.ts schema)
 interface GuideData {
@@ -176,7 +177,7 @@ const heroAlt = toolIcon.alt || guideData.title;
               const relatedData = related.data as GuideData;
               return (
                 <a href={base(`guides/${related.id}/`)} class="related-card">
-                  <span class="related-icon" aria-hidden="true">{getCategoryIcon(relatedData.category)}</span>
+                  <ToolIcon slug={related.id} category={relatedData.category} size={24} class="related-icon" />
                   <div class="related-content">
                     <span class="related-name">{relatedData.title}</span>
                     <span class="related-desc">{relatedData.description}</span>
@@ -600,8 +601,9 @@ const heroAlt = toolIcon.alt || guideData.title;
   }
 
   .related-icon {
-    font-size: 1.5rem;
     flex-shrink: 0;
+    width: 24px;
+    height: 24px;
   }
 
   .related-content {

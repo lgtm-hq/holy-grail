@@ -6,9 +6,10 @@ import { withBase } from '../../lib/paths';
 
 interface Props {
   guideCount: number;
+  categoryCount: number;
 }
 
-const { guideCount } = Astro.props;
+const { guideCount, categoryCount } = Astro.props;
 const base = withBase;
 ---
 
@@ -70,7 +71,7 @@ const base = withBase;
       </div>
       <div class="stat-divider"></div>
       <div class="stat">
-        <span class="stat-value">4</span>
+        <span class="stat-value">{categoryCount}</span>
         <span class="stat-label">Categories</span>
       </div>
       <div class="stat-divider"></div>

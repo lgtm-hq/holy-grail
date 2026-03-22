@@ -166,6 +166,28 @@ In terminal, simply run `reload_session` and it will execute the command for you
 > Aliases are loaded in your shell environment and will be auto-detected once you've
 > typed a portion of the alias and hit `tab`.
 
+### History Configuration
+
+By default, ZSH keeps history but does not deduplicate it. Add these settings
+to your `~/.zshrc` to keep history clean:
+
+```bash
+# Remove older duplicate entries when a new entry is added
+setopt HIST_IGNORE_ALL_DUPS
+
+# Avoid showing duplicates when searching history with Ctrl+R
+setopt HIST_FIND_NO_DUPS
+
+# Optional: increase history size (defaults are low)
+HISTSIZE=10000
+SAVEHIST=10000
+HISTFILE=~/.zsh_history
+```
+
+> These settings prevent the same command from cluttering your history.
+> `HIST_IGNORE_ALL_DUPS` removes the older entry when a duplicate is added,
+> while `HIST_FIND_NO_DUPS` skips duplicates during reverse search.
+
 ## Troubleshooting
 
 ### zshrc is Damaged

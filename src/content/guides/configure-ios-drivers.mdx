@@ -260,6 +260,55 @@ Run driver diagnostics to identify environment issues:
 appium driver doctor xcuitest
 ```
 
+### `ECONNREFUSED 127.0.0.1:8100` (WebDriverAgent failure)
+
+This means WebDriverAgent failed to start on the device or simulator. The
+error typically appears as:
+
+```
+Could not proxy command to the remote server.
+Original error: connect ECONNREFUSED 127.0.0.1:8100
+```
+
+Add retry capabilities to give WDA more time to start:
+
+```python
+caps = {
+    "appium:wdaStartupRetries": 4,
+    "appium:iosInstallPause": 8000,
+    "appium:wdaStartupRetryInterval": 20000,
+}
+```
+
+If the issue persists, manually remove WDA so Appium can reinstall it on the
+next session:
+
+```bash
+# For simulators — uninstall the WDA bundle
+xcrun simctl uninstall booted com.facebook.WebDriverAgentRunner.xctrunner
+
+# For real devices — go to Settings > General > VPN & Device Management
+# and remove the WebDriverAgent profile
+```
+
+Appium will automatically reinstall WDA when you start the next test session.
+
+### Slow iOS Test Execution
+
+If tests run noticeably slower than manual interactions, the XCUITest driver
+may be waiting for the app to become idle between actions. Disable the idle
+wait:
+
+```python
+caps = {
+    "appium:waitForIdleTimeout": 0,
+}
+```
+
+> This tells the XCUITest driver to skip waiting for the app to reach an idle
+> state before executing the next command. This significantly improves speed
+> for apps with continuous animations or background activity.
+
 ## Resources
 
 <LinkCard

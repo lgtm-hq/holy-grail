@@ -1,0 +1,237 @@
+---
+title: Just
+description:
+  Install and use Just as a command runner for automating project tasks,
+  deployments, and multi-step workflows
+category: Infrastructure
+order: 8
+tags: [just, automation, task-runner, infrastructure]
+difficulty: beginner
+relatedGuides: [stow, dotfiles]
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+import Tabs from '../../components/Tabs.astro';
+
+## What is Just?
+
+Just is a command runner — similar to `make`, but designed specifically for
+running project tasks rather than building software. It uses a simple syntax,
+supports arguments, and works across platforms.
+
+> Unlike `make`, Just does not track file dependencies or timestamps. It simply
+> runs the commands you define. This makes it ideal for tasks like deploying
+> configs, running scripts, or orchestrating multi-step workflows.
+
+## Prerequisites
+
+None — Just works with any shell and operating system.
+
+## Installation
+
+<Tabs tabs={["macOS", "Linux"]}>
+<Fragment slot="macOS">
+
+```bash
+brew install just
+```
+
+</Fragment>
+<Fragment slot="Linux">
+
+```bash
+# Debian / Ubuntu (via prebuilt binary)
+curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/bin
+
+# Or via package manager (if available)
+sudo apt install just
+```
+
+Ensure `~/bin` is on your `PATH` if using the install script.
+
+</Fragment>
+</Tabs>
+
+## Your First Justfile
+
+Create a file named `Justfile` (or `justfile`) at the root of your project:
+
+```just
+# List available recipes (runs when you type `just` with no arguments)
+default:
+    @just --list
+
+# Run a simple task
+greet name="world":
+    echo "Hello, {{name}}!"
+```
+
+Run it:
+
+```bash
+# List recipes
+just
+
+# Run a recipe
+just greet
+
+# Pass an argument
+just greet "developer"
+```
+
+## Core Concepts
+
+### Recipes
+
+Recipes are the tasks you define. Each recipe has a name, optional parameters,
+and one or more shell commands:
+
+```just
+# Recipe with no arguments
+build:
+    echo "Building..."
+
+# Recipe with a required argument
+deploy target:
+    echo "Deploying to {{target}}"
+
+# Recipe with a default value
+serve port="8080":
+    echo "Serving on port {{port}}"
+```
+
+> **Important:** Justfile recipes use **tabs** for indentation, not spaces.
+> This is the most common source of syntax errors.
+
+### Dependencies
+
+Recipes can depend on other recipes:
+
+```just
+build:
+    echo "Building..."
+
+test: build
+    echo "Testing..."
+
+# Run build, then test, then deploy
+deploy target: build test
+    echo "Deploying to {{target}}"
+```
+
+### Variables and Environment
+
+```just
+# Set variables
+project := "my-app"
+version := "1.0.0"
+
+# Use environment variables
+export DATABASE_URL := "postgres://localhost/mydb"
+
+build:
+    echo "Building {{project}} v{{version}}"
+```
+
+### Conditional Recipes
+
+```just
+# OS-specific commands
+install:
+    #!/usr/bin/env bash
+    if [[ "$(uname)" == "Darwin" ]]; then
+        brew install mypackage
+    else
+        sudo apt install mypackage
+    fi
+```
+
+## Practical Example: Dotfiles Management
+
+A common use case is automating dotfiles deployment with Stow:
+
+```just
+# Justfile for dotfiles repo
+
+# Deploy shared configs to home directory
+shared:
+    stow -d shared -t ~ zsh git starship
+
+# Deploy machine-specific SSH config
+machine target:
+    stow -d machines/{{target}} -t ~ ssh
+
+# Deploy Docker configs to /opt (requires sudo)
+docker:
+    sudo stow -d machines/my-server -t / docker
+
+# Copy configs that cannot be symlinked (e.g., unprivileged containers)
+copy-configs:
+    sudo cp machines/my-server/cloudflared/config.yml /opt/cloudflared/data/config.yml
+
+# Deploy everything for a specific machine
+setup target: shared (machine target)
+
+# Lint all shell scripts
+lint:
+    find . -name '*.sh' -exec shellcheck {} +
+```
+
+Run with `just shared`, `just setup my-server`, etc.
+
+## Just vs Make
+
+| Feature | Just | Make |
+|---------|------|------|
+| Purpose | Command runner | Build system |
+| File dependencies | No | Yes |
+| Tab requirement | Recipes only | All rules |
+| Arguments | Built-in (`recipe arg`) | Clunky (`make VAR=val`) |
+| Syntax | Simple, purpose-built | Complex, legacy |
+| Cross-platform | Yes | Varies |
+
+**Use Just** when you need a task runner. **Use Make** when you need
+file-dependency tracking (e.g., recompile only changed files).
+
+## Troubleshooting
+
+### `error: Recipe line has inconsistent leading whitespace`
+
+Justfile recipes require **tab** indentation. If you see this error, your
+editor is inserting spaces. Configure your editor to use tabs for Justfiles.
+
+### `just: command not found`
+
+Ensure Just is installed and on your `PATH`. If you installed via the install
+script to `~/bin`, add it to your shell config:
+
+```bash
+[[ -d "$HOME/bin" ]] && export PATH="$HOME/bin:$PATH"
+```
+
+### Recipe runs but commands are not found
+
+By default, each line in a recipe runs in a separate shell. Use a shebang to
+run multi-line scripts in a single shell:
+
+```just
+setup:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "Step 1"
+    echo "Step 2"
+```
+
+## Resources
+
+<LinkCard
+  href="https://just.systems/man/en/"
+  title="Just Manual"
+  description="Complete reference for Just syntax, features, and configuration"
+/>
+<LinkCard
+  href="https://github.com/casey/just"
+  title="Just on GitHub"
+  description="Source code, examples, and community discussions"
+/>

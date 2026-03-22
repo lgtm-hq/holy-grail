@@ -1,0 +1,128 @@
+---
+title: Ghostty
+description:
+  Set up Ghostty, a GPU-accelerated terminal emulator, with Nerd Fonts and
+  custom themes for a modern terminal experience
+category: Infrastructure
+order: 5
+tags: [terminal, ghostty, nerd-fonts, infrastructure]
+difficulty: beginner
+relatedGuides: [zsh, starship, dotfiles]
+---
+
+import LinkCard from '../../components/LinkCard.astro';
+import Tabs from '../../components/Tabs.astro';
+
+## What is Ghostty?
+
+Ghostty is a GPU-accelerated terminal emulator focused on speed, correctness,
+and native platform integration. It supports ligatures, true color, and custom
+themes out of the box.
+
+## Prerequisites
+
+None — Ghostty works with any shell. The [ZSH guide](/guides/zsh/) is
+recommended for the best experience.
+
+## Install Nerd Fonts
+
+Many terminal tools (including Starship) use special glyphs for Git status,
+language icons, and other indicators. You need a patched **Nerd Font** to
+render them properly.
+
+<Tabs tabs={["macOS", "Linux"]}>
+<Fragment slot="macOS">
+
+```bash
+brew install --cask font-meslo-lg-nerd-font
+```
+
+Other popular choices:
+
+```bash
+brew install --cask font-jetbrains-mono-nerd-font
+brew install --cask font-fira-code-nerd-font
+```
+
+</Fragment>
+<Fragment slot="Linux">
+
+```bash
+# Download and install manually
+mkdir -p ~/.local/share/fonts
+cd ~/.local/share/fonts
+curl -fLO https://github.com/ryanoasis/nerd-fonts/releases/latest/download/Meslo.tar.xz
+tar -xf Meslo.tar.xz
+fc-cache -fv
+```
+
+</Fragment>
+</Tabs>
+
+## Installation
+
+<Tabs tabs={["macOS", "Linux"]}>
+<Fragment slot="macOS">
+
+```bash
+brew install --cask ghostty
+```
+
+</Fragment>
+<Fragment slot="Linux">
+
+Ghostty provides packages for major distributions. See the
+[Ghostty installation docs](https://ghostty.org/docs/install/binary) for your distro.
+
+</Fragment>
+</Tabs>
+
+## Configure Ghostty
+
+Create `~/.config/ghostty/config`:
+
+```
+font-family = MesloLGS Nerd Font
+font-size = 14
+
+theme = Argonaut
+background-opacity = 0.95
+
+window-padding-x = 8
+window-padding-y = 8
+```
+
+> Browse available themes with `ghostty +list-themes` in terminal.
+
+## Manage with Dotfiles
+
+To manage Ghostty config with GNU Stow:
+
+```bash
+mkdir -p ~/my-dotfiles/shared/ghostty/.config/ghostty
+mv ~/.config/ghostty/config ~/my-dotfiles/shared/ghostty/.config/ghostty/config
+cd ~/my-dotfiles
+stow -d shared -t ~ ghostty
+```
+
+## Troubleshooting
+
+### Icons display as squares or question marks
+
+You are missing a Nerd Font or your terminal is not configured to use it.
+Verify:
+1. A Nerd Font is installed (`fc-list | grep -i nerd` on Linux)
+2. Your terminal's font is set to the Nerd Font (`font-family` in config)
+
+## Resources
+
+<LinkCard
+  href="https://ghostty.org/docs"
+  title="Ghostty Documentation"
+  description="Official Ghostty terminal emulator documentation"
+/>
+<LinkCard
+  href="https://www.nerdfonts.com/"
+  title="Nerd Fonts"
+  description="Patched fonts with developer icons and glyphs"
+/>

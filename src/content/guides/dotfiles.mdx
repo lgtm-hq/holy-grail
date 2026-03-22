@@ -1,0 +1,415 @@
+---
+title: Dotfiles Management
+description:
+  Organize your dotfiles for multi-machine use with shared and machine-specific
+  configs, cross-platform guards, and secrets management
+category: Infrastructure
+order: 4
+tags: [dotfiles, configuration, cross-platform, infrastructure]
+difficulty: intermediate
+relatedGuides: [stow, just, zsh, ssh]
+---
+
+import LinkBadge from '../../components/LinkBadge.astro';
+import LinkCard from '../../components/LinkCard.astro';
+
+## Why Manage Dotfiles?
+
+As you work across multiple machines — a MacBook for development, a Linux
+server for hosting — your shell configs, SSH settings, and tool configurations
+start to diverge. A dotfiles repository gives you a single source of truth,
+version-controlled and portable.
+
+## Prerequisites
+
+<div class="badge-group">
+  <LinkBadge href="/guides/stow/" />
+  <LinkBadge href="/guides/zsh/" />
+  <LinkBadge href="/guides/ssh/" />
+</div>
+
+## Directory Structure
+
+The key to multi-machine dotfiles is separating **shared** configs from
+**machine-specific** ones:
+
+```
+~/my-dotfiles/
+├── shared/
+│   ├── zsh/
+│   │   └── .zshrc
+│   └── scripts/
+│       └── bin/
+│           ├── system-update
+│           ├── docker-cleanup
+│           └── list-services
+├── machines/
+│   ├── my-macbook/
+│   │   └── ssh/
+│   │       └── config         # macOS 1Password agent path
+│   └── my-server/
+│       ├── ssh/
+│       │   └── config         # Linux 1Password agent path
+│       ├── cloudflared/
+│       │   └── config.yml     # tunnel ingress rules
+│       ├── docker/
+│       │   └── opt/
+│       │       ├── docker-compose.yaml
+│       │       └── .env.example
+│       └── .env.example
+├── Justfile
+├── .gitignore
+└── README.md
+```
+
+### Shared vs Machine-Specific
+
+| Type | Examples | Why |
+|------|----------|-----|
+| Shared | `.zshrc`, `.gitconfig`, `starship.toml`, `scripts/` | Same config works everywhere (with guards) |
+| Machine-specific | SSH config, cloudflared config, docker-compose | Paths, ports, or services differ per machine |
+
+> **SSH config is machine-specific**, not shared. The `IdentityAgent` path
+> differs between macOS (`~/Library/Group Containers/...`) and Linux
+> (`~/.1password/agent.sock`). Host entries also vary per machine.
+
+## Setting Up
+
+### 1. Create the Repository
+
+```bash
+mkdir -p ~/my-dotfiles/{shared,machines}
+cd ~/my-dotfiles
+git init
+```
+
+### 2. Organize Your Configs
+
+Move shared configs into Stow packages:
+
+```bash
+mkdir -p shared/zsh
+mv ~/.zshrc shared/zsh/.zshrc
+```
+
+Move machine-specific configs:
+
+```bash
+# SSH config (machine-specific due to agent paths)
+mkdir -p machines/my-macbook/ssh/.ssh
+mv ~/.ssh/config machines/my-macbook/ssh/.ssh/config
+```
+
+Infrastructure configs can also live here:
+
+```bash
+# Server infrastructure
+mkdir -p machines/my-server/cloudflared
+cp /opt/cloudflared/data/config.yml machines/my-server/cloudflared/
+
+mkdir -p machines/my-server/docker/opt
+cp /opt/docker-compose.yaml machines/my-server/docker/opt/docker-compose.yaml
+```
+
+### 3. Stow on Each Machine
+
+On your Mac:
+
+```bash
+cd ~/my-dotfiles
+stow -d shared -t ~ zsh
+stow -d machines/my-macbook -t ~ ssh
+```
+
+On your server:
+
+```bash
+cd ~/my-dotfiles
+stow -d shared -t ~ zsh
+stow -d machines/my-server -t ~ ssh
+```
+
+### 4. Utility Scripts Package
+
+A `scripts/` stow package deploys reusable shell scripts to `~/bin` — giving
+you the same helper tools on every machine:
+
+```bash
+mkdir -p shared/scripts/bin
+```
+
+Add your scripts (system updates, container cleanup, service status checks),
+then stow:
+
+```bash
+stow -d shared -t ~ scripts
+```
+
+Ensure `~/bin` is on your `PATH` in `.zshrc`:
+
+```bash
+[[ -d "$HOME/bin" ]] && export PATH="$HOME/bin:$PATH"
+```
+
+An alias for listing available scripts is also handy:
+
+```bash
+alias scripts='ls ~/bin'
+```
+
+> Scripts must have a shebang (`#!/usr/bin/env bash`) and executable
+> permissions (`chmod +x`) before stowing.
+
+### 5. Docker Compose as a Stow Package
+
+If your server runs Docker services, the compose file and related configs can
+live in a machine-specific stow package targeting `/opt` instead of `~`:
+
+```bash
+# Package structure mirrors the target
+machines/my-server/docker/opt/docker-compose.yaml
+machines/my-server/docker/opt/prometheus/prometheus.yml
+
+# Stow to root (maps opt/ → /opt/)
+sudo stow -d machines/my-server -t / docker
+```
+
+> Some containerized services (like `cloudflared`) run as unprivileged users
+> and cannot follow symlinks. For those, use `cp` instead of stow. See the
+> [Stow guide](/guides/stow/) for the copy fallback pattern.
+
+### 6. Automating Deployments
+
+As your dotfiles grow, a task runner keeps deployment commands in one place.
+Add a `Justfile` at your repo root:
+
+```just
+# Deploy shared configs (all machines)
+shared:
+    stow -d shared -t ~ zsh git starship scripts
+
+# Deploy machine-specific configs
+machine target:
+    stow -d machines/{{target}} -t ~ ssh
+
+# Deploy everything for the server
+server: shared (machine "my-server")
+    sudo stow -d machines/my-server -t / docker
+    sudo cp machines/my-server/cloudflared/config.yml /opt/cloudflared/data/config.yml
+```
+
+Run with `just shared` or `just server`. See the
+[Stow guide](/guides/stow/) for more on task runner patterns.
+
+### 7. Migrating from a Flat Structure
+
+If your existing dotfiles repo has configs at the root:
+
+```bash
+# Before: flat structure
+my-dotfiles/
+├── .zshrc
+└── .gitconfig
+
+# Move into shared Stow packages
+mkdir -p shared/zsh shared/git
+git mv .zshrc shared/zsh/.zshrc
+git mv .gitconfig shared/git/.gitconfig
+mkdir machines
+```
+
+## Cross-Platform Guards
+
+When sharing a `.zshrc` between macOS and Linux, guard anything that may not
+exist on both platforms:
+
+### Path Checks
+
+```bash
+# Homebrew (macOS only)
+[[ -d /opt/homebrew/bin ]] && export PATH="/opt/homebrew/bin:$PATH"
+
+# Android SDK (macOS only)
+if [[ -d "$HOME/Library/Android/sdk" ]]; then
+  export ANDROID_HOME=$HOME/Library/Android/sdk
+  export PATH=$ANDROID_HOME/platform-tools:$PATH
+fi
+```
+
+### Command Availability
+
+```bash
+# Only init if installed
+command -v starship &>/dev/null && eval "$(starship init zsh)"
+command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
+command -v eza &>/dev/null && alias ls='eza -la --icons'
+command -v rbenv &>/dev/null && eval "$(rbenv init - zsh)"
+```
+
+### Lazy-Loading Heavy Tools
+
+Some tools like `pyenv`, `nvm`, and `rbenv` run initialization scripts that
+add 200–500ms each to shell startup. Wrap them in a function that defers init
+until first use:
+
+```bash
+# Lazy-load nvm — only initializes when you first run nvm
+nvm() {
+  unfunction nvm
+  source "$NVM_DIR/nvm.sh"
+  nvm "$@"
+}
+```
+
+Use lazy-loading for tools you do not use in every shell session. Keep tools
+you use constantly (like `starship` and `zoxide`) eager — their init is fast
+enough that deferred loading adds no benefit.
+
+### OS-Specific Blocks
+
+```bash
+if [[ "$(uname)" == "Darwin" ]]; then
+  alias active_sims="xcrun simctl list 'devices' 'booted'"
+  alias connected_devices="ios-deploy -c"
+fi
+```
+
+For Docker on Apple Silicon or ARM servers, set the default platform:
+
+```bash
+if [[ "$(uname -m)" == "arm64" ]] || [[ "$(uname -m)" == "aarch64" ]]; then
+  export DOCKER_DEFAULT_PLATFORM="linux/arm64"
+fi
+```
+
+### Multi-Path Resources
+
+Some tools install to different paths on each OS:
+
+```bash
+if [[ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
+  source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+elif [[ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
+  source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
+```
+
+### Guarding CLI Tool Integrations
+
+Tools that require other tools to be present:
+
+```bash
+# Only fetch Homebrew token if both 1Password CLI and Homebrew exist
+if command -v op &>/dev/null && command -v brew &>/dev/null; then
+  export HOMEBREW_GITHUB_API_TOKEN="$(op item get 'Homebrew-GH-API' --reveal --field credential)"
+fi
+```
+
+### Avoid Hardcoded Paths
+
+Always use `$HOME` instead of absolute user paths:
+
+```bash
+# Bad — breaks on other machines
+fpath=(/Users/myname/.docker/completions $fpath)
+
+# Good — portable
+[[ -d "$HOME/.docker/completions" ]] && fpath=($HOME/.docker/completions $fpath)
+```
+
+## Secrets Management
+
+### Keep Secrets Out of Git
+
+```bash
+# .gitignore
+*.pem
+*.key
+*.json       # tunnel credentials
+.env
+.env.local
+```
+
+### Use `.env.example` Templates
+
+For machine-specific secrets, provide templates:
+
+```bash
+# machines/my-server/.env.example
+
+# System
+TZ=
+PUID=
+PGID=
+LAN_IP=
+
+# Networking
+DOMAIN=
+TUNNEL_TOKEN=
+
+# Service ports
+PORT_DASHBOARD=
+PORT_MONITORING=
+PORT_DNS=
+PORT_MEDIA=
+
+# Credentials (generate unique values for each)
+DB_PASSWORD=
+ADMIN_PASSWORD=
+API_KEY=
+```
+
+Anyone setting up a new machine copies the template and fills in values:
+
+```bash
+cp .env.example .env
+```
+
+## Syncing Between Machines
+
+After making changes on one machine:
+
+```bash
+# On the machine where you made changes
+cd ~/my-dotfiles
+git add -A
+git commit -m "update: cross-platform zshrc guards"
+git push
+
+# On the other machine
+cd ~/my-dotfiles
+git pull
+```
+
+> If `git pull` hangs on a Linux machine with 1Password SSH agent, check for a
+> GUI approval prompt in the 1Password window.
+
+## Troubleshooting
+
+### Stow complains about existing files
+
+The target file already exists and is not a symlink:
+
+```bash
+mv ~/.zshrc ~/.zshrc.backup
+stow -d shared -t ~ zsh
+```
+
+### Changes not taking effect after pull
+
+If you edited a stowed file, the symlink means changes are immediate. But if
+you restructured packages, re-stow:
+
+```bash
+stow -d shared -t ~ -R zsh
+```
+
+### SSH config permissions after stowing
+
+SSH requires strict permissions. Even though Stow creates symlinks, the
+underlying file must have correct permissions:
+
+```bash
+chmod 600 ~/my-dotfiles/machines/my-macbook/ssh/.ssh/config
+chmod 700 ~/my-dotfiles/machines/my-macbook/ssh/.ssh
+```
