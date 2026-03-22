@@ -9,8 +9,8 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build && pagefind --site dist && rm -rf public/pagefind && cp -r dist/pagefind public/pagefind",
-    "postinstall": "rm -rf public/packages/css/dist/themes && mkdir -p public/packages/css/dist && test -d node_modules/@lgtm-hq/turbo-themes/packages/css/dist/themes && cp -r node_modules/@lgtm-hq/turbo-themes/packages/css/dist/themes public/packages/css/dist/themes",
+    "build": "astro check && astro build && pagefind --site dist && ./scripts/sync-assets.sh pagefind",
+    "postinstall": "./scripts/sync-assets.sh themes",
     "preview": "astro preview"
   },
   "dependencies": {
