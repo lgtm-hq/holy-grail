@@ -12,6 +12,9 @@ dist
 # pagefind (copied to public for dev mode)
 public/pagefind
 
+# theme CSS (copied from turbo-themes for selector)
+public/packages
+
 # code coverage
 coverage
 *.lcov

@@ -9,14 +9,15 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build && pagefind --site dist",
+    "build": "astro check && astro build && pagefind --site dist && cp -r dist/pagefind public/pagefind",
+    "postinstall": "rm -rf public/packages/css/dist/themes && mkdir -p public/packages/css/dist && cp -r node_modules/@lgtm-hq/turbo-themes/packages/css/dist/themes public/packages/css/dist/themes 2>/dev/null || true",
     "preview": "astro preview"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.13",
     "@astrojs/rss": "^4.0.15",
     "@astrojs/sitemap": "^3.7.0",
-    "@lgtm-hq/turbo-themes": "^0.12.22",
+    "@lgtm-hq/turbo-themes": "^0.19.2",
     "astro": "^5.16.16"
   },
   "devDependencies": {

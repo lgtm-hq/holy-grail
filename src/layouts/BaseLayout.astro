@@ -30,7 +30,7 @@ const imageURL = new URL(withBase(image), Astro.site || Astro.url.origin);
 ---
 
 <!doctype html>
-<html lang="en" data-base={import.meta.env.BASE_URL}>
+<html lang="en" data-base={import.meta.env.BASE_URL} data-baseurl={import.meta.env.BASE_URL}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -77,14 +77,11 @@ const imageURL = new URL(withBase(image), Astro.site || Astro.url.origin);
     <!-- Prevent FOUC -->
     <script is:inline define:vars={{ darkTheme: DEFAULT_DARK_THEME, lightTheme: DEFAULT_LIGHT_THEME }}>
       (function() {
-        const stored = localStorage.getItem('turbo-theme');
-        if (stored) {
-          document.documentElement.setAttribute('data-theme', stored);
-        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          document.documentElement.setAttribute('data-theme', darkTheme);
-        } else {
-          document.documentElement.setAttribute('data-theme', lightTheme);
-        }
+        var stored = localStorage.getItem('turbo-theme');
+        var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? darkTheme : lightTheme);
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.classList.add('theme-' + theme);
+        window.__INITIAL_THEME__ = theme;
       })();
     </script>
 
