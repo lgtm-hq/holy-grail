@@ -21,7 +21,6 @@ const navItems = [
   { href: base(''), label: 'Home', icon: '🏰' },
   { href: base('guides/'), label: 'Guides', icon: '📜' },
   { href: base('categories/'), label: 'Categories', icon: '⚔️' },
-  { href: base('search/'), label: 'Search', icon: '🔍' },
 ];
 ---
 
@@ -45,6 +44,12 @@ const navItems = [
           </a>
         </li>
       ))}
+      <li>
+        <button class="mobile-nav-link mobile-search-trigger" data-search-trigger type="button">
+          <span class="nav-icon">🔍</span>
+          Search
+        </button>
+      </li>
       <li class="mobile-categories">
         <span class="mobile-section-title">Categories</span>
         <ul>
@@ -198,5 +203,14 @@ const navItems = [
 
   .nav-icon {
     font-size: 1.1rem;
+  }
+
+  .mobile-search-trigger {
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: inherit;
+    text-align: left;
   }
 </style>
