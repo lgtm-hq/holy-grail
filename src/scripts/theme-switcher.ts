@@ -4,11 +4,16 @@
  * Bridges a gap: turbo-themes selector sets a class (theme-{id}) on <html>,
  * but the bundled CSS uses [data-theme="..."] attribute selectors.
  * This script syncs class → attribute and updates the trigger label.
+ *
+ * Initialization is always explicit via initSelector() to ensure consistent
+ * lifecycle handling on both first load and Astro view transitions.
  */
 
 import { initTheme, wireFlavorSelector } from "@lgtm-hq/turbo-themes/selector";
 
-// The import triggers auto-init on DOMContentLoaded (module-level code in selector).
+// Suppress the module's auto-init DOMContentLoaded listener by using our own
+// explicit initialization. The auto-init still registers but initSelector()
+// guards against double-init via cleanup tracking.
 
 let selectorCleanup: (() => void) | null = null;
 let classObserver: MutationObserver | null = null;
@@ -79,16 +84,11 @@ async function initSelector() {
   observeClassChanges();
 }
 
-// On first load, the auto-init handles the selector.
-// We just need to start observing and sync the initial state.
+// Explicit initialization on first load
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => {
-    syncTheme();
-    observeClassChanges();
-  });
+  document.addEventListener("DOMContentLoaded", initSelector);
 } else {
-  syncTheme();
-  observeClassChanges();
+  initSelector();
 }
 
 // Re-initialize after Astro view transitions

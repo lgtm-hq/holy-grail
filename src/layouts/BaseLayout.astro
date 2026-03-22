@@ -77,8 +77,10 @@ const imageURL = new URL(withBase(image), Astro.site || Astro.url.origin);
     <!-- Prevent FOUC -->
     <script is:inline define:vars={{ darkTheme: DEFAULT_DARK_THEME, lightTheme: DEFAULT_LIGHT_THEME }}>
       (function() {
-        var stored = localStorage.getItem('turbo-theme');
-        var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? darkTheme : lightTheme);
+        var stored = null;
+        try { stored = localStorage.getItem('turbo-theme'); } catch (e) {}
+        var fallback = window.matchMedia('(prefers-color-scheme: dark)').matches ? darkTheme : lightTheme;
+        var theme = (stored && /^[a-z0-9-]+$/.test(stored)) ? stored : fallback;
         document.documentElement.setAttribute('data-theme', theme);
         document.documentElement.classList.add('theme-' + theme);
         window.__INITIAL_THEME__ = theme;
