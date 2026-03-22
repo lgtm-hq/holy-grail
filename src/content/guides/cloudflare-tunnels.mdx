@@ -167,7 +167,7 @@ tunnel has established its connections to Cloudflare's edge network.
 Or with `docker run`:
 
 ```bash
-docker run -d --name cloudflared --restart unless-stopped \
+docker run -d --name cloudflared-tunnel --restart unless-stopped \
   --network host \
   -v /opt/cloudflared/data:/home/nonroot/.cloudflared \
   cloudflare/cloudflared:latest tunnel --no-autoupdate \
@@ -232,7 +232,7 @@ CLOUDFLARED_TOKEN=your-tunnel-token-here
 Or with `docker run`:
 
 ```bash
-docker run -d --name cloudflared --restart unless-stopped \
+docker run -d --name cloudflared-tunnel --restart unless-stopped \
   --network host \
   -e TUNNEL_TOKEN=your-tunnel-token-here \
   cloudflare/cloudflared:latest tunnel --no-autoupdate run
@@ -433,7 +433,7 @@ docker compose up -d cloudflared
 ### Tunnel shows "inactive" in Cloudflare dashboard
 
 - Check the container is running: `docker ps | grep cloudflared`
-- View logs: `docker logs cloudflared`
+- View logs: `docker logs cloudflared-tunnel`
 - Verify the credentials file path in `config.yml` matches the container mount
 
 ### `connection refused` when connecting via SSH

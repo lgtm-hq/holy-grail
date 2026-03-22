@@ -70,9 +70,9 @@ or `rbenv` — can add 200–500ms each to shell startup. For those, defer
 initialization until first use:
 
 ```bash
-# Lazy-load nvm — only runs init when you first call nvm
+# Lazy-load nvm — only runs init when you first call nvm (Zsh-only)
 nvm() {
-  unfunction nvm
+  unfunction nvm  # Zsh builtin; use "unset -f nvm" in Bash
   source "$NVM_DIR/nvm.sh"
   nvm "$@"
 }
