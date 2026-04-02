@@ -21,12 +21,16 @@ jobs:
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
         with:
           egress-policy: audit
+          allowed-endpoints: >
+            codeload.github.com:443
 
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           ref: ${{ github.event.pull_request.base.ref }}
-          sparse-checkout: .github/CODEOWNERS
+          sparse-checkout: |
+            .github/CODEOWNERS
+            scripts/ci/pr-auto-assign.sh
           sparse-checkout-cone-mode: false
 
       - name: Assign random CODEOWNER
@@ -34,50 +38,5 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
-        run: |
-          set -o pipefail
-
-          # Extract usernames from active CODEOWNERS lines, filter out team entries (@org/team)
-          owners=""
-          pipeline_output=$(grep -v '^\s*#' .github/CODEOWNERS \
-            | grep -oE '@[a-zA-Z0-9_/-]+' \
-            | sort -u | tr -d '@' | grep -E '^[A-Za-z0-9_-]+$') \
-            && exit_code=0 || exit_code=$?
-
-          if [[ $exit_code -eq 0 ]]; then
-            owners="$pipeline_output"
-          elif [[ $exit_code -eq 1 ]]; then
-            echo "No matches found, treating as empty result"
-            owners=""
-          else
-            echo "Error: Pipeline failed with exit code $exit_code"
-            exit "$exit_code"
-          fi
-
-          if [[ -z "$owners" ]]; then
-            echo "No valid individual CODEOWNERS found, skipping assignment"
-            exit 0
-          fi
-
-          mapfile -t owner_array <<< "$owners"
-
-          # Filter out the PR author from candidates
-          filtered_array=()
-          for owner in "${owner_array[@]}"; do
-            if [[ "$owner" != "$PR_AUTHOR" ]]; then
-              filtered_array+=("$owner")
-            fi
-          done
-          owner_array=("${filtered_array[@]}")
-          count=${#owner_array[@]}
-
-          if [[ $count -eq 0 ]]; then
-            echo "No eligible assignees after filtering out PR author ($PR_AUTHOR), skipping"
-            exit 0
-          fi
-
-          random_index=$((RANDOM % count))
-          selected="${owner_array[$random_index]}"
-
-          echo "Selected assignee: $selected (from $count eligible CODEOWNERS)"
-          gh pr edit "$PR_NUMBER" --add-assignee "$selected"
+          PR_AUTHOR_TYPE: ${{ github.event.pull_request.user.type }}
+        run: scripts/ci/pr-auto-assign.sh
