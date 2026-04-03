@@ -1,60 +1,80 @@
+# Configuration for actions/labeler
+# Maps file paths to labels for automatic PR labeling
+#
+# Note: Some files intentionally match multiple labels. For example, *.md
+# matches both path-specific labels and "documentation".
 ---
-# PR Labeler Configuration
-# https://github.com/actions/labeler
-
 documentation:
   - changed-files:
       - any-glob-to-any-file:
-          - '*.md'
-          - 'docs/**/*'
-          - 'src/content/**/*'
+          - "docs/**"
+          - "README.md"
+          - "CHANGELOG.md"
+          - "**/*.md"
+          - "!.github/**/*.md"
+          - "src/content/**"
 
 ci:
   - changed-files:
       - any-glob-to-any-file:
-          - '.github/**/*'
-          - 'scripts/ci/**/*'
+          - ".github/workflows/**"
+          - ".github/actions/**"
+          - "scripts/ci/**"
 
 testing:
   - changed-files:
       - any-glob-to-any-file:
-          - 'tests/**/*'
-          - 'playwright.config.ts'
-          - '**/*.test.ts'
-          - '**/*.spec.ts'
+          - "tests/**"
+          - "playwright.config.ts"
+          - "**/*.test.ts"
+          - "**/*.spec.ts"
 
 components:
   - changed-files:
       - any-glob-to-any-file:
-          - 'src/components/**/*'
+          - "src/components/**"
 
 styling:
   - changed-files:
       - any-glob-to-any-file:
-          - '**/*.css'
-          - '**/*.scss'
-          - 'tailwind.config.*'
+          - "**/*.css"
+          - "**/*.scss"
+          - "tailwind.config.*"
 
 dependencies:
   - changed-files:
       - any-glob-to-any-file:
-          - 'package.json'
-          - 'bun.lock'
+          - "package.json"
+          - "bun.lock"
 
 config:
   - changed-files:
       - any-glob-to-any-file:
-          - 'astro.config.*'
-          - 'tsconfig.json'
-          - '*.config.ts'
-          - '*.config.js'
+          - "astro.config.*"
+          - "tsconfig.json"
+          - "*.config.ts"
+          - "*.config.js"
 
 pages:
   - changed-files:
       - any-glob-to-any-file:
-          - 'src/pages/**/*'
+          - "src/pages/**"
 
 layouts:
   - changed-files:
       - any-glob-to-any-file:
-          - 'src/layouts/**/*'
+          - "src/layouts/**"
+
+security:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/workflows/security-dependency-review.yml"
+          - ".github/workflows/codeql.yml"
+          - ".github/workflows/validate-action-pinning.yml"
+
+maintenance:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/CODEOWNERS"
+          - ".github/labeler.yml"
+          - "renovate.json"
