@@ -12,7 +12,7 @@ permissions: {}
 
 jobs:
   assign:
-    name: "\U0001F464 Auto Assign PR Author"
+    name: "\U0001F464 Auto Assign CODEOWNER"
     runs-on: ubuntu-24.04
     permissions:
       contents: read

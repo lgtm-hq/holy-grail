@@ -31,8 +31,7 @@ fi
 
 # Parse CODEOWNERS: skip comments/blank lines, extract owner columns (fields
 # after the pattern), keep only individual users (no org/team entries with /)
-owners=""
-pipeline_output=$(awk '
+if ! pipeline_output=$(awk '
   /^[[:space:]]*(#|$)/ { next }
   {
     for (i = 2; i <= NF; i++) {
@@ -41,20 +40,12 @@ pipeline_output=$(awk '
       if (owner !~ /\// && owner ~ /^[A-Za-z0-9_-]+$/) print owner
     }
   }
-' "$CODEOWNERS_FILE" | sort -u) &&
-	exit_code=0 || exit_code=$?
-
-if [[ $exit_code -eq 0 ]]; then
-	owners="$pipeline_output"
-elif [[ $exit_code -eq 1 ]]; then
-	# awk/sort exit code 1 means no matches - expected when no individual owners
-	echo "No matches found in pipeline, treating as empty result"
-	owners=""
-else
-	# Any other exit code indicates an actual error
-	echo "Error: Pipeline failed with exit code $exit_code"
-	exit "$exit_code"
+' "$CODEOWNERS_FILE" | sort -u); then
+	echo "Error: Failed to parse CODEOWNERS file" >&2
+	exit 1
 fi
+
+owners="$pipeline_output"
 
 if [[ -z "$owners" ]]; then
 	echo "No valid individual CODEOWNERS found, skipping assignment"
@@ -68,12 +59,23 @@ count=${#owner_array[@]}
 random_index=$((RANDOM % count))
 selected="${owner_array[$random_index]}"
 
-echo "Selected assignee: $selected (from $count CODEOWNERS)"
-gh pr edit "$PR_NUMBER" --add-assignee "$selected"
+# Check existing assignees to avoid duplicates on reopened PRs
+existing_assignees=$(gh pr view "$PR_NUMBER" --json assignees --jq '.assignees[].login')
+if echo "$existing_assignees" | grep -qx "$selected"; then
+	echo "Assignee $selected already assigned, skipping"
+else
+	echo "Selected assignee: $selected (from $count CODEOWNERS)"
+	gh pr edit "$PR_NUMBER" --add-assignee "$selected"
+fi
 
 # Request a review from the selected CODEOWNER for bot-authored PRs
 # (e.g. version bumps, Renovate dependency updates)
 if [[ "${PR_AUTHOR_TYPE:-}" == "Bot" ]]; then
-	echo "Bot-authored PR detected, requesting review from $selected"
-	gh pr edit "$PR_NUMBER" --add-reviewer "$selected"
+	existing_reviewers=$(gh pr view "$PR_NUMBER" --json reviewRequests --jq '.reviewRequests[].login')
+	if echo "$existing_reviewers" | grep -qx "$selected"; then
+		echo "Reviewer $selected already requested, skipping"
+	else
+		echo "Bot-authored PR detected, requesting review from $selected"
+		gh pr edit "$PR_NUMBER" --add-reviewer "$selected"
+	fi
 fi
