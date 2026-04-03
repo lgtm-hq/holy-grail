@@ -4,7 +4,7 @@ name: PR - Auto Label
 # Automatically applies labels to pull requests based on changed files.
 # Uses lgtm-ci harden-runner action.
 
-"on":
+'on':
   pull_request_target:
     types: [opened, synchronize, reopened]
 
@@ -25,8 +25,7 @@ jobs:
         with:
           egress-policy: block
           allowed-endpoints: >
-            github.com:443
-            api.github.com:443
+            github.com:443 api.github.com:443
 
       - name: Apply labels based on changed files
         # yamllint disable-line rule:line-length
