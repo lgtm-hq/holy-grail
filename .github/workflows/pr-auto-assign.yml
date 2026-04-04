@@ -1,33 +1,36 @@
+# SPDX-License-Identifier: MIT
 ---
-name: PR Auto Assign
+name: PR - Auto Assign
+# Automatically assigns a random CODEOWNER to new pull requests.
+# Ensures every PR has an assignee for accountability.
 
-on:
+'on':
   pull_request_target:
-    types: [opened]
+    types: [opened, reopened]
 
-permissions:
-  contents: read
-  issues: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   assign:
-    name: Auto-assign PR
-    runs-on: ubuntu-latest
+    name: "\U0001F464 Auto Assign CODEOWNER"
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: write
     timeout-minutes: 5
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        # yamllint disable-line rule:line-length
+        uses: lgtm-hq/lgtm-ci/.github/actions/harden-runner@282efbc5344859744d952012d982cec7be75c294 # v0
         with:
-          egress-policy: audit
+          egress-policy: block
           allowed-endpoints: >
-            codeload.github.com:443
+            github.com:443 api.github.com:443 codeload.github.com:443
 
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: ${{ github.event.pull_request.base.ref }}
           sparse-checkout: |
             .github/CODEOWNERS
             scripts/ci/pr-auto-assign.sh
@@ -37,6 +40,5 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_AUTHOR_TYPE: ${{ github.event.pull_request.user.type }}
-        run: scripts/ci/pr-auto-assign.sh
+        run: ./scripts/ci/pr-auto-assign.sh
