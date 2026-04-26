@@ -27,7 +27,7 @@ jobs:
         id: lintro
         env:
           # py-lintro image pinned to specific digest for reproducibility (0.60.2)
-          LINTRO_IMAGE: ghcr.io/lgtm-hq/py-lintro:0.60.2@sha256:587283626d467b449922306e6a17d9386e96fd548e229fb003c155cc8878be44
+          LINTRO_IMAGE: ghcr.io/lgtm-hq/py-lintro:0.60.2@sha256:480cd6cfc40c6ad27ec1491a208fa3111fc72c679fc3a4246762c5cbd8752175
         run: |
           set +e
           docker run --rm -v "${{ github.workspace }}:/code" \

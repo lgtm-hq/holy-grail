@@ -19,7 +19,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  LINTRO_IMAGE: ghcr.io/lgtm-hq/py-lintro:0.60.2
+  # py-lintro 0.60.2 pinned to immutable digest for reproducibility
+  LINTRO_IMAGE: ghcr.io/lgtm-hq/py-lintro:0.60.2@sha256:480cd6cfc40c6ad27ec1491a208fa3111fc72c679fc3a4246762c5cbd8752175
 
 jobs:
   security-audit:
@@ -59,7 +60,7 @@ jobs:
         with:
           name: security-audit-comment
           path: security-audit-comment.txt
-          if-no-files-found: ignore
+          if-no-files-found: error
 
       - name: Fail on vulnerabilities
         if: steps.audit.outcome == 'failure'
@@ -70,6 +71,7 @@ jobs:
     if: always() && github.event_name == 'pull_request'
     needs: security-audit
     permissions:
+      contents: read
       pull-requests: write
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -86,13 +88,11 @@ jobs:
 
       - name: Download comment artifact
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        continue-on-error: true
         with:
           name: security-audit-comment
 
       - name: Post PR comment
         uses: ./.github/actions/post-pr-comment
-        continue-on-error: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           file: security-audit-comment.txt
