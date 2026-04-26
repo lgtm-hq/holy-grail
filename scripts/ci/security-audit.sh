@@ -92,6 +92,9 @@ fi
 if [[ "${AUDIT_FAILED}" -eq 1 ]]; then
   log_error "Security audit failed (tool/scan error)"
   exit 1
+elif [[ "${FORMAT_FAILED}" -eq 1 ]]; then
+  log_error "Security audit comment formatting failed"
+  exit 1
 elif [[ "${HAS_VULNS}" -eq 1 ]]; then
   log_error "Security audit found vulnerabilities"
   exit 1
