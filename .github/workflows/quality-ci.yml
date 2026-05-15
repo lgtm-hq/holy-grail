@@ -60,7 +60,7 @@ jobs:
 
       - name: Fail on linting issues
         if: needs.lint.outputs.exit-code != '0'
-        run: exit 1
+        run: bash scripts/ci/fail-on-lint-issues.sh
 
   build:
     name: Build & Test
@@ -74,21 +74,7 @@ jobs:
 
       - name: Check for buildable project
         id: check
-        run: |
-          # Check for package.json and any astro.config.* file
-          has_astro_config=false
-          for ext in mjs js ts mts cjs cts; do
-            if [[ -f "astro.config.${ext}" ]]; then
-              has_astro_config=true
-              break
-            fi
-          done
-
-          if [[ -f "package.json" ]] && [[ "$has_astro_config" == "true" ]]; then
-            echo "has_project=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_project=false" >> "$GITHUB_OUTPUT"
-          fi
+        run: bash scripts/ci/detect-buildable-project.sh
 
       - name: Setup environment
         if: steps.check.outputs.has_project == 'true'
@@ -100,12 +86,7 @@ jobs:
 
       - name: Run unit tests
         if: steps.check.outputs.has_project == 'true'
-        run: |
-          if [[ -d "tests/unit" ]] && find tests/unit -name "*.test.ts" | grep -q .; then
-            bun test tests/unit
-          else
-            echo "No unit tests found, skipping"
-          fi
+        run: bash scripts/ci/run-unit-tests-if-present.sh
 
       - name: Build
         if: steps.check.outputs.has_project == 'true'
