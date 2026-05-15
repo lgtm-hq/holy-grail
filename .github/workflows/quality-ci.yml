@@ -13,7 +13,19 @@ concurrency:
 
 jobs:
   lint:
-    name: Lint
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-quality.yml@main
+    with:
+      job-name: Lint
+      fail-on-error: false
+    permissions:
+      contents: read
+      packages: read
+      pull-requests: read
+
+  lint-pr-comment:
+    name: Lint PR Comment
+    needs: lint
+    if: always() && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -23,28 +35,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Run lintro
-        id: lintro
-        env:
-          # py-lintro image pinned to specific digest for reproducibility (0.60.2)
-          LINTRO_IMAGE: ghcr.io/lgtm-hq/py-lintro:0.60.2@sha256:480cd6cfc40c6ad27ec1491a208fa3111fc72c679fc3a4246762c5cbd8752175
-        run: |
-          set +e
-          docker run --rm -v "${{ github.workspace }}:/code" \
-            "$LINTRO_IMAGE" check --output-format grid 2>&1 | tee chk-output.txt
-          exit_code=${PIPESTATUS[0]}
-          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
-          exit 0
+      - name: Download linting report
+        id: download
+        uses: actions/download-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         continue-on-error: true
+        with:
+          name: linting-report
+          path: .
 
       - name: Generate PR comment
-        if: github.event_name == 'pull_request'
+        if: steps.download.outcome == 'success'
         env:
-          CHK_EXIT_CODE: ${{ steps.lintro.outputs.exit_code }}
+          CHK_EXIT_CODE: ${{ needs.lint.outputs.exit-code }}
         run: ./scripts/ci/ci-pr-comment.sh
 
       - name: Post lintro results to PR
-        if: github.event_name == 'pull_request'
+        if: steps.download.outcome == 'success'
         uses: ./.github/actions/post-pr-comment
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -52,7 +58,7 @@ jobs:
           file: pr-comment.txt
 
       - name: Fail on linting issues
-        if: steps.lintro.outputs.exit_code != '0'
+        if: needs.lint.outputs.exit-code != '0'
         run: exit 1
 
   build:
