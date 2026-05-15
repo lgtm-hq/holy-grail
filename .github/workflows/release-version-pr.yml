@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   version-pr:
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-release-version-pr.yml@main
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-release-version-pr.yml@014c1c3e698852969f37b685619bb58844f60465
     with:
       max-bump: minor
       ecosystems: node
