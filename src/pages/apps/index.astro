@@ -17,8 +17,11 @@ const tocHeadings = [
 
 const uniqueAppNames = new Set<string>();
 sections.forEach((section) => {
-  section.groups?.forEach((group) => group.apps.forEach((app) => uniqueAppNames.add(app.name)));
-  section.apps?.forEach((app) => uniqueAppNames.add(app.name));
+  if (section.kind === "groups") {
+    section.groups.forEach((group) => group.apps.forEach((app) => uniqueAppNames.add(app.name)));
+  } else {
+    section.apps.forEach((app) => uniqueAppNames.add(app.name));
+  }
 });
 const totalApps = uniqueAppNames.size;
 
@@ -97,7 +100,7 @@ function faviconUrl(href?: string): string {
               </div>
             </div>
 
-            {section.groups ? (
+            {section.kind === "groups" ? (
               section.groups.map((group) => (
                 <div class="grp" data-grp>
                   <h3 class="grp-label">{group.label}</h3>
@@ -133,7 +136,7 @@ function faviconUrl(href?: string): string {
                   </div>
                 </div>
               ))
-            ) : section.apps ? (
+            ) : (
               <div class="cards">
                 {section.apps.map((app) => (
                   <article class:list={['card', { 'daily-driver': app.dailyDriver }]} data-name={app.name.toLowerCase()} data-desc={app.description.toLowerCase()} data-price={app.badgeType || 'none'}>
@@ -164,7 +167,7 @@ function faviconUrl(href?: string): string {
                   </article>
                 ))}
               </div>
-            ) : null}
+            )}
 
             {section.tip && (
               <div class="sect-tip">

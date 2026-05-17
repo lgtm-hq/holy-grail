@@ -9,22 +9,35 @@ export interface App {
   tags?: string[];
 }
 
-export interface Section {
+export interface SectionBase {
   id: string;
   title: string;
   icon: string;
   note?: string;
   tip?: string;
   tipIcon?: string;
-  groups?: { label: string; apps: App[] }[];
-  apps?: App[];
 }
+
+/** Flat list of apps (no sub-groups). */
+export interface AppSection extends SectionBase {
+  kind: "apps";
+  apps: App[];
+}
+
+/** Apps organized under labeled sub-groups. */
+export interface GroupSection extends SectionBase {
+  kind: "groups";
+  groups: { label: string; apps: App[] }[];
+}
+
+export type Section = AppSection | GroupSection;
 
 export const sections: Section[] = [
   {
     id: "password-managers",
     title: "Password Managers",
     icon: "🔐",
+    kind: "apps",
     note: "Choose one and use it consistently across all your devices.",
     tip: "Some password managers (like 1Password) have a built-in authenticator, which can replace a separate 2FA app.",
     apps: [
@@ -56,6 +69,7 @@ export const sections: Section[] = [
     id: "authenticators",
     title: "Authenticator Apps",
     icon: "🛡️",
+    kind: "apps",
     apps: [
       {
         name: "Ente Auth",
@@ -85,6 +99,7 @@ export const sections: Section[] = [
     id: "browsers",
     title: "Browsers",
     icon: "🌐",
+    kind: "groups",
     groups: [
       {
         label: "Browsers",
@@ -163,6 +178,7 @@ export const sections: Section[] = [
     id: "ai",
     title: "AI Tools",
     icon: "🤖",
+    kind: "groups",
     groups: [
       {
         label: "Coding Agents",
@@ -274,6 +290,7 @@ export const sections: Section[] = [
     id: "ides",
     title: "Development",
     icon: "✏️",
+    kind: "groups",
     groups: [
       {
         label: "Editors & IDEs",
@@ -369,6 +386,7 @@ export const sections: Section[] = [
     id: "workflow",
     title: "Workflow & Productivity",
     icon: "⚡",
+    kind: "groups",
     groups: [
       {
         label: "Launchers",
@@ -445,6 +463,7 @@ export const sections: Section[] = [
     id: "menu-bar",
     title: "Window, Menu Bar & Focus",
     icon: "🎛️",
+    kind: "groups",
     groups: [
       {
         label: "Window Management",
@@ -577,6 +596,7 @@ export const sections: Section[] = [
     id: "communication",
     title: "Communication",
     icon: "💬",
+    kind: "groups",
     groups: [
       {
         label: "Messaging",
@@ -641,6 +661,7 @@ export const sections: Section[] = [
     id: "notes-productivity",
     title: "Documents & Cloud Storage",
     icon: "📝",
+    kind: "apps",
     apps: [
       {
         name: "Craft",
@@ -671,6 +692,7 @@ export const sections: Section[] = [
     id: "virtualization",
     title: "Virtualization",
     icon: "📦",
+    kind: "apps",
     apps: [
       {
         name: "Docker Desktop",
@@ -693,6 +715,7 @@ export const sections: Section[] = [
     id: "files-media",
     title: "Files & Media",
     icon: "🎬",
+    kind: "groups",
     groups: [
       {
         label: "File Utilities",
@@ -769,6 +792,7 @@ export const sections: Section[] = [
     id: "screenshots",
     title: "Screenshots & Recording",
     icon: "📸",
+    kind: "apps",
     apps: [
       {
         name: "Shottr",
@@ -798,6 +822,7 @@ export const sections: Section[] = [
     id: "security-privacy",
     title: "Security & Privacy",
     icon: "🔒",
+    kind: "apps",
     apps: [
       {
         name: "NordVPN",
@@ -821,6 +846,7 @@ export const sections: Section[] = [
     id: "system-maintenance",
     title: "System & Hardware",
     icon: "⚙️",
+    kind: "groups",
     groups: [
       {
         label: "App & System Updates",
@@ -942,6 +968,7 @@ export const sections: Section[] = [
     id: "remote-desktop",
     title: "Remote Desktop",
     icon: "🖥️",
+    kind: "apps",
     apps: [
       {
         name: "AnyDesk",
@@ -965,6 +992,7 @@ export const sections: Section[] = [
     id: "gaming-streaming",
     title: "Gaming & Trading",
     icon: "🎮",
+    kind: "apps",
     apps: [
       {
         name: "MetaTrader 5",
@@ -986,6 +1014,7 @@ export const sections: Section[] = [
     id: "smart-home",
     title: "Networking, Smart Home & Self-Hosted",
     icon: "🏠",
+    kind: "groups",
     groups: [
       {
         label: "Networking",
