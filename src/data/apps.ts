@@ -178,7 +178,7 @@ export const sections: Section[] = [
           },
           {
             name: "Codex",
-            href: "https://openai.com/codex/",
+            href: "https://openai.com/index/codex-now-generally-available/",
             description: "Cloud-based AI coding agent by OpenAI",
             badge: "Paid",
             badgeType: "paid",
