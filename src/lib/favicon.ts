@@ -2,7 +2,7 @@ export function getDomain(href?: string): string {
   if (!href) return "";
 
   try {
-    return new URL(href).hostname.replace("www.", "");
+    return new URL(href).hostname.replace(/^www\./, "");
   } catch {
     return "";
   }
