@@ -212,6 +212,16 @@ export const sections: Section[] = [
             dailyDriver: true,
             tags: ["AI"],
           },
+          {
+            name: "T3 Code",
+            href: "https://t3.codes/",
+            description:
+              "Minimal web GUI for coding agents (Codex, Claude, OpenCode); open source on GitHub (pingdotgg/t3code)",
+            badge: "Free",
+            badgeType: "free",
+            dailyDriver: true,
+            tags: ["AI"],
+          },
         ],
       },
       {
