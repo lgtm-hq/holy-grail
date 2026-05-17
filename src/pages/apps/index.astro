@@ -4,428 +4,10 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import BackToTop from '../../components/BackToTop.astro';
 import TableOfContents from '../../components/TableOfContents.astro';
+import { sections } from '../../data/apps';
 import { withBase } from '../../lib/paths';
 
 const currentPath = withBase('apps/');
-
-interface App {
-  name: string;
-  href?: string;
-  description: string;
-  badge?: string;
-  badgeType?: 'free' | 'paid' | 'freemium';
-  priceBadge?: string;
-}
-
-interface Section {
-  id: string;
-  title: string;
-  icon: string;
-  note?: string;
-  tip?: string;
-  tipIcon?: string;
-  groups?: { label: string; apps: App[] }[];
-  apps?: App[];
-}
-
-const sections: Section[] = [
-  {
-    id: 'daily-drivers',
-    title: 'My Daily Drivers',
-    icon: '⭐',
-    note: 'The apps I actually use every single day.',
-    groups: [
-      {
-        label: 'Security & Auth',
-        apps: [
-          { name: '1Password', href: 'https://1password.com/', description: 'Built-in authenticator, family/team sharing', badge: 'Paid', badgeType: 'paid', priceBadge: '~$4/mo' },
-          { name: 'Ente Auth', href: 'https://ente.io/auth/', description: 'Open source, end-to-end encrypted, all platforms', badge: 'Free', badgeType: 'free' },
-        ],
-      },
-      {
-        label: 'System & Utilities',
-        apps: [
-          { name: 'AltTab', href: 'https://alt-tab-macos.netlify.app/', description: 'Windows-style alt-tab window switcher', badge: 'Free', badgeType: 'free' },
-          { name: 'AppCleaner', href: 'https://freemacsoft.net/appcleaner/', description: 'Thoroughly uninstall apps and their leftover files', badge: 'Free', badgeType: 'free' },
-          { name: 'Updatest', href: 'https://updatest.app/', description: 'Your home for Mac updates — Homebrew, App Store, Sparkle, GitHub Releases', badge: 'Free', badgeType: 'free' },
-          { name: 'Raycast', href: 'https://www.raycast.com/', description: 'Launcher and productivity tool (replaces Spotlight)', badge: 'Free', badgeType: 'free' },
-          { name: 'Shottr', href: 'https://shottr.cc/', description: 'Screenshot tool with annotations', badge: 'Free', badgeType: 'free' },
-          { name: 'Velja', href: 'https://sindresorhus.com/velja', description: 'Browser picker for opening links', badge: 'Free', badgeType: 'free' },
-          { name: 'Ice', href: 'https://github.com/jordanbaird/Ice', description: 'Menu bar management — hide and show items', badge: 'Free', badgeType: 'free' },
-          { name: 'Keyclu', href: 'https://github.com/Anze/KeyCluCask', description: 'Shows keyboard shortcuts for the active app', badge: 'Free', badgeType: 'free' },
-          { name: 'Dato', href: 'https://sindresorhus.com/dato', description: 'Menu bar clock with calendar, time zones, and events', badge: 'Paid', badgeType: 'paid', priceBadge: '~$17' },
-          { name: 'Alcove', href: 'https://tryalcove.com/', description: 'Enhance the MacBook notch with useful utilities', badge: 'Paid', badgeType: 'paid', priceBadge: '~$17' },
-        ],
-      },
-      {
-        label: 'Development',
-        apps: [
-          { name: 'Cursor', href: 'https://cursor.com/', description: 'AI-powered code editor, fork of VS Code', badge: 'Freemium', badgeType: 'freemium', priceBadge: '~$20/mo' },
-          { name: 'SuperWhisper', href: 'https://superwhisper.com/privacy', description: 'Voice-to-text powered by AI, runs locally', badge: 'Paid', badgeType: 'paid', priceBadge: '~$8/mo' },
-          { name: 'Ghostty', href: 'https://ghostty.org/', description: 'GPU-accelerated terminal emulator', badge: 'Free', badgeType: 'free' },
-          { name: 'Docker Desktop', href: 'https://www.docker.com/products/docker-desktop/', description: 'Container management', badge: 'Freemium', badgeType: 'freemium' },
-          { name: 'GitHub Desktop', href: 'https://desktop.github.com/', description: 'Git GUI client', badge: 'Free', badgeType: 'free' },
-          { name: 'Claude Code', href: 'https://docs.anthropic.com/en/docs/claude-code', description: 'Anthropic\'s agentic CLI for coding with Claude', badge: 'Paid', badgeType: 'paid' },
-          { name: 'Codex', href: 'https://openai.com/codex/', description: 'Cloud-based AI coding agent by OpenAI', badge: 'Paid', badgeType: 'paid' },
-          { name: 'CodexBar', href: 'https://github.com/steipete/CodexBar', description: 'Menu bar app monitoring AI coding assistant usage and quotas', badge: 'Free', badgeType: 'free' },
-          { name: 'CMux', href: 'https://cmux.com/', description: 'Native terminal for managing multiple AI coding agents with split panes', badge: 'Free', badgeType: 'free' },
-          { name: 'DevToys', href: 'https://devtoys.app/', description: 'Developer Swiss army knife — JSON, Base64, regex, hash tools', badge: 'Free', badgeType: 'free' },
-        ],
-      },
-      {
-        label: 'Productivity & Documents',
-        apps: [
-          { name: 'PDFgear', href: 'https://www.pdfgear.com/', description: 'Full-featured PDF editor, reader, and converter', badge: 'Free', badgeType: 'free' },
-          { name: 'Paperless NGX', href: 'https://github.com/paperless-ngx/paperless-ngx?tab=readme-ov-file#getting-started', description: 'Open-source document management system', badge: 'Free', badgeType: 'free' },
-        ],
-      },
-      {
-        label: 'Media & Entertainment',
-        apps: [
-          { name: 'Spotify', href: 'https://spotify.com/', description: 'Music and podcast streaming', badge: 'Freemium', badgeType: 'freemium', priceBadge: '~$13/mo' },
-          { name: 'Stremio', href: 'https://www.stremio.com/', description: 'Media center with streaming aggregation and add-ons', badge: 'Free', badgeType: 'free' },
-        ],
-      },
-      {
-        label: 'Display & Hardware',
-        apps: [
-          { name: 'Batteries', href: 'https://www.fadel.io/batteries', description: 'Track battery levels of all your Apple devices', badge: 'Paid', badgeType: 'paid', priceBadge: '~$9' },
-          { name: 'BetterDisplay', href: 'https://github.com/waydabber/BetterDisplay', description: 'Custom resolutions, XDR brightness, display management', badge: 'Freemium', badgeType: 'freemium', priceBadge: '~$22' },
-          { name: 'DisplayLink Manager', href: 'https://www.synaptics.com/products/displaylink-graphics/downloads/macos', description: 'Driver for DisplayLink docking stations and adapters', badge: 'Free', badgeType: 'free' },
-        ],
-      },
-      {
-        label: 'Networking & Remote',
-        apps: [
-          { name: 'RustDesk', href: 'https://rustdesk.com/', description: 'Open-source remote desktop, self-hostable', badge: 'Free', badgeType: 'free' },
-          { name: 'Home Assistant', href: 'https://companion.home-assistant.io/', description: 'Open-source home automation companion app', badge: 'Free', badgeType: 'free' },
-          { name: 'Tailscale', href: 'https://tailscale.com/', description: 'Zero-config mesh VPN built on WireGuard', badge: 'Freemium', badgeType: 'freemium' },
-        ],
-      },
-      {
-        label: 'Browsers',
-        apps: [
-          { name: 'Zen', href: 'https://zen-browser.app/', description: 'Privacy-focused browser built on Firefox', badge: 'Free', badgeType: 'free' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'password-managers',
-    title: 'Password Managers',
-    icon: '🔐',
-    note: 'Choose one and use it consistently across all your devices.',
-    tip: 'Some password managers (like 1Password) have a built-in authenticator, which can replace a separate 2FA app.',
-    apps: [
-      { name: '1Password', href: 'https://1password.com/', description: 'Built-in authenticator, family/team sharing', badge: 'Paid', badgeType: 'paid', priceBadge: '~$4/mo' },
-      { name: 'Bitwarden', href: 'https://bitwarden.com/', description: 'Open source, self-hostable', badge: 'Free / Paid', badgeType: 'free' },
-
-      { name: 'Apple Keychain', description: 'Built into macOS, syncs via iCloud', badge: 'Free', badgeType: 'free' },
-    ],
-  },
-  {
-    id: 'authenticators',
-    title: 'Authenticator Apps',
-    icon: '🛡️',
-    apps: [
-      { name: 'Ente Auth', href: 'https://ente.io/auth/', description: 'Open source, end-to-end encrypted, all platforms', badge: 'Free', badgeType: 'free' },
-      { name: 'Google Authenticator', href: 'https://apps.apple.com/app/google-authenticator/id388497605', description: 'Cloud backup support, mobile', badge: 'Free', badgeType: 'free' },
-      { name: 'Microsoft Authenticator', href: 'https://www.microsoft.com/en-us/security/mobile-authenticator-app', description: 'Push notifications for Microsoft accounts, mobile', badge: 'Free', badgeType: 'free' },
-    ],
-  },
-  {
-    id: 'tools',
-    title: 'Tools & Utilities',
-    icon: '🔧',
-    groups: [
-      {
-        label: 'Free',
-        apps: [
-          { name: 'AltTab', href: 'https://alt-tab-macos.netlify.app/', description: 'Windows-style alt-tab window switcher', badge: 'Free', badgeType: 'free' },
-          { name: 'AppCleaner', href: 'https://freemacsoft.net/appcleaner/', description: 'Thoroughly uninstall apps and their leftover files', badge: 'Free', badgeType: 'free' },
-          { name: 'Hidden Bar', href: 'https://github.com/dwarvesf/hidden', description: 'Hide menu bar items', badge: 'Free', badgeType: 'free' },
-          { name: 'CopyClip', href: 'https://apps.apple.com/app/copyclip-clipboard-history/id595191960', description: 'Clipboard history manager', badge: 'Free', badgeType: 'free' },
-          { name: 'Dropover', href: 'https://dropoverapp.com/', description: 'Drag-and-drop shelf for files', badge: 'Free', badgeType: 'free' },
-          { name: 'ImageOptim', href: 'https://imageoptim.com/', description: 'Image compression and optimization', badge: 'Free', badgeType: 'free' },
-          { name: 'Latest', href: 'https://max.codes/latest/', description: 'Check for app updates', badge: 'Free', badgeType: 'free' },
-          { name: 'MonitorControl', href: 'https://github.com/MonitorControl/MonitorControl', description: 'Control external monitor brightness and volume', badge: 'Free', badgeType: 'free' },
-          { name: 'Raycast', href: 'https://www.raycast.com/', description: 'Launcher and productivity tool (replaces Spotlight)', badge: 'Free', badgeType: 'free' },
-          { name: 'Rectangle', href: 'https://rectangleapp.com/', description: 'Window management with keyboard shortcuts', badge: 'Free', badgeType: 'free' },
-          { name: 'Shottr', href: 'https://shottr.cc/', description: 'Screenshot tool with annotations', badge: 'Free', badgeType: 'free' },
-          { name: 'TinkerTool', href: 'https://www.bresink.com/osx/TinkerTool.html', description: 'Access hidden macOS settings', badge: 'Free', badgeType: 'free' },
-          { name: 'Velja', href: 'https://sindresorhus.com/velja', description: 'Browser picker for opening links', badge: 'Free', badgeType: 'free' },
-          { name: 'DevToys', href: 'https://devtoys.app/', description: 'Developer Swiss army knife — JSON, Base64, regex, hash tools', badge: 'Free', badgeType: 'free' },
-          { name: 'Ice', href: 'https://github.com/jordanbaird/Ice', description: 'Menu bar management — hide and show items', badge: 'Free', badgeType: 'free' },
-          { name: 'Keyclu', href: 'https://github.com/Anze/KeyCluCask', description: 'Shows keyboard shortcuts for the active app', badge: 'Free', badgeType: 'free' },
-          { name: 'Updatest', href: 'https://updatest.app/', description: 'Your home for Mac updates — Homebrew, App Store, Sparkle, GitHub Releases', badge: 'Free', badgeType: 'free' },
-          { name: 'Find Any File', href: 'https://findanyfile.app/', description: 'Search for files the way Spotlight cannot', badge: 'Paid', badgeType: 'paid', priceBadge: '~$6' },
-          { name: 'GrandPerspective', href: 'https://grandperspectiv.sourceforge.net/', description: 'Visualize disk usage with treemaps', badge: 'Free', badgeType: 'free' },
-        ],
-      },
-      {
-        label: 'Paid Alternatives',
-        apps: [
-          { name: 'Alfred', href: 'https://www.alfredapp.com/', description: 'Alternative to Raycast', badge: 'Paid', badgeType: 'paid', priceBadge: '~$35' },
-          { name: 'Bartender', href: 'https://www.macbartender.com/', description: 'Alternative to Hidden Bar', badge: 'Paid', badgeType: 'paid', priceBadge: '~$20' },
-          { name: 'Magnet', href: 'https://magnet.crowdcafe.com/', description: 'Alternative to Rectangle', badge: 'Paid', badgeType: 'paid', priceBadge: '~$10' },
-          { name: 'PopClip', href: 'https://www.popclip.app/', description: 'Text selection actions', badge: 'Paid', badgeType: 'paid', priceBadge: '~$20' },
-          { name: 'Maccy', href: 'https://maccy.app/', description: 'Alternative to CopyClip', badge: 'Paid', badgeType: 'paid', priceBadge: '~$10' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'menu-bar',
-    title: 'Menu Bar & Focus',
-    icon: '🎛️',
-    apps: [
-      { name: 'HiddenMe', href: 'https://geni.us/lDuPhC', description: 'Hide desktop icons with a single click', badge: 'Paid', badgeType: 'paid', priceBadge: '~$2' },
-      { name: 'Hazeover', href: 'https://hazeover.com/', description: 'Dim background windows to focus on the active one', badge: 'Paid', badgeType: 'paid', priceBadge: '~$12' },
-      { name: 'Itsycal', href: 'https://www.mowglii.com/itsycal/', description: 'Tiny menu bar calendar with events', badge: 'Free', badgeType: 'free' },
-      { name: 'Lookaway', href: 'https://geni.us/AqAZS7', description: 'Break reminders to reduce eye strain', badge: 'Paid', badgeType: 'paid', priceBadge: '~$15' },
-      { name: 'Meetingbar', href: 'https://geni.us/80lGtY0', description: 'Show upcoming meetings in the menu bar', badge: 'Free', badgeType: 'free' },
-      { name: 'Hand Mirror', href: 'https://geni.us/GGOUP', description: 'One-click webcam preview in menu bar', badge: 'Freemium', badgeType: 'freemium', priceBadge: '~$5' },
-      { name: 'Dato', href: 'https://sindresorhus.com/dato', description: 'Menu bar clock with calendar, time zones, and events', badge: 'Paid', badgeType: 'paid', priceBadge: '~$17' },
-      { name: 'Alcove', href: 'https://tryalcove.com/', description: 'Enhance the MacBook notch with useful utilities', badge: 'Paid', badgeType: 'paid', priceBadge: '~$17' },
-    ],
-  },
-  {
-    id: 'ai',
-    title: 'AI Tools',
-    icon: '🤖',
-    apps: [
-      { name: 'Cursor', href: 'https://cursor.com/', description: 'AI-powered code editor, fork of VS Code', badge: 'Freemium', badgeType: 'freemium', priceBadge: '~$20/mo' },
-      { name: 'Upscayl', href: 'https://upscayl.org/', description: 'Open-source AI image upscaler, runs locally', badge: 'Free', badgeType: 'free' },
-      { name: 'MacWhisper', href: 'https://goodsnooze.gumroad.com/l/macwhisper', description: 'Audio transcription, runs locally', badge: 'Freemium', badgeType: 'freemium' },
-      { name: 'SuperWhisper', href: 'https://superwhisper.com/privacy', description: 'Voice-to-text powered by AI, runs locally', badge: 'Paid', badgeType: 'paid', priceBadge: '~$8/mo' },
-      { name: 'Claude Code', href: 'https://docs.anthropic.com/en/docs/claude-code', description: 'Anthropic\'s agentic CLI for coding with Claude', badge: 'Paid', badgeType: 'paid' },
-      { name: 'Codex', href: 'https://openai.com/codex/', description: 'Cloud-based AI coding agent by OpenAI', badge: 'Paid', badgeType: 'paid' },
-      { name: 'CodexBar', href: 'https://github.com/steipete/CodexBar', description: 'Menu bar app monitoring AI coding assistant usage and quotas', badge: 'Free', badgeType: 'free' },
-      { name: 'CMux', href: 'https://cmux.com/', description: 'Native terminal for managing multiple AI coding agents with split panes', badge: 'Free', badgeType: 'free' },
-    ],
-  },
-  {
-    id: 'communication',
-    title: 'Communication',
-    icon: '💬',
-    apps: [
-      { name: 'Slack', href: 'https://slack.com/downloads/mac', description: 'Team communication', badge: 'Freemium', badgeType: 'freemium' },
-      { name: 'Discord', href: 'https://discord.com/', description: 'Community and voice chat', badge: 'Freemium', badgeType: 'freemium' },
-      { name: 'Telegram', href: 'https://telegram.org/', description: 'Messaging with desktop client', badge: 'Free', badgeType: 'free' },
-      { name: 'WhatsApp', href: 'https://www.whatsapp.com/', description: 'Messaging with desktop client', badge: 'Free', badgeType: 'free' },
-      { name: 'Zoom', href: 'https://zoom.us/download', description: 'Video conferencing', badge: 'Freemium', badgeType: 'freemium' },
-      { name: 'Camo Studio', href: 'https://reincubate.com/camo/', description: 'Use your phone as a high-quality webcam', badge: 'Freemium', badgeType: 'freemium', priceBadge: '~$5/mo' },
-    ],
-  },
-  {
-    id: 'ides',
-    title: 'IDEs & Editors',
-    icon: '✏️',
-    apps: [
-      { name: 'Visual Studio Code', href: 'https://code.visualstudio.com/', description: 'Extensible, most popular, all languages', badge: 'Free', badgeType: 'free' },
-      { name: 'Ghostty', href: 'https://ghostty.org/', description: 'GPU-accelerated terminal emulator', badge: 'Free', badgeType: 'free' },
-      { name: 'JetBrains Toolbox', href: 'https://www.jetbrains.com/toolbox-app/', description: 'Manages all JetBrains IDEs', badge: 'Free', badgeType: 'free' },
-      { name: 'IntelliJ IDEA', href: 'https://www.jetbrains.com/idea/', description: 'Java, Kotlin', badge: 'Free / Paid', badgeType: 'free' },
-      { name: 'PyCharm', href: 'https://www.jetbrains.com/pycharm/', description: 'Python', badge: 'Free / Paid', badgeType: 'free' },
-      { name: 'Android Studio', href: 'https://developer.android.com/studio', description: 'Android development, based on IntelliJ', badge: 'Free', badgeType: 'free' },
-      { name: 'Xcode', href: 'https://developer.apple.com/xcode/', description: 'Required for iOS/macOS development', badge: 'Free', badgeType: 'free' },
-    ],
-  },
-  {
-    id: 'notes-productivity',
-    title: 'Notes & Productivity',
-    icon: '📝',
-    apps: [
-      { name: 'Craft', href: 'https://www.craft.do/', description: 'Beautiful native document editor with blocks', badge: 'Freemium', badgeType: 'freemium' },
-      { name: 'SideNotes', href: 'https://bit.ly/sidenotes-app', description: 'Quick notes in a slide-out side panel', badge: 'Paid', badgeType: 'paid', priceBadge: '~$20' },
-      { name: 'SnippetsLab', href: 'https://apps.apple.com/us/app/snippetslab/id1006087419?mt=12', description: 'Code snippet manager with syntax highlighting', badge: 'Free', badgeType: 'free' },
-      { name: 'Pocket', href: 'https://getpocket.com/en/', description: 'Save articles and links to read later', badge: 'Freemium', badgeType: 'freemium' },
-      { name: 'Paperless NGX', href: 'https://github.com/paperless-ngx/paperless-ngx?tab=readme-ov-file#getting-started', description: 'Open-source document management system', badge: 'Free', badgeType: 'free' },
-      { name: 'Things 3', href: 'https://culturedcode.com/things/', description: 'Elegant task manager with projects, areas, and tags', badge: 'Paid', badgeType: 'paid', priceBadge: '~$50' },
-      { name: 'PDFgear', href: 'https://www.pdfgear.com/', description: 'Full-featured PDF editor, reader, and converter', badge: 'Free', badgeType: 'free' },
-    ],
-  },
-  {
-    id: 'virtualization',
-    title: 'Virtualization',
-    icon: '📦',
-    apps: [
-      { name: 'Docker Desktop', href: 'https://www.docker.com/products/docker-desktop/', description: 'Container management', badge: 'Freemium', badgeType: 'freemium' },
-      { name: 'OrbStack', href: 'https://orbstack.dev/', description: 'Fast Docker and Linux VM alternative for macOS', badge: 'Freemium', badgeType: 'freemium' },
-    ],
-  },
-  {
-    id: 'workflow',
-    title: 'Workflow',
-    icon: '⚡',
-    apps: [
-      { name: 'Figma', href: 'https://www.figma.com/', description: 'Design and prototyping', badge: 'Freemium', badgeType: 'freemium' },
-      { name: 'GitHub Desktop', href: 'https://desktop.github.com/', description: 'Git GUI client', badge: 'Free', badgeType: 'free' },
-      { name: 'Google Drive', href: 'https://www.google.com/drive/download/', description: 'Cloud storage (includes Docs, Sheets, Slides)', badge: 'Freemium', badgeType: 'freemium' },
-      { name: 'iTerm2', href: 'https://iterm2.com/', description: 'Terminal replacement with tabs, split panes, search', badge: 'Free', badgeType: 'free' },
-      { name: 'Spaces for Mac', href: 'https://gumroad.com/a/1025595603/grwwi', description: 'Organize apps into workspace groups', badge: 'Paid', badgeType: 'paid', priceBadge: '~$11' },
-      { name: 'Portal', href: 'https://portal.app/mac', description: 'Immersive focus and ambient sound app', badge: 'Freemium', badgeType: 'freemium' },
-    ],
-  },
-  {
-    id: 'files-media',
-    title: 'Files & Media',
-    icon: '🎬',
-    tip: 'Handbrake and LosslessCut complement each other — use Handbrake for re-encoding and LosslessCut for quick trims without quality loss.',
-    tipIcon: '🎞️',
-    groups: [
-      {
-        label: 'Players',
-        apps: [
-          { name: 'IINA', href: 'https://iina.io/', description: 'Modern media player for macOS', badge: 'Free', badgeType: 'free' },
-          { name: 'VLC', href: 'https://www.videolan.org/', description: 'Universal media player', badge: 'Free', badgeType: 'free' },
-          { name: 'Spotify', href: 'https://spotify.com/', description: 'Music and podcast streaming', badge: 'Freemium', badgeType: 'freemium', priceBadge: '~$13/mo' },
-          { name: 'Stremio', href: 'https://www.stremio.com/', description: 'Media center with streaming aggregation and add-ons', badge: 'Free', badgeType: 'free' },
-        ],
-      },
-      {
-        label: 'Editing & Conversion',
-        apps: [
-          { name: 'Handbrake', href: 'https://handbrake.fr/downloads.php', description: 'Open-source video transcoder', badge: 'Free', badgeType: 'free' },
-          { name: 'Lossless Cut', href: 'https://github.com/mifi/lossless-cut', description: 'Quick lossless video/audio trimming and cutting', badge: 'Free', badgeType: 'free' },
-          { name: 'Recut', href: 'https://geni.us/PtBZHK', description: 'Automatically remove silences from video/audio', badge: 'Paid', badgeType: 'paid', priceBadge: '~$99' },
-          { name: 'Clop', href: 'https://geni.us/tPNILQ', description: 'Clipboard optimizer — auto-compress images and videos', badge: 'Freemium', badgeType: 'freemium' },
-          { name: 'HEIC Converter', href: 'https://apps.apple.com/us/app/heic-converter/id1294126402?mt=12', description: 'Convert HEIC images to JPEG or PNG', badge: 'Free', badgeType: 'free' },
-        ],
-      },
-      {
-        label: 'Photo Editing',
-        apps: [
-          { name: 'Lightroom', href: 'https://www.adobe.com/products/photoshop-lightroom.html', description: 'Professional photo editing and management', badge: 'Paid', badgeType: 'paid', priceBadge: '~$12/mo' },
-          { name: 'Photomator', href: 'https://www.pixelmator.com/photomator/', description: 'ML-powered photo editor, native macOS', badge: 'Paid', badgeType: 'paid', priceBadge: '~$30/yr' },
-        ],
-      },
-      {
-        label: 'File Management',
-        apps: [
-          { name: 'Forklift', href: 'https://binarynights.com/', description: 'Dual-pane file manager with remote connections', badge: 'Paid', badgeType: 'paid', priceBadge: '~$20' },
-          { name: 'Transnomino', href: 'https://www.transnomino.com/', description: 'Powerful batch file renaming tool', badge: 'Free', badgeType: 'free' },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'screenshots',
-    title: 'Screenshots & Recording',
-    icon: '📸',
-    apps: [
-      { name: 'XNIP', href: 'https://xnipapp.com/', description: 'Scrolling screenshot capture with annotations', badge: 'Freemium', badgeType: 'freemium' },
-      { name: 'Zappy', href: 'https://zapier.com/zappy', description: 'Quick screen capture and GIF recording by Zapier', badge: 'Free', badgeType: 'free' },
-    ],
-  },
-  {
-    id: 'clipboard-input',
-    title: 'Clipboard & Input',
-    icon: '📋',
-    apps: [
-      { name: 'PastePal', href: 'https://bit.ly/47hcD10', description: 'Clipboard manager with visual preview and organization', badge: 'Paid', badgeType: 'paid', priceBadge: '~$9' },
-      { name: 'Rocket', href: 'https://bit.ly/4cW9Ifl', description: 'Slack-style emoji picker for any app', badge: 'Freemium', badgeType: 'freemium' },
-    ],
-  },
-  {
-    id: 'security-privacy',
-    title: 'Security & Privacy',
-    icon: '🔒',
-    apps: [
-      { name: 'Encrypto', href: 'https://macpaw.audw.net/BXomB1', description: 'Encrypt files before sending with AES-256', badge: 'Free', badgeType: 'free' },
-      { name: 'NordVPN', href: 'https://nordvpn.com/', description: 'VPN for privacy, security, and geo-unblocking', badge: 'Paid', badgeType: 'paid', priceBadge: '~$3/mo' },
-      { name: 'Clyde', href: 'https://theclyde.app/', description: 'Privacy-focused Mac cleaner and optimizer', badge: 'Paid', badgeType: 'paid' },
-      { name: 'Tailscale', href: 'https://tailscale.com/', description: 'Zero-config mesh VPN built on WireGuard', badge: 'Freemium', badgeType: 'freemium' },
-    ],
-  },
-  {
-    id: 'system-maintenance',
-    title: 'System & Maintenance',
-    icon: '⚙️',
-    apps: [
-      { name: 'Al Dente', href: 'https://apphousekitchen.com/', description: 'Battery charge limiter to prolong battery health', badge: 'Freemium', badgeType: 'freemium' },
-      { name: 'Batteries', href: 'https://www.fadel.io/batteries', description: 'Track battery levels of all your Apple devices', badge: 'Paid', badgeType: 'paid', priceBadge: '~$9' },
-      { name: 'BetterDisplay', href: 'https://github.com/waydabber/BetterDisplay', description: 'Custom resolutions, XDR brightness, display management', badge: 'Freemium', badgeType: 'freemium', priceBadge: '~$22' },
-      { name: 'CleanMyMac X', href: 'https://bit.ly/MacApps2023', description: 'System cleanup, malware removal, and optimization', badge: 'Paid', badgeType: 'paid', priceBadge: '~$10/mo' },
-      { name: 'Disk Drill', href: 'https://www.cleverfiles.com/', description: 'Data recovery and disk health monitoring', badge: 'Freemium', badgeType: 'freemium', priceBadge: '~$89' },
-      { name: 'Display Menu', href: 'https://apps.apple.com/us/app/display-menu/id549083868', description: 'Quickly change display resolution from the menu bar', badge: 'Freemium', badgeType: 'freemium', priceBadge: '~$2' },
-      { name: 'DisplayLink Manager', href: 'https://www.synaptics.com/products/displaylink-graphics/downloads/macos', description: 'Driver for DisplayLink docking stations and adapters', badge: 'Free', badgeType: 'free' },
-      { name: 'Raze', href: 'https://bit.ly/3XgzzIX', description: 'Monitor and manage system resources', badge: 'Paid', badgeType: 'paid' },
-      { name: 'DumbWare', href: 'https://github.com/DumbWareio', description: 'Collection of simple, open-source self-hosted tools', badge: 'Free', badgeType: 'free' },
-    ],
-  },
-  {
-    id: 'web-email',
-    title: 'Web & Email',
-    icon: '📧',
-    apps: [
-      { name: 'TempBox', href: 'https://geni.us/BA6e7Wt', description: 'Disposable temporary email addresses', badge: 'Free', badgeType: 'free' },
-      { name: 'Sparkle', href: 'https://bit.ly/3B6k3rF', description: 'Smart email client with AI triage', badge: 'Freemium', badgeType: 'freemium' },
-    ],
-  },
-  {
-    id: 'design-creative',
-    title: 'Design & Creative',
-    icon: '🎨',
-    apps: [
-      { name: 'Barrel', href: 'https://getbarrel.app/pricing/', description: '3D app icon and UI mockup generator', badge: 'Paid', badgeType: 'paid' },
-      { name: 'Wallpapers', href: 'https://andrewethanzeng.gumroad.com/', description: 'Curated high-resolution desktop wallpapers', badge: 'Paid', badgeType: 'paid' },
-
-    ],
-  },
-  {
-    id: 'remote-desktop',
-    title: 'Remote Desktop',
-    icon: '🖥️',
-    apps: [
-      { name: 'AnyDesk', href: 'https://anydesk.com/', description: 'Fast remote desktop with low latency', badge: 'Freemium', badgeType: 'freemium', priceBadge: '~$13/mo' },
-      { name: 'RustDesk', href: 'https://rustdesk.com/', description: 'Open-source remote desktop, self-hostable', badge: 'Free', badgeType: 'free' },
-    ],
-  },
-  {
-    id: 'gaming-streaming',
-    title: 'Gaming & Streaming',
-    icon: '🎮',
-    apps: [
-      { name: 'Steam Link', href: 'https://apps.apple.com/us/app/steam-link/id1246969117', description: 'Stream games from your PC to your Mac', badge: 'Free', badgeType: 'free' },
-      { name: 'MetaTrader 5', href: 'https://www.metatrader5.com/en/download', description: 'Trading platform for forex and stocks', badge: 'Free', badgeType: 'free' },
-    ],
-  },
-  {
-    id: 'smart-home',
-    title: 'Smart Home',
-    icon: '🏠',
-    apps: [
-      { name: 'Home Assistant', href: 'https://companion.home-assistant.io/', description: 'Open-source home automation companion app', badge: 'Free', badgeType: 'free' },
-      { name: 'NetSpot', href: 'https://www.netspotapp.com/', description: 'WiFi survey, analysis, and troubleshooting', badge: 'Freemium', badgeType: 'freemium', priceBadge: '~$149' },
-    ],
-  },
-  {
-    id: 'browsers',
-    title: 'Browsers',
-    icon: '🌐',
-    groups: [
-      {
-        label: 'Recommended',
-        apps: [
-          { name: 'Helium', href: 'https://helium.computer/', description: 'Privacy-focused browser, blocks ads and trackers by default', badge: 'Free', badgeType: 'free' },
-          { name: 'Google Chrome', href: 'https://www.google.com/chrome/', description: 'Most widely used, strong DevTools', badge: 'Free', badgeType: 'free' },
-          { name: 'Firefox', href: 'https://www.mozilla.org/firefox/', description: 'Privacy-focused, independent engine', badge: 'Free', badgeType: 'free' },
-          { name: 'Safari', href: 'https://www.apple.com/safari/', description: 'Built into macOS, battery efficient', badge: 'Free', badgeType: 'free' },
-          { name: 'Zen', href: 'https://zen-browser.app/', description: 'Privacy-focused browser built on Firefox', badge: 'Free', badgeType: 'free' },
-        ],
-      },
-      {
-        label: 'Extensions',
-        apps: [
-          { name: 'Dark Reader', description: 'Dark mode for all websites (Chrome, Firefox, Safari)', badge: 'Free', badgeType: 'free' },
-          { name: 'uBlock Origin', description: 'Ad and tracker blocker (Chrome, Firefox)', badge: 'Free', badgeType: 'free' },
-          { name: '1Password / Bitwarden', description: 'Password manager integration (Chrome, Firefox, Safari)', badge: 'Free', badgeType: 'free' },
-        ],
-      },
-    ],
-  },
-];
 
 // Build headings for TableOfContents
 const tocHeadings = [
@@ -433,10 +15,12 @@ const tocHeadings = [
   { depth: 2, slug: 'good-to-know', text: 'Good to Know' },
 ];
 
-const totalApps = sections.reduce((acc, s) => {
-  if (s.groups) return acc + s.groups.reduce((g, gr) => g + gr.apps.length, 0);
-  return acc + (s.apps?.length || 0);
-}, 0);
+const uniqueAppNames = new Set<string>();
+sections.forEach((section) => {
+  section.groups?.forEach((group) => group.apps.forEach((app) => uniqueAppNames.add(app.name)));
+  section.apps?.forEach((app) => uniqueAppNames.add(app.name));
+});
+const totalApps = uniqueAppNames.size;
 
 function getDomain(href?: string): string {
   if (!href) return '';
@@ -472,13 +56,18 @@ function faviconUrl(href?: string): string {
             <svg class="search-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
             </svg>
-            <input type="text" id="app-search" placeholder="Search apps..." autocomplete="off" />
+            <input type="text" id="app-search" placeholder="Search apps..." autocomplete="off" aria-label="Search apps" />
           </div>
           <div class="price-filters" role="group" aria-label="Filter by price">
-            <button class="pf active" data-filter="all">All</button>
-            <button class="pf" data-filter="free"><span class="pf-dot free-dot"></span>Free</button>
-            <button class="pf" data-filter="freemium"><span class="pf-dot freemium-dot"></span>Freemium</button>
-            <button class="pf" data-filter="paid"><span class="pf-dot paid-dot"></span>Paid</button>
+            <button type="button" class="pf active" data-filter="all" aria-pressed="true">All</button>
+            <button type="button" class="pf" data-filter="free" aria-pressed="false"><span class="pf-dot free-dot"></span>Free</button>
+            <button type="button" class="pf" data-filter="freemium" aria-pressed="false"><span class="pf-dot freemium-dot"></span>Freemium</button>
+            <button type="button" class="pf" data-filter="paid" aria-pressed="false"><span class="pf-dot paid-dot"></span>Paid</button>
+          </div>
+          <div class="legend" aria-label="App marker legend">
+            <span class="legend-item"><span class="legend-star" aria-hidden="true">⭐</span> Daily driver</span>
+            <span class="legend-item"><span class="badge tag">AI</span> AI-assisted tool</span>
+            <span class="legend-item"><span class="badge price">~$</span> Approximate price</span>
           </div>
         </div>
       </header>
@@ -493,7 +82,7 @@ function faviconUrl(href?: string): string {
           </div>
 
           <!-- No Results -->
-          <div class="no-results" id="no-results" style="display:none;">
+          <div class="no-results" id="no-results" role="status" aria-live="polite" style="display:none;">
             <p>No apps match your search.</p>
           </div>
 
@@ -514,10 +103,12 @@ function faviconUrl(href?: string): string {
                   <h3 class="grp-label">{group.label}</h3>
                   <div class="cards">
                     {group.apps.map((app) => (
-                      <article class="card" data-name={app.name.toLowerCase()} data-desc={app.description.toLowerCase()} data-price={app.badgeType || 'none'}>
+                      <article class:list={['card', { 'daily-driver': app.dailyDriver }]} data-name={app.name.toLowerCase()} data-desc={app.description.toLowerCase()} data-price={app.badgeType || 'none'}>
+                        {app.dailyDriver && <span class="daily-star" aria-label="Daily driver">⭐</span>}
                         <div class="card-badges">
                           {app.badge && <span class={`badge ${app.badgeType || 'free'}`}>{app.badge}</span>}
                           {app.priceBadge && <span class="badge price">{app.priceBadge}</span>}
+                          {app.tags?.map((tag) => <span class="badge tag">{tag}</span>)}
                         </div>
                         <div class="card-header">
                           <div class="card-fav-wrap">
@@ -545,10 +136,12 @@ function faviconUrl(href?: string): string {
             ) : section.apps ? (
               <div class="cards">
                 {section.apps.map((app) => (
-                  <article class="card" data-name={app.name.toLowerCase()} data-desc={app.description.toLowerCase()} data-price={app.badgeType || 'none'}>
+                  <article class:list={['card', { 'daily-driver': app.dailyDriver }]} data-name={app.name.toLowerCase()} data-desc={app.description.toLowerCase()} data-price={app.badgeType || 'none'}>
+                    {app.dailyDriver && <span class="daily-star" aria-label="Daily driver">⭐</span>}
                     <div class="card-badges">
-                      {app.priceBadge && <span class="badge price">{app.priceBadge}</span>}
                       {app.badge && <span class={`badge ${app.badgeType || 'free'}`}>{app.badge}</span>}
+                      {app.priceBadge && <span class="badge price">{app.priceBadge}</span>}
+                      {app.tags?.map((tag) => <span class="badge tag">{tag}</span>)}
                     </div>
                     <div class="card-header">
                       <div class="card-fav-wrap">
@@ -784,6 +377,36 @@ function faviconUrl(href?: string): string {
   .freemium-dot { background: #89b4fa; }
   .paid-dot  { background: var(--grail-gold); }
 
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 12px;
+    max-width: 560px;
+    padding-top: 2px;
+  }
+
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--turbo-text-secondary);
+  }
+
+  .legend-star {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--grail-gold) 16%, var(--turbo-bg-surface));
+    border: 1px solid color-mix(in srgb, var(--grail-gold) 32%, transparent);
+    font-size: 0.68rem;
+    line-height: 1;
+  }
+
   /* ── Two-column Layout ──────────────────────── */
   .apps-layout {
     display: grid;
@@ -897,6 +520,7 @@ function faviconUrl(href?: string): string {
 
   /* ── Card ──────────────────────────────────────── */
   .card {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -914,6 +538,27 @@ function faviconUrl(href?: string): string {
   }
 
   .card.hidden { display: none; }
+
+  .card.daily-driver {
+    border-color: color-mix(in srgb, var(--grail-gold) 38%, var(--turbo-border-default));
+  }
+
+  .daily-star {
+    position: absolute;
+    top: 8px;
+    left: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--grail-gold) 16%, var(--turbo-bg-surface));
+    border: 1px solid color-mix(in srgb, var(--grail-gold) 32%, transparent);
+    font-size: 0.72rem;
+    line-height: 1;
+    box-shadow: 0 2px 8px -4px var(--grail-gold);
+  }
 
   .card-header {
     display: flex;
@@ -1025,6 +670,12 @@ function faviconUrl(href?: string): string {
     font-variant-numeric: tabular-nums;
   }
 
+  .badge.tag {
+    background: color-mix(in srgb, #f38ba8 14%, transparent);
+    color: #f38ba8;
+    border: 1px solid color-mix(in srgb, #f38ba8 28%, transparent);
+  }
+
   /* ── Tip ───────────────────────────────────────── */
   .sect-tip {
     display: flex;
@@ -1134,6 +785,8 @@ function faviconUrl(href?: string): string {
 <script>
   function initAppsFilter() {
     const input = document.getElementById('app-search') as HTMLInputElement | null;
+    if (!input || input.dataset.bound === 'true') return;
+
     const pills = document.querySelectorAll<HTMLButtonElement>('.pf[data-filter]');
     const cards = document.querySelectorAll<HTMLElement>('.card[data-name]');
     const sects = document.querySelectorAll<HTMLElement>('[data-sect]');
@@ -1167,14 +820,20 @@ function faviconUrl(href?: string): string {
       if (noRes) noRes.style.display = total > 0 ? 'none' : '';
     }
 
-    input?.addEventListener('input', () => { query = input.value.toLowerCase().trim(); run(); });
+    input.addEventListener('input', () => { query = input.value.toLowerCase().trim(); run(); });
 
     pills.forEach(p => p.addEventListener('click', () => {
-      pills.forEach(x => x.classList.remove('active'));
+      pills.forEach(x => {
+        x.classList.remove('active');
+        x.setAttribute('aria-pressed', 'false');
+      });
       p.classList.add('active');
+      p.setAttribute('aria-pressed', 'true');
       filter = p.dataset.filter || 'all';
       run();
     }));
+
+    input.dataset.bound = 'true';
   }
 
   initAppsFilter();
