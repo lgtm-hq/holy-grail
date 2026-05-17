@@ -154,13 +154,11 @@ function faviconUrl(href?: string): string {
                           <span class="card-fav-fb" style="display:flex" aria-hidden="true">{section.icon}</span>
                         )}
                       </div>
-                      <div class="card-meta">
-                        {app.href ? (
-                          <a href={app.href} class="card-name" target="_blank" rel="noopener noreferrer">{app.name}<span class="ext" aria-hidden="true">&thinsp;↗</span></a>
-                        ) : (
-                          <span class="card-name">{app.name}</span>
-                        )}
-                      </div>
+                      {app.href ? (
+                        <a href={app.href} class="card-name" target="_blank" rel="noopener noreferrer">{app.name}<span class="ext" aria-hidden="true">&thinsp;↗</span></a>
+                      ) : (
+                        <span class="card-name">{app.name}</span>
+                      )}
                     </div>
                     <p class="card-desc">{app.description}</p>
                   </article>

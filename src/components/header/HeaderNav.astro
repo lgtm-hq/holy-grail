@@ -11,6 +11,11 @@ interface Props {
 
 const { currentPath = '' } = Astro.props;
 const base = withBase;
+
+function isActiveNavItem(path: string): boolean {
+  const targetPath = base(path);
+  return path === '' ? currentPath === targetPath : currentPath === targetPath || currentPath.startsWith(targetPath);
+}
 ---
 
 <nav class="main-nav" aria-label="Main navigation">
@@ -19,7 +24,7 @@ const base = withBase;
       <li>
         <a
           href={base(item.path)}
-          class:list={['nav-link', { active: currentPath === base(item.path) }]}
+          class:list={['nav-link', { active: isActiveNavItem(item.path) }]}
         >
           <span class="nav-icon">{item.icon}</span>
           <span class="nav-label">{item.label}</span>
