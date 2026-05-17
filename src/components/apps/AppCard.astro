@@ -1,0 +1,54 @@
+---
+import type { App } from '../../data/apps';
+import { faviconUrl } from '../../lib/favicon';
+
+interface Props {
+  app: App;
+  sectionIcon: string;
+}
+
+const { app, sectionIcon } = Astro.props;
+const favicon = faviconUrl(app.href);
+---
+
+<article
+  class:list={['card', { 'daily-driver': app.dailyDriver }]}
+  data-name={app.name.toLowerCase()}
+  data-desc={app.description.toLowerCase()}
+  data-price={app.badgeType ?? 'none'}
+>
+  {app.dailyDriver && <span class="daily-star" aria-label="Daily driver">⭐</span>}
+  <div class="card-badges">
+    {app.badge && <span class={`badge ${app.badgeType ?? 'free'}`}>{app.badge}</span>}
+    {app.priceBadge && <span class="badge price">{app.priceBadge}</span>}
+    {app.tags?.map((tag) => <span class="badge tag">{tag}</span>)}
+  </div>
+  <div class="card-header">
+    <div class="card-fav-wrap">
+      {favicon ? (
+        <>
+          <img
+            class="card-fav"
+            src={favicon}
+            alt=""
+            width="20"
+            height="20"
+            loading="lazy"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+          />
+          <span class="card-fav-fb" aria-hidden="true">{sectionIcon}</span>
+        </>
+      ) : (
+        <span class="card-fav-fb" style="display:flex" aria-hidden="true">{sectionIcon}</span>
+      )}
+    </div>
+    {app.href ? (
+      <a href={app.href} class="card-name" target="_blank" rel="noopener noreferrer">
+        {app.name}<span class="ext" aria-hidden="true">&thinsp;↗</span>
+      </a>
+    ) : (
+      <span class="card-name">{app.name}</span>
+    )}
+  </div>
+  <p class="card-desc">{app.description}</p>
+</article>
