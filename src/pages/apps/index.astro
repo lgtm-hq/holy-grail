@@ -112,7 +112,10 @@ const totalApps = countUniqueAppNames(sections);
     }));
 
     // AppCard renders .card-fav images with an adjacent .card-fav-fb fallback.
-    favicons.forEach(img => img.addEventListener('error', () => showFaviconFallback(img)));
+    favicons.forEach(img => {
+      img.addEventListener('error', () => showFaviconFallback(img));
+      if (img.complete && img.naturalWidth === 0 && img.naturalHeight === 0) showFaviconFallback(img);
+    });
 
     input.dataset.bound = 'true';
     run();
