@@ -1,0 +1,37 @@
+---
+interface Props {
+  totalApps: number;
+}
+
+const { totalApps } = Astro.props;
+---
+
+<header class="hero">
+  <div class="hero-ornament" aria-hidden="true">
+    <span class="orn-line"></span>
+    <span class="orn-diamond">◆</span>
+    <span class="orn-line"></span>
+  </div>
+  <h1>Recommended Apps</h1>
+  <p class="hero-sub">{totalApps} hand-picked macOS applications for developers &amp; power&nbsp;users</p>
+
+  <div class="controls">
+    <div class="search-box">
+      <svg class="search-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path>
+      </svg>
+      <input type="text" id="app-search" placeholder="Search apps..." autocomplete="off" aria-label="Search apps" />
+    </div>
+    <div class="price-filters" role="group" aria-label="Filter by price">
+      <button type="button" class="pf active" data-filter="all" aria-pressed="true">All</button>
+      <button type="button" class="pf" data-filter="free" aria-pressed="false"><span class="pf-dot free-dot"></span>Free</button>
+      <button type="button" class="pf" data-filter="freemium" aria-pressed="false"><span class="pf-dot freemium-dot"></span>Freemium</button>
+      <button type="button" class="pf" data-filter="paid" aria-pressed="false"><span class="pf-dot paid-dot"></span>Paid</button>
+    </div>
+    <div class="legend" aria-label="App marker legend">
+      <span class="legend-item"><span class="legend-star" aria-hidden="true">⭐</span> Daily driver</span>
+      <span class="legend-item"><span class="badge tag">AI</span> AI-assisted tool</span>
+      <span class="legend-item"><span class="badge price">~$</span> Approximate price</span>
+    </div>
+  </div>
+</header>

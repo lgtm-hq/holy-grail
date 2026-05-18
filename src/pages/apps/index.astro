@@ -1,0 +1,127 @@
+---
+import '../../styles/apps-catalog.css';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BackToTop from '../../components/BackToTop.astro';
+import AppCatalogSection from '../../components/apps/AppCatalogSection.astro';
+import AppsGoodToKnow from '../../components/apps/AppsGoodToKnow.astro';
+import AppsHero from '../../components/apps/AppsHero.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
+import { sections } from '../../data/apps';
+import { buildAppsTocHeadings, countUniqueAppNames } from '../../lib/apps-catalog';
+import { withBase } from '../../lib/paths';
+
+const currentPath = withBase('apps/');
+const tocHeadings = buildAppsTocHeadings(sections);
+const totalApps = countUniqueAppNames(sections);
+---
+
+<BaseLayout title="Recommended Apps" description="A curated list of recommended macOS applications for developers">
+  <Header slot="header" currentPath={currentPath} />
+
+  <section class="apps-page" data-pagefind-body>
+    <div class="container">
+      <AppsHero totalApps={totalApps} />
+
+      <div class="apps-layout">
+        <div class="apps-main">
+          <div class="apps-toc-mobile">
+            <TableOfContents headings={tocHeadings} />
+          </div>
+
+          <div class="no-results" id="no-results" role="status" aria-live="polite" style="display:none;">
+            <p>No apps match your search.</p>
+          </div>
+
+          {sections.map((section) => <AppCatalogSection section={section} />)}
+
+          <AppsGoodToKnow />
+        </div>
+
+        <aside class="apps-sidebar">
+          <TableOfContents headings={tocHeadings} />
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+  <BackToTop />
+</BaseLayout>
+
+<script>
+  function initAppsFilter() {
+    const input = document.getElementById('app-search') as HTMLInputElement | null;
+    if (!input || input.dataset.bound === 'true') return;
+
+    const pills = document.querySelectorAll<HTMLButtonElement>('.pf[data-filter]');
+    const cards = document.querySelectorAll<HTMLElement>('.card[data-name]');
+    const sects = document.querySelectorAll<HTMLElement>('[data-sect]');
+    const grps = document.querySelectorAll<HTMLElement>('[data-grp]');
+    const favicons = document.querySelectorAll<HTMLImageElement>('.card-fav');
+    const noRes = document.getElementById('no-results');
+
+    let filter = 'all';
+    let query = '';
+
+    function showFaviconFallback(img: HTMLImageElement) {
+      const fallback = img.nextElementSibling;
+      if (!fallback?.classList.contains('card-fav-fb')) return;
+
+      img.style.display = 'none';
+      (fallback as HTMLElement).style.display = 'flex';
+    }
+
+    function run() {
+      let total = 0;
+      cards.forEach(c => {
+        const matchQ = !query || (c.dataset.name || '').includes(query) || (c.dataset.desc || '').includes(query);
+        const matchF = filter === 'all' || (c.dataset.price || '') === filter;
+        const show = matchQ && matchF;
+        c.classList.toggle('hidden', !show);
+        if (show) total++;
+      });
+
+      sects.forEach(s => {
+        if (s.classList.contains('info-sect')) return;
+        const vis = s.querySelectorAll('.card:not(.hidden)').length > 0;
+        s.style.display = vis ? '' : 'none';
+      });
+
+      grps.forEach(g => {
+        const vis = g.querySelectorAll('.card:not(.hidden)').length > 0;
+        g.style.display = vis ? '' : 'none';
+      });
+
+      if (noRes) noRes.style.display = total > 0 ? 'none' : '';
+    }
+
+    input.addEventListener('input', () => { query = input.value.toLowerCase().trim(); run(); });
+
+    pills.forEach(p => p.addEventListener('click', () => {
+      pills.forEach(x => {
+        x.classList.remove('active');
+        x.setAttribute('aria-pressed', 'false');
+      });
+      p.classList.add('active');
+      p.setAttribute('aria-pressed', 'true');
+      filter = p.dataset.filter || 'all';
+      run();
+    }));
+
+    // AppCard renders .card-fav images with an adjacent .card-fav-fb fallback.
+    favicons.forEach(img => {
+      img.addEventListener('error', () => showFaviconFallback(img));
+      if (img.complete && img.naturalWidth === 0 && img.naturalHeight === 0) showFaviconFallback(img);
+    });
+
+    input.dataset.bound = 'true';
+    run();
+  }
+
+  initAppsFilter();
+  document.addEventListener('astro:after-swap', initAppsFilter);
+</script>
+

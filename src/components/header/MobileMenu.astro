@@ -3,6 +3,7 @@
  * MobileMenu - Mobile navigation toggle and dropdown menu
  */
 import { withBase } from '../../lib/paths';
+import { navItems } from '../../lib/navigation';
 
 interface Category {
   slug: string;
@@ -16,12 +17,6 @@ interface Props {
 
 const { categories } = Astro.props;
 const base = withBase;
-
-const navItems = [
-  { href: base(''), label: 'Home', icon: '🏰' },
-  { href: base('guides/'), label: 'Guides', icon: '📜' },
-  { href: base('categories/'), label: 'Categories', icon: '⚔️' },
-];
 ---
 
 <button
@@ -38,7 +33,7 @@ const navItems = [
     <ul class="mobile-nav-list">
       {navItems.map((item) => (
         <li>
-          <a href={item.href} class="mobile-nav-link">
+          <a href={base(item.path)} class="mobile-nav-link">
             <span class="nav-icon">{item.icon}</span>
             {item.label}
           </a>

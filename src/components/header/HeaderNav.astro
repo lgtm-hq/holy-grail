@@ -3,6 +3,7 @@
  * HeaderNav - Main navigation links
  */
 import { withBase } from '../../lib/paths';
+import { navItems } from '../../lib/navigation';
 
 interface Props {
   currentPath?: string;
@@ -11,11 +12,10 @@ interface Props {
 const { currentPath = '' } = Astro.props;
 const base = withBase;
 
-const navItems = [
-  { href: base(''), label: 'Home', icon: '🏰' },
-  { href: base('guides/'), label: 'Guides', icon: '📜' },
-  { href: base('categories/'), label: 'Categories', icon: '⚔️' },
-];
+function isActiveNavItem(path: string): boolean {
+  const targetPath = base(path);
+  return path === '' ? currentPath === targetPath : currentPath === targetPath || currentPath.startsWith(targetPath);
+}
 ---
 
 <nav class="main-nav" aria-label="Main navigation">
@@ -23,8 +23,8 @@ const navItems = [
     {navItems.map((item) => (
       <li>
         <a
-          href={item.href}
-          class:list={['nav-link', { active: currentPath === item.href }]}
+          href={base(item.path)}
+          class:list={['nav-link', { active: isActiveNavItem(item.path) }]}
         >
           <span class="nav-icon">{item.icon}</span>
           <span class="nav-label">{item.label}</span>

@@ -1,0 +1,42 @@
+---
+import type { Section } from '../../data/apps';
+import AppCard from './AppCard.astro';
+
+interface Props {
+  section: Section;
+}
+
+const { section } = Astro.props;
+---
+
+<section id={section.id} class="sect" data-sect>
+  <div class="sect-head">
+    <span class="sect-icon">{section.icon}</span>
+    <div class="sect-titles">
+      <h2>{section.title}</h2>
+      {section.note && <p class="sect-note">{section.note}</p>}
+    </div>
+  </div>
+
+  {section.kind === 'groups' ? (
+    section.groups.map((group) => (
+      <div class="grp" data-grp>
+        <h3 class="grp-label">{group.label}</h3>
+        <div class="cards">
+          {group.apps.map((app) => <AppCard app={app} sectionIcon={section.icon} />)}
+        </div>
+      </div>
+    ))
+  ) : (
+    <div class="cards">
+      {section.apps.map((app) => <AppCard app={app} sectionIcon={section.icon} />)}
+    </div>
+  )}
+
+  {section.tip && (
+    <div class="sect-tip">
+      <span class="tip-ico">{section.tipIcon ?? '💡'}</span>
+      <p>{section.tip}</p>
+    </div>
+  )}
+</section>
