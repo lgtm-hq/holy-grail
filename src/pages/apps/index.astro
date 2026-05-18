@@ -60,10 +60,19 @@ const totalApps = countUniqueAppNames(sections);
     const cards = document.querySelectorAll<HTMLElement>('.card[data-name]');
     const sects = document.querySelectorAll<HTMLElement>('[data-sect]');
     const grps = document.querySelectorAll<HTMLElement>('[data-grp]');
+    const favicons = document.querySelectorAll<HTMLImageElement>('.card-fav');
     const noRes = document.getElementById('no-results');
 
     let filter = 'all';
     let query = '';
+
+    function showFaviconFallback(img: HTMLImageElement) {
+      const fallback = img.nextElementSibling;
+      if (!fallback?.classList.contains('card-fav-fb')) return;
+
+      img.style.display = 'none';
+      (fallback as HTMLElement).style.display = 'flex';
+    }
 
     function run() {
       let total = 0;
@@ -101,6 +110,9 @@ const totalApps = countUniqueAppNames(sections);
       filter = p.dataset.filter || 'all';
       run();
     }));
+
+    // AppCard renders .card-fav images with an adjacent .card-fav-fb fallback.
+    favicons.forEach(img => img.addEventListener('error', () => showFaviconFallback(img)));
 
     input.dataset.bound = 'true';
     run();

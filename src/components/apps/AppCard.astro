@@ -19,7 +19,7 @@ const favicon = faviconUrl(app.href);
 >
   {app.dailyDriver && <span class="daily-star" aria-label="Daily driver">⭐</span>}
   <div class="card-badges">
-    {app.badge && <span class={`badge ${app.badgeType ?? 'free'}`}>{app.badge}</span>}
+    {app.badge && <span class={`badge ${app.badgeType ?? 'none'}`}>{app.badge}</span>}
     {app.priceBadge && <span class="badge price">{app.priceBadge}</span>}
     {app.tags?.map((tag) => <span class="badge tag">{tag}</span>)}
   </div>
@@ -34,7 +34,6 @@ const favicon = faviconUrl(app.href);
             width="20"
             height="20"
             loading="lazy"
-            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
           />
           <span class="card-fav-fb" aria-hidden="true">{sectionIcon}</span>
         </>
