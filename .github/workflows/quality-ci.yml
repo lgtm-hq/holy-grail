@@ -12,48 +12,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
+  quality:
+    # yamllint disable-line rule:line-length
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-quality.yml@fc73b3ab8342a24597c12d137d6ff7fca84b9fe2
+    with:
+      tooling-ref: 'fc73b3ab8342a24597c12d137d6ff7fca84b9fe2'
     permissions:
       contents: read
+      packages: read
       pull-requests: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Run lintro
-        id: lintro
-        env:
-          # py-lintro image pinned to specific digest for reproducibility (0.60.2)
-          LINTRO_IMAGE: ghcr.io/lgtm-hq/py-lintro:0.60.2@sha256:480cd6cfc40c6ad27ec1491a208fa3111fc72c679fc3a4246762c5cbd8752175
-        run: |
-          set +e
-          docker run --rm -v "${{ github.workspace }}:/code" \
-            "$LINTRO_IMAGE" check --output-format grid 2>&1 | tee chk-output.txt
-          exit_code=${PIPESTATUS[0]}
-          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
-          exit 0
-        continue-on-error: true
-
-      - name: Generate PR comment
-        if: github.event_name == 'pull_request'
-        env:
-          CHK_EXIT_CODE: ${{ steps.lintro.outputs.exit_code }}
-        run: ./scripts/ci/ci-pr-comment.sh
-
-      - name: Post lintro results to PR
-        if: github.event_name == 'pull_request'
-        uses: ./.github/actions/post-pr-comment
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          marker: lintro-report
-          file: pr-comment.txt
-
-      - name: Fail on linting issues
-        if: steps.lintro.outputs.exit_code != '0'
-        run: exit 1
 
   build:
     name: Build & Test
@@ -67,21 +34,7 @@ jobs:
 
       - name: Check for buildable project
         id: check
-        run: |
-          # Check for package.json and any astro.config.* file
-          has_astro_config=false
-          for ext in mjs js ts mts cjs cts; do
-            if [[ -f "astro.config.${ext}" ]]; then
-              has_astro_config=true
-              break
-            fi
-          done
-
-          if [[ -f "package.json" ]] && [[ "$has_astro_config" == "true" ]]; then
-            echo "has_project=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_project=false" >> "$GITHUB_OUTPUT"
-          fi
+        run: bash scripts/ci/detect-buildable-project.sh
 
       - name: Setup environment
         if: steps.check.outputs.has_project == 'true'
@@ -93,12 +46,7 @@ jobs:
 
       - name: Run unit tests
         if: steps.check.outputs.has_project == 'true'
-        run: |
-          if [[ -d "tests/unit" ]] && find tests/unit -name "*.test.ts" | grep -q .; then
-            bun test tests/unit
-          else
-            echo "No unit tests found, skipping"
-          fi
+        run: bash scripts/ci/run-unit-tests-if-present.sh
 
       - name: Build
         if: steps.check.outputs.has_project == 'true'
@@ -112,7 +60,3 @@ jobs:
           path: ./dist
           retention-days: 7
           if-no-files-found: ignore
-
-      - name: Skip notification
-        if: steps.check.outputs.has_project == 'false'
-        run: echo "No buildable project found, skipping build steps"
