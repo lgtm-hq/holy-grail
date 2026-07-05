@@ -81,23 +81,6 @@ function convertMdxToMarkdown(content: string): string {
   // Remove badge-group wrapper spans but keep inner content
   result = result.replace(/<span class="badge-group">([\s\S]*?)<\/span>/g, "$1");
 
-  // Convert Callout components to blockquotes
-  result = result.replace(
-    /<Callout\s+type=["'](\w+)["'](?:\s+title=["']([^"']+)["'])?\s*>([\s\S]*?)<\/Callout>/g,
-    (_, type, title, inner) => {
-      const prefix = title ? `**${title}:** ` : "";
-      const icon =
-        type === "warning"
-          ? "> [!WARNING]\n> "
-          : type === "danger"
-            ? "> [!CAUTION]\n> "
-            : type === "tip"
-              ? "> [!TIP]\n> "
-              : "> [!NOTE]\n> ";
-      return `${icon}${prefix}${inner.trim()}`;
-    },
-  );
-
   // Remove any remaining JSX-style self-closing tags we don't handle
   result = result.replace(/<[A-Z][a-zA-Z]*\s+[^>]*\/>/g, "");
 
