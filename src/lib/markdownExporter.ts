@@ -28,7 +28,12 @@ export function generateMarkdown(data: GuideData): string {
  * Escape a value for use inside a double-quoted YAML scalar
  */
 function escapeYamlValue(value: string): string {
-  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  return value
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r")
+    .replace(/\t/g, "\\t");
 }
 
 /**
