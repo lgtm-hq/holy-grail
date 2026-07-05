@@ -17,7 +17,10 @@ const existingGuideSlugs = new Set(
 );
 
 const guides = defineCollection({
-  loader: glob({ pattern: "**/*.{md,mdx}", base: GUIDES_DIR }),
+  // Guides are flat files directly under GUIDES_DIR; the non-recursive
+  // pattern keeps loader semantics consistent with the relatedGuides
+  // validation below, which reads the same directory non-recursively.
+  loader: glob({ pattern: "*.{md,mdx}", base: GUIDES_DIR }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
