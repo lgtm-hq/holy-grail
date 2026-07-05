@@ -58,6 +58,12 @@ defaults:
 # Full tool configs are in native files (pyproject.toml, etc.)
 # or in the defaults section above.
 tools:
+  # Astro check - disabled: the py-lintro image bundles a global Astro that
+  # mismatches this project's Astro/MDX majors and crashes astro-check.
+  # Type checking is covered by `bun run astro check` in the Build & Test job.
+  astro-check:
+    enabled: false
+
   # Ruff - Python linter and formatter (config in pyproject.toml [tool.ruff])
   ruff:
     enabled: true
