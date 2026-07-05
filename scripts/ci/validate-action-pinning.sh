@@ -31,10 +31,10 @@ while IFS= read -r -d '' file; do
 			if [[ ! "$ref" =~ ^[a-f0-9]{40}$ ]]; then
 				echo "  ERROR: Not SHA-pinned: $line"
 				echo "    Found ref: $ref"
-				((ERRORS++))
+				ERRORS=$((ERRORS + 1))
 			fi
 		fi
-	done < <(grep -oP '(?<=uses:\s)[^\s]+' "$file" 2>/dev/null || true)
+	done < <(grep -Eo 'uses:[[:space:]]+[^[:space:]]+' "$file" 2>/dev/null | sed -E 's/^uses:[[:space:]]+//' || true)
 
 done < <(find "$WORKFLOWS_DIR" -type f \( -name "*.yml" -o -name "*.yaml" \) -print0)
 
