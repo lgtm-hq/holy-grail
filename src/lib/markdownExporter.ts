@@ -25,13 +25,20 @@ export function generateMarkdown(data: GuideData): string {
 }
 
 /**
+ * Escape a value for use inside a double-quoted YAML scalar
+ */
+function escapeYamlValue(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+/**
  * Build YAML frontmatter from guide metadata
  */
 function buildFrontmatter(data: GuideData): string {
   const lines = [
     "---",
-    `title: "${data.title}"`,
-    `description: "${data.description}"`,
+    `title: "${escapeYamlValue(data.title)}"`,
+    `description: "${escapeYamlValue(data.description)}"`,
     `category: ${data.category}`,
   ];
 
@@ -39,7 +46,7 @@ function buildFrontmatter(data: GuideData): string {
     lines.push(`order: ${data.order}`);
   }
   if (data.tags?.length) {
-    lines.push(`tags: [${data.tags.map((t) => `"${t}"`).join(", ")}]`);
+    lines.push(`tags: [${data.tags.map((t) => `"${escapeYamlValue(t)}"`).join(", ")}]`);
   }
   if (data.difficulty) {
     lines.push(`difficulty: ${data.difficulty}`);
