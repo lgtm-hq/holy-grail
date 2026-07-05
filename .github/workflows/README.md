@@ -65,10 +65,11 @@ Weekly (Sunday 00:00 UTC)
 The following workflows delegate to [lgtm-ci](https://github.com/lgtm-hq/lgtm-ci)
 reusable workflows:
 
-| Workflow           | Reusable Workflow           |
-| ------------------ | --------------------------- |
-| `release.yml`      | `reusable-release.yml`      |
-| `deploy-pages.yml` | `reusable-deploy-pages.yml` |
+| Workflow                 | Reusable Workflow                                                    |
+| ------------------------ | -------------------------------------------------------------------- |
+| `quality-ci.yml`         | `reusable-quality-lint.yml` + `reusable-publish-quality-summary.yml` |
+| `release-version-pr.yml` | `reusable-release-version-pr.yml`                                     |
+| `pr-auto-assign.yml`     | `reusable-pr-auto-assign.yml`                                         |
 
 ## Local Actions
 
