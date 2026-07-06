@@ -33,7 +33,13 @@ function escapeYamlValue(value: string): string {
     .replace(/"/g, '\\"')
     .replace(/\n/g, "\\n")
     .replace(/\r/g, "\\r")
-    .replace(/\t/g, "\\t");
+    .replace(/\t/g, "\\t")
+    .replace(
+      // Remaining C0 controls and DEL are invalid raw inside YAML double quotes
+      // eslint-disable-next-line no-control-regex
+      /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,
+      (ch) => `\\x${ch.charCodeAt(0).toString(16).padStart(2, "0")}`,
+    );
 }
 
 /**
