@@ -25,13 +25,31 @@ export function generateMarkdown(data: GuideData): string {
 }
 
 /**
+ * Escape a value for use inside a double-quoted YAML scalar
+ */
+function escapeYamlValue(value: string): string {
+  return value
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r")
+    .replace(/\t/g, "\\t")
+    .replace(
+      // Remaining C0 controls and DEL are invalid raw inside YAML double quotes
+      // eslint-disable-next-line no-control-regex
+      /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,
+      (ch) => `\\x${ch.charCodeAt(0).toString(16).padStart(2, "0")}`,
+    );
+}
+
+/**
  * Build YAML frontmatter from guide metadata
  */
 function buildFrontmatter(data: GuideData): string {
   const lines = [
     "---",
-    `title: "${data.title}"`,
-    `description: "${data.description}"`,
+    `title: "${escapeYamlValue(data.title)}"`,
+    `description: "${escapeYamlValue(data.description)}"`,
     `category: ${data.category}`,
   ];
 
@@ -39,7 +57,7 @@ function buildFrontmatter(data: GuideData): string {
     lines.push(`order: ${data.order}`);
   }
   if (data.tags?.length) {
-    lines.push(`tags: [${data.tags.map((t) => `"${t}"`).join(", ")}]`);
+    lines.push(`tags: [${data.tags.map((t) => `"${escapeYamlValue(t)}"`).join(", ")}]`);
   }
   if (data.difficulty) {
     lines.push(`difficulty: ${data.difficulty}`);
@@ -80,23 +98,6 @@ function convertMdxToMarkdown(content: string): string {
 
   // Remove badge-group wrapper spans but keep inner content
   result = result.replace(/<span class="badge-group">([\s\S]*?)<\/span>/g, "$1");
-
-  // Convert Callout components to blockquotes
-  result = result.replace(
-    /<Callout\s+type=["'](\w+)["'](?:\s+title=["']([^"']+)["'])?\s*>([\s\S]*?)<\/Callout>/g,
-    (_, type, title, inner) => {
-      const prefix = title ? `**${title}:** ` : "";
-      const icon =
-        type === "warning"
-          ? "> [!WARNING]\n> "
-          : type === "danger"
-            ? "> [!CAUTION]\n> "
-            : type === "tip"
-              ? "> [!TIP]\n> "
-              : "> [!NOTE]\n> ";
-      return `${icon}${prefix}${inner.trim()}`;
-    },
-  );
 
   // Remove any remaining JSX-style self-closing tags we don't handle
   result = result.replace(/<[A-Z][a-zA-Z]*\s+[^>]*\/>/g, "");
