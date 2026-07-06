@@ -5,4 +5,4 @@ description = "The Holy Grail documentation site"
 requires-python = ">=3.11"
 
 [dependency-groups]
-dev = ["lintro>=0.51.2"]
+dev = ["lintro>=0.51.2", "pyyaml>=6.0"]

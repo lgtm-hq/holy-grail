@@ -17,6 +17,16 @@ if [[ -z "$new_version" ]]; then
 	exit 0
 fi
 
+# Validate that the version is a well-formed semver string before writing it
+# to workflow outputs (guards against malformed or malicious values flowing
+# into downstream release steps).
+SEMVER_REGEX='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'
+if [[ ! "$new_version" =~ $SEMVER_REGEX ]]; then
+	log_error "Version in package.json is not valid semver: $new_version"
+	echo "version_changed=false" >>"$GITHUB_OUTPUT"
+	exit 0
+fi
+
 # Get the previous version from the parent commit.
 # HEAD~1 targets the first parent commit, which represents the pre-merge state
 # on the target branch. This is appropriate for typical GitHub PR merges (fast-

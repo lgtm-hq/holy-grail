@@ -58,6 +58,12 @@ assets/static/badges/**
 **/.astro/**
 apps/site/public/**
 
+# Vendored build outputs synced by scripts/sync-assets.sh
+public/pagefind/**
+**/public/pagefind/**
+public/packages/**
+**/public/packages/**
+
 # Minified files
 assets/js/*.min.js
 
