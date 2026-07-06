@@ -52,9 +52,9 @@ brew install chruby ruby-install
 sudo apt install -y build-essential libssl-dev libreadline-dev zlib1g-dev libyaml-dev
 
 # Install ruby-install (check https://github.com/postmodern/ruby-install/releases for latest)
-wget https://github.com/postmodern/ruby-install/releases/download/v0.9.4/ruby-install-0.9.4.tar.gz
-tar -xzvf ruby-install-0.9.4.tar.gz
-cd ruby-install-0.9.4/
+wget https://github.com/postmodern/ruby-install/releases/download/v0.10.2/ruby-install-0.10.2.tar.gz
+tar -xzvf ruby-install-0.10.2.tar.gz
+cd ruby-install-0.10.2/
 sudo make install
 cd ..
 
@@ -77,7 +77,7 @@ List available versions and install one:
 ruby-install
 
 # Install a specific version
-ruby-install ruby 3.3
+ruby-install ruby 3.4
 ```
 
 This compiles Ruby from source — it may take a few minutes.
@@ -94,7 +94,7 @@ source $(brew --prefix)/opt/chruby/share/chruby/chruby.sh
 source $(brew --prefix)/opt/chruby/share/chruby/auto.sh
 
 # Set a default Ruby version
-chruby ruby-3.3
+chruby ruby-3.4
 ```
 
 > On Linux, replace `$(brew --prefix)/opt/chruby` with `/usr/local/share/chruby`.
@@ -115,7 +115,7 @@ Create a `.ruby-version` file in your project root to automatically switch
 Ruby versions when you enter the directory:
 
 ```bash
-echo "ruby-3.3" > .ruby-version
+echo "ruby-3.4" > .ruby-version
 ```
 
 With `auto.sh` loaded, chruby reads this file and switches automatically.
@@ -169,7 +169,7 @@ chruby
 The active version should have an asterisk. If no version is selected, set one:
 
 ```bash
-chruby ruby-3.3
+chruby ruby-3.4
 ```
 
 If chruby itself is not found, ensure the `source` lines are in your
