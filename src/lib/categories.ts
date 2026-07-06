@@ -72,6 +72,20 @@ export const CATEGORIES = {
 
 export type CategoryKey = keyof typeof CATEGORIES;
 export type Category = (typeof CATEGORIES)[CategoryKey];
+export type CategoryName = Category["name"];
+
+/**
+ * All category display names, derived from CATEGORIES.
+ *
+ * Single source of truth for schema validation (guide frontmatter uses
+ * display names such as "Android Tools", "Build Tools", "iOS Tools").
+ */
+// Assertion is safe: CATEGORIES is a non-empty `as const` object, so every
+// mapped name is a CategoryName and the array is non-empty.
+export const CATEGORY_NAMES = Object.values(CATEGORIES).map((category) => category.name) as [
+  CategoryName,
+  ...CategoryName[],
+];
 
 /**
  * Get category configuration by key (case-insensitive)
