@@ -23,7 +23,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.6",
     "@pagefind/default-ui": "^1.4.0",
-    "markdownlint-cli2": "^0.22.0",
+    "markdownlint-cli2": "^0.23.0",
     "oxfmt": "^0.57.0",
     "oxlint": "^1.42.0",
     "pagefind": "^1.4.0",
