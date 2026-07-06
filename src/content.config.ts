@@ -1,4 +1,5 @@
 import { readdirSync } from "node:fs";
+import { join } from "node:path";
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
@@ -7,20 +8,30 @@ import { CATEGORY_NAMES } from "./lib/categories";
 const GUIDES_DIR = "./src/content/guides";
 
 /**
- * Slugs of all existing guide files, used to validate relatedGuides entries
+ * Recursively collect guide entry ids under a directory, mirroring how the
+ * glob loader derives ids: POSIX-style path relative to the base directory
+ * with the extension stripped (e.g. "adb", "foo/bar").
+ */
+function collectGuideIds(dir: string, prefix = ""): string[] {
+  const ids: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      ids.push(...collectGuideIds(join(dir, entry.name), `${prefix}${entry.name}/`));
+    } else if (/\.mdx?$/.test(entry.name)) {
+      ids.push(`${prefix}${entry.name.replace(/\.mdx?$/, "")}`);
+    }
+  }
+  return ids;
+}
+
+/**
+ * Ids of all existing guide files, used to validate relatedGuides entries
  * at build time. Read once when the config is evaluated.
  */
-const existingGuideSlugs = new Set(
-  readdirSync(GUIDES_DIR)
-    .filter((fileName) => /\.mdx?$/.test(fileName))
-    .map((fileName) => fileName.replace(/\.mdx?$/, "")),
-);
+const existingGuideSlugs = new Set(collectGuideIds(GUIDES_DIR));
 
 const guides = defineCollection({
-  // Guides are flat files directly under GUIDES_DIR; the non-recursive
-  // pattern keeps loader semantics consistent with the relatedGuides
-  // validation below, which reads the same directory non-recursively.
-  loader: glob({ pattern: "*.{md,mdx}", base: GUIDES_DIR }),
+  loader: glob({ pattern: "**/*.{md,mdx}", base: GUIDES_DIR }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
