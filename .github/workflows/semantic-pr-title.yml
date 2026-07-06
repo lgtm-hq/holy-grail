@@ -4,6 +4,7 @@ name: Semantic PR Title
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
+  merge_group:
 
 permissions:
   pull-requests: read
@@ -11,6 +12,10 @@ permissions:
 jobs:
   validate:
     name: Validate PR Title
+    # amannn/action-semantic-pull-request needs PR context; on merge_group the
+    # job is skipped (reported as a skipped check, which satisfies the required
+    # check) — the title was already validated on the pull_request event.
+    if: github.event_name != 'merge_group'
     runs-on: ubuntu-latest
 
     steps:

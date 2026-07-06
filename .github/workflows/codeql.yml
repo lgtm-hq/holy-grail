@@ -22,6 +22,7 @@ on:
       - '**.mjs'
       - '**.cjs'
       - '.github/workflows/**'
+  merge_group:
   schedule:
     # Run weekly on Sunday at 00:00 UTC
     - cron: '0 0 * * 0'
