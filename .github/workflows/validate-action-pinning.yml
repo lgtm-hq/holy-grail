@@ -6,9 +6,14 @@ on:
     paths:
       - '.github/workflows/**'
       - '.github/actions/**'
+  merge_group:
 
 permissions:
   contents: read
+
+concurrency:
+  group: validate-action-pinning-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:
