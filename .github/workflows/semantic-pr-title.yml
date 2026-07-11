@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   validate:
-    name: Validate PR Title
+    name: 📝 Validate PR Title
     # amannn/action-semantic-pull-request needs PR context; on merge_group the
     # job is skipped (reported as a skipped check, which satisfies the required
     # check) — the title was already validated on the pull_request event.

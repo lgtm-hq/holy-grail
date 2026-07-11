@@ -43,7 +43,7 @@ jobs:
               - '.github/actions/**'
 
   validate:
-    name: Check SHA Pinning
+    name: 📌 Check SHA Pinning
     needs: changes
     runs-on: ubuntu-latest
 
