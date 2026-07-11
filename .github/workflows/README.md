@@ -127,6 +127,11 @@ For the `main` branch, configure:
    - `🏗️ Build & Test` (from quality-ci.yml)
    - `🎭 E2E Tests` (from quality-e2e.yml)
    - `📝 Validate PR Title` (from semantic-pr-title.yml)
+   - `quality / 🛠️ Lintro Code Quality` (from quality-ci.yml)
+   - `📌 Check SHA Pinning` (from validate-action-pinning.yml)
+   - `🔬 Analyze JavaScript/TypeScript` (from codeql.yml)
+   - `🔬 Analyze GitHub Actions` (from codeql.yml)
+   - `🔐 Security Audit` (from security-dependency-review.yml)
 
 2. **Require pull request reviews** (optional)
 
