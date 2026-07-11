@@ -65,11 +65,14 @@ Weekly (Sunday 00:00 UTC)
 The following workflows delegate to [lgtm-ci](https://github.com/lgtm-hq/lgtm-ci)
 reusable workflows:
 
-| Workflow                 | Reusable Workflow                                                    |
-| ------------------------ | -------------------------------------------------------------------- |
-| `quality-ci.yml`         | `reusable-quality-lint.yml` + `reusable-publish-quality-summary.yml` |
-| `release-version-pr.yml` | `reusable-release-version-pr.yml`                                     |
-| `pr-auto-assign.yml`     | `reusable-pr-auto-assign.yml`                                         |
+| Workflow                      | Reusable Workflow                                                     |
+| ----------------------------- | --------------------------------------------------------------------- |
+| `quality-ci.yml`              | `reusable-quality-lint.yml` + `reusable-publish-quality-summary.yml` |
+| `release-version-pr.yml`      | `reusable-release-version-pr.yml`                                     |
+| `pr-auto-assign.yml`          | `reusable-pr-auto-assign.yml`                                         |
+| `codeql.yml`                  | `reusable-codeql.yml`                                                 |
+| `validate-action-pinning.yml` | `reusable-validate-action-pinning.yml`                                |
+| `semantic-pr-title.yml`       | `reusable-semantic-pr-title.yml`                                      |
 
 ## Local Actions
 
@@ -110,10 +113,9 @@ Posts or updates a PR comment with marker-based deduplication.
 
 ## Scripts
 
-| Script                                      | Purpose           |
-| ------------------------------------------- | ----------------- |
-| `scripts/ci/generate-playwright-comment.sh` | PR comment gen    |
-| `scripts/ci/validate-action-pinning.sh`     | Validate SHA pins |
+| Script                                      | Purpose        |
+| ------------------------------------------- | -------------- |
+| `scripts/ci/generate-playwright-comment.sh` | PR comment gen |
 
 ## Required Secrets
 
@@ -126,11 +128,10 @@ For the `main` branch, configure:
 1. **Require status checks to pass:**
    - `🏗️ Build & Test` (from quality-ci.yml)
    - `🎭 E2E Tests` (from quality-e2e.yml)
-   - `📝 Validate PR Title` (from semantic-pr-title.yml)
+   - `semantic-title / 📝 Validate PR Title` (from semantic-pr-title.yml)
    - `quality / 🛠️ Lintro Code Quality` (from quality-ci.yml)
-   - `📌 Check SHA Pinning` (from validate-action-pinning.yml)
-   - `🔬 Analyze JavaScript/TypeScript` (from codeql.yml)
-   - `🔬 Analyze GitHub Actions` (from codeql.yml)
+   - `validate / Validate Action Pinning` (from validate-action-pinning.yml)
+   - `codeql / 🔬 CodeQL Analysis` (from codeql.yml)
    - `🔐 Security Audit` (from security-dependency-review.yml)
 
 2. **Require pull request reviews** (optional)
