@@ -124,9 +124,14 @@ None. All workflows use `GITHUB_TOKEN` which is auto-provided.
 For the `main` branch, configure:
 
 1. **Require status checks to pass:**
-   - `Build & Test` (from quality-ci.yml)
-   - `E2E Tests` (from quality-e2e.yml)
-   - `Validate PR Title` (from semantic-pr-title.yml)
+   - `🏗️ Build & Test` (from quality-ci.yml)
+   - `🎭 E2E Tests` (from quality-e2e.yml)
+   - `📝 Validate PR Title` (from semantic-pr-title.yml)
+   - `quality / 🛠️ Lintro Code Quality` (from quality-ci.yml)
+   - `📌 Check SHA Pinning` (from validate-action-pinning.yml)
+   - `🔬 Analyze JavaScript/TypeScript` (from codeql.yml)
+   - `🔬 Analyze GitHub Actions` (from codeql.yml)
+   - `🔐 Security Audit` (from security-dependency-review.yml)
 
 2. **Require pull request reviews** (optional)
 
