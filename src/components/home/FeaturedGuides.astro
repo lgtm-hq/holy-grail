@@ -10,7 +10,7 @@ import type { CollectionEntry } from 'astro:content';
 interface GuideData {
   title: string;
   description: string;
-  category: string;
+  category: string[];
   order?: number;
   tags?: string[];
   difficulty?: 'beginner' | 'intermediate' | 'advanced';
