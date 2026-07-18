@@ -4,9 +4,12 @@
 # The reusable provisions Node.js only, so Bun is installed here when absent.
 set -euo pipefail
 
+# Pinned for deterministic CI installs; keep in sync with package.json engines.
+BUN_VERSION="${BUN_VERSION:-1.3.14}"
+
 if ! command -v bun >/dev/null 2>&1; then
-	echo "[build-site] Bun not found; installing via npm"
-	npm install -g bun
+	echo "[build-site] Bun not found; installing bun@${BUN_VERSION} via npm"
+	npm install -g "bun@${BUN_VERSION}"
 fi
 
 bun install --frozen-lockfile
