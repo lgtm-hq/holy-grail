@@ -68,6 +68,7 @@ reusable workflows:
 | Workflow                      | Reusable Workflow                                                     |
 | ----------------------------- | --------------------------------------------------------------------- |
 | `quality-ci.yml`              | `reusable-quality-lint.yml` + `reusable-publish-quality-summary.yml` + `reusable-build-artifact.yml` |
+| `quality-e2e.yml`             | `reusable-test-e2e-playwright.yml`                                    |
 | `release-version-pr.yml`      | `reusable-release-version-pr.yml`                                     |
 | `pr-auto-assign.yml`          | `reusable-pr-auto-assign.yml`                                         |
 | `codeql.yml`                  | `reusable-codeql.yml`                                                 |
@@ -111,12 +112,6 @@ Posts or updates a PR comment with marker-based deduplication.
 | `pull_request_template.md` | PR description template   |
 | `renovate.json`            | Renovate dependency bot   |
 
-## Scripts
-
-| Script                                      | Purpose        |
-| ------------------------------------------- | -------------- |
-| `scripts/ci/generate-playwright-comment.sh` | PR comment gen |
-
 ## Required Secrets
 
 None. All workflows use `GITHUB_TOKEN` which is auto-provided.
@@ -127,12 +122,16 @@ For the `main` branch, configure:
 
 1. **Require status checks to pass:**
    - `build / 🏗️ Build & Test` (from quality-ci.yml)
-   - `🎭 E2E Tests` (from quality-e2e.yml)
+   - `e2e / 🎭 E2E Tests` (from quality-e2e.yml)
    - `semantic-title / 📝 Validate PR Title` (from semantic-pr-title.yml)
    - `quality / 🛠️ Lintro Code Quality` (from quality-ci.yml)
    - `validate / Validate Action Pinning` (from validate-action-pinning.yml)
    - `codeql / 🔬 CodeQL Analysis` (from codeql.yml)
    - `🔐 Security Audit` (from security-dependency-review.yml)
+
+   Note: `e2e / 🎭 E2E Tests` replaced the pre-migration `🎭 E2E Tests` context
+   when `quality-e2e.yml` moved to the lgtm-ci `reusable-test-e2e-playwright`
+   caller. Branch protection rulesets must be updated in lockstep.
 
 2. **Require pull request reviews** (optional)
 
