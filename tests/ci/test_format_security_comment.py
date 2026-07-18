@@ -320,7 +320,9 @@ def test_main_missing_argument_exits_2(
         monkeypatch: The pytest monkeypatch fixture.
         capsys: The pytest stdout/stderr capture fixture.
     """
-    monkeypatch.setattr(target=fsc.sys, name="argv", value=["format-security-comment.py"])
+    monkeypatch.setattr(
+        target=fsc.sys, name="argv", value=["format-security-comment.py"]
+    )
 
     with pytest.raises(SystemExit) as exc_info:
         fsc.main()
