@@ -6,5 +6,5 @@
     "moduleResolution": "Bundler",
     "target": "ESNext"
   },
-  "exclude": ["dist", "public/pagefind"]
+  "exclude": ["dist", "public/pagefind", "tests", "playwright.config.ts", "playwright-report", "test-results"]
 }
