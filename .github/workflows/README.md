@@ -67,7 +67,7 @@ reusable workflows:
 
 | Workflow                      | Reusable Workflow                                                     |
 | ----------------------------- | --------------------------------------------------------------------- |
-| `quality-ci.yml`              | `reusable-quality-lint.yml` + `reusable-publish-quality-summary.yml` |
+| `quality-ci.yml`              | `reusable-quality-lint.yml` + `reusable-publish-quality-summary.yml` + `reusable-build-artifact.yml` |
 | `release-version-pr.yml`      | `reusable-release-version-pr.yml`                                     |
 | `pr-auto-assign.yml`          | `reusable-pr-auto-assign.yml`                                         |
 | `codeql.yml`                  | `reusable-codeql.yml`                                                 |
@@ -126,7 +126,7 @@ None. All workflows use `GITHUB_TOKEN` which is auto-provided.
 For the `main` branch, configure:
 
 1. **Require status checks to pass:**
-   - `🏗️ Build & Test` (from quality-ci.yml)
+   - `build / 🏗️ Build & Test` (from quality-ci.yml)
    - `🎭 E2E Tests` (from quality-e2e.yml)
    - `semantic-title / 📝 Validate PR Title` (from semantic-pr-title.yml)
    - `quality / 🛠️ Lintro Code Quality` (from quality-ci.yml)
