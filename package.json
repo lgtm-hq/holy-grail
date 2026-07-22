@@ -18,7 +18,7 @@
     "@astrojs/rss": "^4.0.15",
     "@astrojs/sitemap": "^3.7.0",
     "@lgtm-hq/turbo-themes": "^0.21.0",
-    "astro": "^7.0.0"
+    "astro": "^7.1.0"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.9",
@@ -35,6 +35,8 @@
     "smol-toml": "1.7.0",
     "yaml": "2.9.0",
     "js-yaml": "4.3.0",
-    "markdown-it": "14.3.0"
+    "markdown-it": "14.3.0",
+    "fast-uri": "3.1.4",
+    "fast-xml-parser": "5.10.1"
   }
 }
