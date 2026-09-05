@@ -17,7 +17,7 @@
     "@astrojs/mdx": "^7.0.0",
     "@astrojs/rss": "^4.0.15",
     "@astrojs/sitemap": "^3.7.0",
-    "@lgtm-hq/turbo-themes": "^0.41.0",
+    "@lgtm-hq/turbo-themes": "^0.42.0",
     "astro": "^7.1.0"
   },
   "devDependencies": {
