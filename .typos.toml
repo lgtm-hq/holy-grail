@@ -1,0 +1,29 @@
+# Typos configuration for holy-grail.
+# Identity entries below whitelist legitimate terms that the typos
+# dictionary flags as misspellings. See https://github.com/crate-ci/typos
+
+[default.extend-words]
+# "UDID"/"udid" is Apple's Unique Device Identifier — a real identifier,
+# distinct from a UUID. All occurrences are in the iOS/Appium guides
+# (appium:udid capability key, device identifiers, tool placeholders);
+# renaming them would introduce factual errors.
+UDID = "UDID"
+udid = "udid"
+# "unparseable" is a valid English variant of "unparsable", used in a
+# log message in scripts/ci/security-audit.sh.
+unparseable = "unparseable"
+
+[default.extend-identifiers]
+# Same UDID whitelist for identifier-like tokens (appium:udid,
+# <device-udid>, DEVICE_UDID placeholders in code spans and commands).
+UDID = "UDID"
+udid = "udid"
+
+# "ba" is a sed branch label (`sed -e :a -e '...ba;'`) in
+# scripts/ci/create-release-tag.sh, not a typo of "by"/"be".
+# Scoped to the built-in `sh` type so prose typos of "by"/"be" are still caught.
+[type.sh.extend-words]
+ba = "ba"
+
+[type.sh.extend-identifiers]
+ba = "ba"
