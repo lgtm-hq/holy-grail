@@ -21,9 +21,9 @@ udid = "udid"
 
 # "ba" is a sed branch label (`sed -e :a -e '...ba;'`) in
 # scripts/ci/create-release-tag.sh, not a typo of "by"/"be".
-# Scoped to shell scripts so prose typos of "by"/"be" are still caught.
-[type.shell-scripts]
-extend-glob = ["*.sh"]
+# Scoped to the built-in `sh` type so prose typos of "by"/"be" are still caught.
+[type.sh.extend-words]
+ba = "ba"
 
-[type.shell-scripts.extend-words]
+[type.sh.extend-identifiers]
 ba = "ba"
