@@ -76,6 +76,14 @@ tools:
   prettier:
     enabled: true
 
+  # Pylint - disabled: lintro 0.147.x bundles pylint, which scans the vendored
+  # lgtm-ci tooling scripts (scripts/ci/**) and flags pre-existing script
+  # conventions (C0103 hyphenated CLI names, W1514 open-encoding, C0116
+  # docstrings). That catalogue is gated upstream in lgtm-ci's own repo
+  # (duplicate-code ratchet landed in lgtm-ci#930).
+  pylint:
+    enabled: false
+
   # Markdownlint - Markdown linter (defaults above or .markdownlint.yaml)
   markdownlint:
     enabled: true
