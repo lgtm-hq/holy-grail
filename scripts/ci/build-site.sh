@@ -5,7 +5,7 @@
 set -euo pipefail
 
 # Pinned for deterministic CI installs; keep in sync with package.json engines.
-BUN_VERSION="${BUN_VERSION:-1.3.14}"
+BUN_VERSION="${BUN_VERSION:-1.4.2}"
 
 if ! command -v bun >/dev/null 2>&1; then
 	echo "[build-site] Bun not found; installing bun@${BUN_VERSION} via npm"
