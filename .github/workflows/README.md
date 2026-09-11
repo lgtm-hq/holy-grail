@@ -130,9 +130,10 @@ For the `main` branch, configure:
    - `🎭 E2E Tests` (from quality-e2e.yml)
    - `semantic-title / 📝 Validate PR Title` (from semantic-pr-title.yml)
    - `quality / 🛠️ Lintro Code Quality` (from quality-ci.yml)
-   - `validate / Validate Action Pinning` (from validate-action-pinning.yml)
+   - `validate / 📌 Validate Action Pinning` (from validate-action-pinning.yml)
    - `codeql / 🔬 CodeQL Analysis` (from codeql.yml)
    - `🔐 Security Audit` (from security-dependency-review.yml)
+   - `Socket Security: Pull Request Alerts`
 
 2. **Require pull request reviews** (optional)
 
