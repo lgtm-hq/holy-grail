@@ -11,7 +11,7 @@
  *   - id: string - Guide identifier
  *   - title: string - Guide title
  *   - description: string - Brief description
- *   - category: string - Category name
+ *   - category: string[] - Category names (primary at index 0)
  *   - order: number | null - Display order
  *   - tags: string[] - Associated tags
  *   - difficulty: string | null - Difficulty level
@@ -29,11 +29,12 @@ import type { CollectionEntry } from "astro:content";
 import { getCollection } from "astro:content";
 import { logger } from "../../../lib/logger";
 
-// Guide data shape for standalone tsc compatibility
+// Guide data shape for standalone tsc compatibility. Schema normalizes
+// `category` to a non-empty string[] (primary at [0]).
 interface GuideData {
   title: string;
   description: string;
-  category: string;
+  category: string[];
   order?: number;
   tags?: string[];
   difficulty?: string;

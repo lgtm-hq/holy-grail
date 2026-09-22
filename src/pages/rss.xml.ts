@@ -22,11 +22,12 @@ import rss from "@astrojs/rss";
 import { getCollection } from "astro:content";
 import type { APIContext } from "astro";
 
-// Guide data shape for standalone tsc compatibility
+// Guide data shape for standalone tsc compatibility. Schema normalizes
+// `category` to a non-empty string[] (primary at [0]).
 interface GuideData {
   title: string;
   description: string;
-  category: string;
+  category: string[];
   order?: number;
   tags?: string[];
 }
@@ -75,7 +76,7 @@ export async function GET(context: APIContext) {
         title: guideData.title,
         description: guideData.description,
         link: `${base}guides/${guide.id}/`,
-        categories: [guideData.category, ...(guideData.tags || [])].filter(Boolean),
+        categories: [...guideData.category, ...(guideData.tags || [])].filter(Boolean),
       };
     }),
     customData: `<language>en-us</language>`,

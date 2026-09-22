@@ -6,7 +6,7 @@ interface Props {
   title: string;
   description: string;
   href: string;
-  category: string;
+  category: string | string[];
   tags?: string[];
   order?: number;
   slug?: string;
@@ -15,15 +15,23 @@ interface Props {
 
 const { title, description, href, category, tags = [], order, slug, difficulty } = Astro.props;
 
+// Normalize category to an array; primary is index 0 (drives color/icon).
+const categories = Array.isArray(category) ? category : [category];
+const primaryCategory = categories[0] ?? '';
+
 // Extract slug from href if not provided
 const guideSlug = slug || href.split('/').filter(Boolean).pop() || '';
-const categoryColor = getCategoryColor(category);
+const categoryColor = getCategoryColor(primaryCategory);
+
+// data-category is comma-separated (lowercased) so the CategoryNav filter
+// can match against any owned category without knowing the primary.
+const dataCategory = categories.map((c) => c.toLowerCase()).join(',');
 ---
 
-<a href={href} class="guide-card" style={`--category-color: ${categoryColor};`} data-category={category.toLowerCase()} data-difficulty={difficulty || ''}>
+<a href={href} class="guide-card" style={`--category-color: ${categoryColor};`} data-category={dataCategory} data-difficulty={difficulty || ''}>
   <div class="card-header">
     <span class="card-icon">
-      <ToolIcon slug={guideSlug} category={category} size={40} />
+      <ToolIcon slug={guideSlug} category={primaryCategory} size={40} />
     </span>
     {order !== undefined && (
       <span class="card-order">Quest #{order}</span>
@@ -36,7 +44,15 @@ const categoryColor = getCategoryColor(category);
   </div>
 
   <div class="card-footer">
-    <span class="card-category">{category}</span>
+    <span class="card-categories">
+      {categories.map((cat, index) => (
+        <span
+          class="card-category"
+          style={`--badge-color: ${getCategoryColor(cat)};`}
+          data-primary={index === 0 ? 'true' : 'false'}
+        >{cat}</span>
+      ))}
+    </span>
     {tags.length > 0 && (
       <div class="card-tags">
         {tags.slice(0, 3).map((tag) => (
@@ -176,12 +192,29 @@ const categoryColor = getCategoryColor(category);
     flex-wrap: wrap;
   }
 
+  .card-categories {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+  }
+
   .card-category {
     font-family: var(--font-display);
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--category-color, var(--grail-gold));
+    color: var(--badge-color, var(--category-color, var(--grail-gold)));
+  }
+
+  .card-category[data-primary="false"] {
+    opacity: 0.7;
+  }
+
+  .card-category[data-primary="false"]::before {
+    content: '•';
+    margin-right: var(--space-xs);
+    opacity: 0.5;
   }
 
   .card-tags {

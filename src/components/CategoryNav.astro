@@ -100,10 +100,18 @@ const difficulties = getAllDifficulties();
     function filterCards() {
       cards.forEach((card) => {
         const cardEl = card as HTMLElement;
-        const cardCategory = cardEl.dataset.category?.toLowerCase() || '';
+        // data-category is a comma-separated list of every category the guide
+        // is owned by (see GuideCard.astro). Split before comparing so a guide
+        // filed under multiple categories matches each of its owned filters.
+        const cardCategories = (cardEl.dataset.category ?? '')
+          .toLowerCase()
+          .split(',')
+          .map((c) => c.trim())
+          .filter(Boolean);
         const cardDifficulty = cardEl.dataset.difficulty?.toLowerCase() || '';
 
-        const matchesCategory = currentCategory === 'all' || cardCategory === currentCategory;
+        const matchesCategory =
+          currentCategory === 'all' || cardCategories.includes(currentCategory);
         const matchesDifficulty = currentDifficulty === 'all' || cardDifficulty === currentDifficulty;
 
         cardEl.style.display = matchesCategory && matchesDifficulty ? '' : 'none';

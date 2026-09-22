@@ -30,12 +30,19 @@ function collectGuideIds(dir: string, prefix = ""): string[] {
  */
 const existingGuideSlugs = new Set(collectGuideIds(GUIDES_DIR));
 
+const categoryEnum = z.enum(CATEGORY_NAMES);
+
 const guides = defineCollection({
   loader: glob({ pattern: "**/*.{md,mdx}", base: GUIDES_DIR }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    category: z.enum(CATEGORY_NAMES),
+    // Accept either a single category or a non-empty array; always normalize
+    // to an array so downstream consumers can treat category uniformly. The
+    // primary category (used for color, icon, breadcrumb) is `category[0]`.
+    category: z
+      .union([categoryEnum, z.array(categoryEnum).nonempty()])
+      .transform((val) => (Array.isArray(val) ? val : [val])),
     order: z.number().optional().default(0),
     tags: z.array(z.string()).optional().default([]),
     // New optional fields
