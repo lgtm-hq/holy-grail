@@ -22,6 +22,37 @@ jobs:
       contents: read
 
     steps:
+      - name: Harden Runner
+        # yamllint disable-line rule:line-length
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: block
+          # GitHub + lychee-action asset endpoints, then external documentation
+          # hosts referenced by src/content/**/*.mdx (lychee follows only http(s)
+          # per #140 and skips the workflow's --exclude regex targets).
+          allowed-endpoints: >
+            github.com:443 api.github.com:443 codeload.github.com:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+            raw.githubusercontent.com:443
+            adbshell.com:443 adoptium.net:443 appium.github.io:443 appium.io:443
+            apps.apple.com:443 brandon.invergo.net:443 brew.sh:443
+            bundler.io:443 developer.1password.com:443
+            developer.android.com:443 developer.apple.com:443
+            developers.cloudflare.com:443 devguide.python.org:443
+            docs.astral.sh:443 docs.brew.sh:443 docs.pydantic.dev:443
+            formulae.brew.sh:443 get.sdkman.io:443 ghostty.org:443
+            gradle.org:443 guides.cocoapods.org:443 json-schema.org:443
+            just.systems:443 libimobiledevice.org:443 macos-defaults.com:443
+            man.openbsd.org:443 marshmallow.readthedocs.io:443
+            martinfowler.com:443 maven.apache.org:443 nodejs.org:443
+            nshipster.com:443 peps.python.org:443 pipenv.pypa.io:443
+            pkg.cloudflare.com:443 pypi.org:443 python-poetry.org:443
+            rvm.io:443 sdkman.io:443 semver.org:443 starship.rs:443
+            swagger.io:443 www.bitdoze.com:443 www.nerdfonts.com:443
+            www.openssh.org:443 www.python.org:443 www.selenium.dev:443
+            www.w3.org:443
+
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
