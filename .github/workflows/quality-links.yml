@@ -8,6 +8,8 @@ on:
     branches: [main]
     paths:
       - 'src/content/**/*.mdx'
+      - '.github/workflows/quality-links.yml'
+      - 'scripts/ci/build-site-for-links.sh'
   workflow_dispatch:
 
 concurrency:
@@ -25,13 +27,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Check external links
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+
+      - name: Build site for link check
+        run: bash scripts/ci/build-site-for-links.sh
+
+      - name: Check links
         uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
+          # lychee 0.24.x (action default) needs --root-dir for /guides/<slug>/.
+          # Scan MDX against the built routes. Full dist HTML also flags
+          # third-party favicon URLs and pagefind assets this job does not own.
+          # --include-fragments is off: lychee misses Astro heading ids.
           args: >-
-            --scheme https --scheme http --no-progress --exclude 'example\.com' --exclude 'localhost' --exclude
-            '127\.0\.0\.1' --exclude 'your-app(\.|$)' --exclude 'java\.com' --exclude
-            'gnu\.org' --timeout 30 --max-retries 5 --retry-wait-time 10 --accept
-            '200..=204' 'src/content/**/*.mdx'
+            --no-progress --root-dir ${{ github.workspace }}/dist
+            --fallback-extensions html --exclude 'example\.com' --exclude
+            'localhost' --exclude '127\.0\.0\.1' --exclude 'your-app(\.|$)'
+            --exclude 'java\.com' --exclude 'gnu\.org' --timeout 30
+            --max-retries 5 --retry-wait-time 10 --accept '200..=204'
+            'src/content/**/*.mdx'
           token: ${{ secrets.GITHUB_TOKEN }}
           fail: true
