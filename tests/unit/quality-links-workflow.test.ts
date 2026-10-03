@@ -5,7 +5,10 @@ const workflow = readFileSync(".github/workflows/quality-links.yml", "utf8");
 const buildScript = readFileSync("scripts/ci/build-site-for-links.sh", "utf8");
 
 test("Quality Links builds the site at ASTRO_BASE=/ before lychee", () => {
-  expect(workflow).toContain("scripts/ci/build-site-for-links.sh");
+  const buildStepIndex = workflow.indexOf("run: bash scripts/ci/build-site-for-links.sh");
+  const lycheeStepIndex = workflow.indexOf("lycheeverse/lychee-action@");
+  expect(buildStepIndex).toBeGreaterThan(-1);
+  expect(lycheeStepIndex).toBeGreaterThan(buildStepIndex);
   expect(buildScript).toContain("ASTRO_BASE=/");
   expect(buildScript).toContain("bun run astro build");
 });

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Build static HTML for the Quality Links lychee job.
-# Uses ASTRO_BASE=/ so rendered hrefs match /guides/<slug>/ and --root-dir dist.
+# Uses ASTRO_BASE=/ so MDX /guides/<slug>/ paths map 1:1 onto dist/guides/<slug>/.
+# Authors write those root-relative hrefs; LinkBadge/withBase adds /holy-grail at
+# render time for GitHub Pages. This job checks that the slug exists as a route.
 # Skips astro check and pagefind; those run in quality-ci.yml.
 set -euo pipefail
 
