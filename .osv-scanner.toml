@@ -1,0 +1,12 @@
+# OSV-Scanner configuration for holy-grail.
+# Add suppressions here only when upstream fixes are unavailable and risk is accepted.
+
+[[IgnoredVulns]]
+id = "GHSA-ch52-4w7c-c8xp"
+ignoreUntil = 2026-11-02
+reason = """http-cache-semantics@4.2.0 (transitive via astro@7.3.4, bun.lock). No fix available: GHSA-ch52-4w7c-c8xp / CVE-2026-93748 lists first_patched_version = none; npm latest is 4.2.0 (only 4.2.0-beta.x prereleases). Usage: build-time only — astro imports it solely in dist/assets/build/remote.js for caching remote images through astro:assets; holy-grail is a fully static site (output:"static") with no astro:assets imports in src/ and no remote image configuration, so the vulnerable code path (shared cache honoring client max-stale directives) is never reachable at build time or runtime. Exploitability: none — there is no server and no shared cache. Tracking: https://github.com/kornelski/http-cache-semantics/issues/56 and https://github.com/advisories/GHSA-ch52-4w7c-c8xp."""
+
+[[IgnoredVulns]]
+id = "GHSA-vfj7-8cjw-p6xm"
+ignoreUntil = 2026-11-02
+reason = """braces@3.0.3 (transitive via micromatch@4.0.8 <- fast-glob/globby <- markdownlint-cli2@0.23.3, a devDependency; bun.lock). No fix available: GHSA-vfj7-8cjw-p6xm / CVE-2026-93687 (CWE-674, stack-exhaustion DoS via deeply nested brace patterns) lists first_patched_version = none for braces <= 3.0.3; npm latest is 3.0.3 and micromatch latest (4.0.8) still requires braces ^3.0.3, so no parent bump avoids it. Usage: dev/lint-only — markdownlint-cli2 expands the repository's own, developer-authored glob patterns when linting Markdown; braces is not part of the Astro build output and the deployed site is fully static (no server). Exploitability: requires deeply nested brace patterns reaching brace expansion. The only untrusted source is a fork pull request editing .markdownlint-cli2.jsonc (or another lint config) to add such a pattern, which can at most exhaust the stack of that PR's own quality-ci lint job; that run holds no secrets or write tokens and nothing is deployed from it, so this CI-only self-inflicted denial of service is accepted. Tracking: https://github.com/micromatch/braces/issues/70 and https://github.com/advisories/GHSA-vfj7-8cjw-p6xm."""
