@@ -29,8 +29,9 @@ Weekly (Sunday 00:00 UTC)
 
 | Workflow          | Trigger           | Purpose                  |
 | ----------------- | ----------------- | ------------------------ |
-| `quality-ci.yml`  | Push to main, PRs | Type check, tests, build |
-| `quality-e2e.yml` | Push to main, PRs | Playwright E2E tests     |
+| `quality-ci.yml`    | Push to main, PRs | Type check, tests, build |
+| `quality-e2e.yml`   | Push to main, PRs | Playwright E2E tests     |
+| `quality-links.yml` | Monthly, PRs on content/workflow | Lychee over MDX against built `dist/` |
 
 ### Deployment
 
@@ -116,6 +117,7 @@ Posts or updates a PR comment with marker-based deduplication.
 | Script                                      | Purpose        |
 | ------------------------------------------- | -------------- |
 | `scripts/ci/generate-playwright-comment.sh` | PR comment gen |
+| `scripts/ci/build-site-for-links.sh`        | Astro build for Quality Links |
 
 ## Required Secrets
 
