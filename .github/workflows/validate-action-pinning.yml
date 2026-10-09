@@ -1,7 +1,7 @@
 ---
 name: Validate Action Pinning
 
-# validate / Validate Action Pinning is a required status check, so this
+# validate / 📌 Validate Action Pinning is a required status check, so this
 # workflow must report on every PR and merge-queue entry. No
 # on.pull_request.paths filter: a path-filtered workflow that does not run
 # leaves the required context absent (not skipped), which permanently blocks
