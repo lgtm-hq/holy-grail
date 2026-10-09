@@ -45,14 +45,6 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      run: |
-        if [[ "${{ inputs.frozen-lockfile }}" == "true" ]]; then
-          if [[ -f "bun.lock" ]] || [[ -f "bun.lockb" ]]; then
-            bun install --frozen-lockfile
-          else
-            echo "Warning: frozen-lockfile requested but no lockfile found, running normal install"
-            bun install
-          fi
-        else
-          bun install
-        fi
+      env:
+        FROZEN_LOCKFILE: ${{ inputs.frozen-lockfile }}
+      run: ${{ github.action_path }}/../../../scripts/ci/setup-env-install.sh

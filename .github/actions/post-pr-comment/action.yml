@@ -24,32 +24,18 @@ runs:
   steps:
     - name: Validate inputs
       shell: bash
-      run: |
-        if [[ -n "${{ inputs.body }}" && -n "${{ inputs.file }}" ]]; then
-          echo "::error::Specify either 'body' or 'file', not both"
-          exit 1
-        fi
-        if [[ -z "${{ inputs.body }}" && -z "${{ inputs.file }}" ]]; then
-          echo "::error::Either 'body' or 'file' must be provided"
-          exit 1
-        fi
+      env:
+        COMMENT_BODY: ${{ inputs.body }}
+        COMMENT_FILE: ${{ inputs.file }}
+      run: ${{ github.action_path }}/../../../scripts/ci/validate-comment-inputs.sh
 
     - name: Read comment from file
       if: inputs.file != ''
       id: read-file
       shell: bash
-      run: |
-        if [ ! -f "${{ inputs.file }}" ]; then
-          echo "::error::Comment file not found: ${{ inputs.file }}"
-          exit 1
-        fi
-        # Use dynamic delimiter to avoid collisions with file content
-        delim="EOF_$(date +%s%N)"
-        {
-          echo "content<<${delim}"
-          cat "${{ inputs.file }}"
-          echo "${delim}"
-        } >> "$GITHUB_OUTPUT"
+      env:
+        COMMENT_FILE: ${{ inputs.file }}
+      run: ${{ github.action_path }}/../../../scripts/ci/read-comment-file.sh
 
     - name: Post or update PR comment
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
