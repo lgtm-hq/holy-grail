@@ -7,7 +7,7 @@
 export interface GuideData {
   title: string;
   description: string;
-  category: string;
+  category: string[];
   order?: number;
   tags?: string[];
   difficulty?: string;
@@ -46,11 +46,16 @@ function escapeYamlValue(value: string): string {
  * Build YAML frontmatter from guide metadata
  */
 function buildFrontmatter(data: GuideData): string {
+  const categoryYaml =
+    data.category.length === 1
+      ? data.category[0]
+      : `[${data.category.map((c) => `"${escapeYamlValue(c)}"`).join(", ")}]`;
+
   const lines = [
     "---",
     `title: "${escapeYamlValue(data.title)}"`,
     `description: "${escapeYamlValue(data.description)}"`,
-    `category: ${data.category}`,
+    `category: ${categoryYaml}`,
   ];
 
   if (data.order !== undefined && data.order !== null) {

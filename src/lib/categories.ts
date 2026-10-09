@@ -88,14 +88,18 @@ export const CATEGORY_NAMES = Object.values(CATEGORIES).map((category) => catego
 ];
 
 /**
- * Get category configuration by key (case-insensitive)
+ * Get category configuration by key (case-insensitive).
+ *
+ * Accepts either a canonical slug (e.g. "android-tools") or a display name
+ * (e.g. "Android Tools") so callers reading guide frontmatter — which uses
+ * display names — resolve to the same entry as callers using the slug.
  */
 export function getCategory(key: string): Category | undefined {
-  const normalizedKey = key.toLowerCase();
-  if (Object.prototype.hasOwnProperty.call(CATEGORIES, normalizedKey)) {
-    return CATEGORIES[normalizedKey as CategoryKey];
+  const slug = getCategorySlug(key);
+  if (slug === undefined) {
+    return undefined;
   }
-  return undefined;
+  return CATEGORIES[slug as CategoryKey];
 }
 
 /**

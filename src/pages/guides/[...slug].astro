@@ -13,11 +13,12 @@ import { withBase } from '../../lib/paths';
 import { getToolIcon } from '../../lib/toolIcons';
 import ToolIcon from '../../components/ToolIcon.astro';
 
-// Guide data shape for type assertions (matches content.config.ts schema)
+// Guide data shape for type assertions (matches content.config.ts schema).
+// Schema normalizes `category` to a non-empty string[] with primary at [0].
 interface GuideData {
   title: string;
   description: string;
-  category: string;
+  category: string[];
   order?: number;
   tags?: string[];
   difficulty?: string;
@@ -40,8 +41,13 @@ const { Content, headings } = await render(guide);
 // Cast for standalone type checking (Astro provides proper types at runtime)
 const guideData = guide.data as GuideData;
 
-const icon = getCategoryIcon(guideData.category);
-const categoryColor = getCategoryColor(guideData.category);
+// Primary category drives icon/color/breadcrumb; all categories are shown as
+// badges below. The schema guarantees at least one element.
+const guideCategories = guideData.category;
+const primaryCategory = guideCategories[0];
+const primaryCategorySlug = getCategorySlug(primaryCategory);
+const icon = getCategoryIcon(primaryCategory);
+const categoryColor = getCategoryColor(primaryCategory);
 const base = withBase;
 
 // Build dynamic guide URL for sharing/display
@@ -60,7 +66,7 @@ const relatedGuides = (guideData.relatedGuides ?? [])
 const difficulty = guideData.difficulty ? getDifficulty(guideData.difficulty) : null;
 
 // Hero image: use frontmatter heroImage, or fall back to tool icon SVG
-const toolIcon = getToolIcon(guide.id, guideData.category);
+const toolIcon = getToolIcon(guide.id, primaryCategory);
 const heroImage = guideData.heroImage
   || (toolIcon.type === 'svg' ? toolIcon.value : '');
 const heroAlt = toolIcon.alt || guideData.title;
@@ -77,7 +83,7 @@ const heroAlt = toolIcon.alt || guideData.title;
       <span class="print-title">{guideData.title}</span>
     </div>
     <div class="print-meta">
-      <span>{guideData.category}</span>
+      <span>{guideCategories.join(', ')}</span>
       <span>•</span>
       <span>{guideUrl}</span>
     </div>
@@ -91,12 +97,12 @@ const heroAlt = toolIcon.alt || guideData.title;
           <li><a href={base('')}>Home</a></li>
           <li><a href={base('guides/')}>Guides</a></li>
           <li>
-            {getCategorySlug(guideData.category) ? (
-              <a href={base(`categories/${getCategorySlug(guideData.category)}/`)}>
-                {guideData.category}
+            {primaryCategorySlug ? (
+              <a href={base(`categories/${primaryCategorySlug}/`)}>
+                {primaryCategory}
               </a>
             ) : (
-              <span>{guideData.category}</span>
+              <span>{primaryCategory}</span>
             )}
           </li>
           <li aria-current="page">{guideData.title}</li>
@@ -122,10 +128,27 @@ const heroAlt = toolIcon.alt || guideData.title;
 
       <header class="guide-header">
         <div class="guide-meta">
-          <span class="category-badge" style={`--category-color: ${categoryColor};`}>
-            <span class="category-icon" aria-hidden="true">{icon}</span>
-            {guideData.category}
-          </span>
+          {guideCategories.map((cat, index) => {
+            const catSlug = getCategorySlug(cat);
+            const catColor = getCategoryColor(cat);
+            const catIcon = getCategoryIcon(cat);
+            const isPrimary = index === 0;
+            const badge = (
+              <span
+                class="category-badge"
+                style={`--category-color: ${catColor};`}
+                data-primary={isPrimary ? 'true' : 'false'}
+              >
+                <span class="category-icon" aria-hidden="true">{catIcon}</span>
+                {cat}
+              </span>
+            );
+            return catSlug ? (
+              <a href={base(`categories/${catSlug}/`)} class="category-badge-link">
+                {badge}
+              </a>
+            ) : badge;
+          })}
           {typeof guideData.order === 'number' && (
             <span class="quest-number">Quest #{guideData.order}</span>
           )}
@@ -175,9 +198,10 @@ const heroAlt = toolIcon.alt || guideData.title;
           <div class="related-grid">
             {relatedGuides.map((related) => {
               const relatedData = related.data as GuideData;
+              const relatedPrimary = relatedData.category[0];
               return (
                 <a href={base(`guides/${related.id}/`)} class="related-card">
-                  <ToolIcon slug={related.id} category={relatedData.category} size={24} class="related-icon" />
+                  <ToolIcon slug={related.id} category={relatedPrimary} size={24} class="related-icon" />
                   <div class="related-content">
                     <span class="related-name">{relatedData.title}</span>
                     <span class="related-desc">{relatedData.description}</span>
@@ -195,10 +219,10 @@ const heroAlt = toolIcon.alt || guideData.title;
             <span class="nav-direction">← Back to</span>
             <span class="nav-title">All Guides</span>
           </a>
-          {getCategorySlug(guideData.category) ? (
-            <a href={base(`categories/${getCategorySlug(guideData.category)}/`)} class="nav-link next">
+          {primaryCategorySlug ? (
+            <a href={base(`categories/${primaryCategorySlug}/`)} class="nav-link next">
               <span class="nav-direction">More in</span>
-              <span class="nav-title">{guideData.category} →</span>
+              <span class="nav-title">{primaryCategory} →</span>
             </a>
           ) : (
             <a href={base('categories/')} class="nav-link next">
@@ -365,6 +389,24 @@ const heroAlt = toolIcon.alt || guideData.title;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--category-color, var(--turbo-text-secondary));
+  }
+
+  .category-badge[data-primary="false"] {
+    opacity: 0.75;
+    background: transparent;
+  }
+
+  .category-badge-link {
+    text-decoration: none;
+  }
+
+  .category-badge-link::after {
+    display: none;
+  }
+
+  .category-badge-link:hover .category-badge {
+    background: color-mix(in srgb, var(--category-color, var(--grail-gold)) 12%, var(--turbo-bg-surface));
+    opacity: 1;
   }
 
   .category-icon {
