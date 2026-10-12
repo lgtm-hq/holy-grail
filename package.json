@@ -39,7 +39,7 @@
     "markdown-it": "15.0.2",
     "fast-uri": "4.2.1",
     "fast-xml-parser": "5.11.2",
-    "ws": "8.21.3",
+    "ws": "8.22.0",
     "astro": "7.3.5",
     "esbuild": "0.28.2",
     "sharp": "0.35.5",
