@@ -8,11 +8,12 @@ import { getCollection } from 'astro:content';
 import { CATEGORIES, getCategory, getCategorySlug } from '../../lib/categories';
 import { withBase } from '../../lib/paths';
 
-// Guide data shape for standalone type checking
+// Guide data shape for standalone type checking. Schema normalizes
+// `category` to a non-empty string[] where index 0 is the primary category.
 interface GuideData {
   title: string;
   description: string;
-  category: string;
+  category: string[];
   order?: number;
   tags?: string[];
 }
@@ -36,8 +37,9 @@ const allGuides = await getCollection('guides');
 const categoryGuides = allGuides
   .filter((guide) => {
     const guideData = guide.data as GuideData;
-    const slug = getCategorySlug(guideData.category);
-    return slug !== undefined && slug === category;
+    // A guide is listed under this category page if any of its owned
+    // categories resolves to the current slug (multi-category support).
+    return guideData.category.some((cat) => getCategorySlug(cat) === category);
   })
   .sort((a, b) => {
     const aData = a.data as GuideData;
