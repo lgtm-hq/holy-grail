@@ -70,8 +70,7 @@ assets/js/*.min.js
 # Generated JS bundles (contain console.* calls that trigger semgrep false positives)
 assets/js/theme-selector.js
 
-# GitHub metadata and policies handled externally
-.github/**
+# Policy metadata handled externally
 .allstar/**
 
 # Husky internal files (auto-generated)
