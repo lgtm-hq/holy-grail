@@ -16,5 +16,6 @@
     ".lintro/**",
     "playwright-report/**",
     "coverage/**",
+    ".github/**",
   ],
 }

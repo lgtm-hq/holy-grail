@@ -17,3 +17,7 @@ public/pagefind/
 
 # Test artifacts
 coverage/
+
+# GitHub workflows/actions: keep Renovate-managed pin comments and egress
+# allowlists as written (actionlint and yamllint lint them via Lintro)
+.github/
