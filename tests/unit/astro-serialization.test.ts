@@ -46,6 +46,11 @@ test.each([false, true])(
   },
 );
 
+test("serializer versions remain consumer-scoped instead of globally overridden", () => {
+  const project = JSON.parse(readFileSync("package.json", "utf8"));
+  expect(project.overrides).not.toHaveProperty("devalue");
+});
+
 test("CI and package engines satisfy Astro's Node minimum", () => {
   const project = JSON.parse(readFileSync("package.json", "utf8"));
   const astro = astroRequire("./package.json");

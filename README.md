@@ -106,8 +106,10 @@ bun test tests/unit      # Unit and dependency-serialization regressions
 
 The dependency regressions resolve devalue from the installed Astro package and exercise
 its tagged-template URL and image-asset serialization contracts. Astro 7.4 requires
-devalue 6; keep the override within Astro's declared range. There is no configured
-Playwright E2E suite; the E2E workflow explicitly skips it.
+devalue 6. Do not globally override devalue: consumers such as Svelte 5 still require
+its version 5 string-replacer API and must retain side-by-side resolutions when installed.
+This site's installed graph currently has only Astro as a serializer consumer.
+There is no configured Playwright E2E suite; the E2E workflow explicitly skips it.
 
 ### Linting
 

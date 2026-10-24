@@ -25,7 +25,6 @@
   },
   "overrides": {
     "astro": "7.4.1",
-    "devalue": "6.0.3",
     "esbuild": "0.28.2",
     "fast-uri": "4.2.3",
     "fast-xml-parser": "5.11.2",
