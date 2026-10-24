@@ -78,7 +78,8 @@ npm run dev
 ### Prerequisites
 
 - **Bun** 1.3+ - [Install Bun](https://bun.sh/docs/installation)
-- **Node.js** 22+ (alternative to Bun)
+- **Node.js** 22.22.0+ (required by the locked build dependencies, including patched
+  Undici)
 - **Python** 3.11+ with uv (for lintro)
 
 ### Setup
