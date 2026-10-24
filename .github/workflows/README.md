@@ -84,7 +84,7 @@ Sets up Bun and Node.js with dependency caching.
 ```yaml
 - uses: ./.github/actions/setup-env
   with:
-    node-version: '22' # optional, default: 22
+    node-version: '22.22.0' # optional, default: 22.22.0 (minimum supported)
     bun-version: 'latest' # optional, default: latest
     frozen-lockfile: 'true' # optional, default: true
 ```
