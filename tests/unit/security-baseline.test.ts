@@ -11,10 +11,10 @@ test("the Node contract covers patched Undici and the locked build tooling", () 
   if (Number(floor[1]) === 22) expect(Number(floor[2])).toBeGreaterThanOrEqual(22);
 
   const version = floor.slice(1).join(".");
-  const setup = read(".github/actions/setup-env/action.yml");
-  const quality = read(".github/workflows/quality-ci.yml");
-  expect(setup).toMatch(new RegExp(`default: '${version.replaceAll(".", "\\.")}'`));
-  expect(quality).toMatch(new RegExp(`node-version: '${version.replaceAll(".", "\\.")}'`));
+  const setup = Bun.YAML.parse(read(".github/actions/setup-env/action.yml"));
+  const quality = Bun.YAML.parse(read(".github/workflows/quality-ci.yml"));
+  expect(setup.inputs["node-version"].default).toBe(version);
+  expect(quality.jobs.build.with["node-version"]).toBe(version);
 });
 
 test("all locked Undici copies remain on the patched 8.x security baseline", () => {
