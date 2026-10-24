@@ -78,7 +78,7 @@ npm run dev
 ### Prerequisites
 
 - **Bun** 1.3+ - [Install Bun](https://bun.sh/docs/installation)
-- **Node.js** 22.22.0+ - required by Astro, including when running scripts with Bun
+- **Node.js** 22.23.4+ - required by Astro, including when running scripts with Bun
 - **Python** 3.11+ with uv (for lintro)
 
 ### Setup

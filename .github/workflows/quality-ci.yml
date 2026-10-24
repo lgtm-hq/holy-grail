@@ -44,7 +44,7 @@ jobs:
     with:
       job-name: '🏗️ Build & Test'
       build-command: bash scripts/ci/build-site.sh
-      node-version: '22.22.0'
+      node-version: '22.23.4'
       artifact-name: site-dist
       artifact-path: dist
       tooling-ref: '9ea778eb4e6b876d60b7b3d7d0d0aee5182717bb' # v0.78.0
