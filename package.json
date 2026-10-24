@@ -21,7 +21,7 @@
     "astro": "^7.1.0"
   },
   "devDependencies": {
-    "@astrojs/check": "0.9.11",
+    "@astrojs/check": "0.9.12",
     "@pagefind/default-ui": "1.5.2",
     "markdownlint-cli2": "0.24.0",
     "oxfmt": "0.74.0",
@@ -39,7 +39,7 @@
     "fast-uri": "4.2.3",
     "fast-xml-parser": "5.11.2",
     "ws": "8.22.0",
-    "astro": "7.4.1",
+    "astro": "7.4.2",
     "esbuild": "0.28.2",
     "sharp": "0.35.5",
     "h3": "2.0.7",
