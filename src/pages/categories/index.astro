@@ -3,12 +3,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { getCollection } from 'astro:content';
-import { getAllCategories } from '../../lib/categories';
+import { getAllCategories, getCategorySlug } from '../../lib/categories';
 import { withBase } from '../../lib/paths';
 
 // Guide data shape for standalone type checking
 interface GuideData {
-  category: string;
+  category: string[];
 }
 
 const allGuides = await getCollection('guides');
@@ -17,10 +17,13 @@ const base = withBase;
 // Get categories from centralized config
 const categories = getAllCategories();
 
-// Count guides per category
+// Count guides per category independently: a guide owned by N categories
+// contributes 1 to each of them.
 const categoryCounts = categories.map((cat) => ({
   ...cat,
-  count: allGuides.filter((g) => (g.data as GuideData).category.toLowerCase() === cat.slug).length,
+  count: allGuides.filter((g) =>
+    (g.data as GuideData).category.some((c) => getCategorySlug(c) === cat.slug),
+  ).length,
 }));
 ---
 

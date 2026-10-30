@@ -14,11 +14,12 @@ import { getCategoryColor, getCategoryCardIcon } from '../lib/categories';
 import { withBase, extractGuideSlug, isGuideHref } from '../lib/paths';
 import { logger } from '../lib/logger';
 
-// Guide data shape for type assertions (matches content.config.ts schema)
+// Guide data shape for type assertions (matches content.config.ts schema).
+// Schema normalizes `category` to a non-empty string[] (primary at [0]).
 interface GuideData {
   title: string;
   description: string;
-  category: string;
+  category: string[];
 }
 
 interface Props {
@@ -53,7 +54,7 @@ if (isGuideLink && (!providedTitle || !providedDesc)) {
       const guideData = guide.data as GuideData;
       title = providedTitle || guideData.title;
       description = providedDesc || guideData.description;
-      category = guideData.category?.toLowerCase() || '';
+      category = guideData.category[0]?.toLowerCase() || '';
     } else {
       logger.warn('LinkCard', `Guide not found for slug: ${slug}`);
     }

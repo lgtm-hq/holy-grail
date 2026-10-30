@@ -14,10 +14,11 @@ import { getCategoryColor } from '../lib/categories';
 import { withBase, extractGuideSlug, isGuideHref } from '../lib/paths';
 import { logger } from '../lib/logger';
 
-// Guide data shape for standalone type checking
+// Guide data shape for standalone type checking. Schema normalizes
+// `category` to a non-empty string[] (primary at [0]).
 interface GuideData {
   title: string;
-  category: string;
+  category: string[];
 }
 
 interface Props {
@@ -49,7 +50,7 @@ if (isGuideLink && !providedTitle) {
     if (guide) {
       const guideData = guide.data as GuideData;
       title = guideData.title;
-      category = guideData.category.toLowerCase();
+      category = guideData.category[0]?.toLowerCase() ?? '';
     } else {
       logger.warn('LinkBadge', `Guide not found for slug: ${slug}`);
     }
