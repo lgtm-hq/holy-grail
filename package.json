@@ -24,7 +24,7 @@
     "@astrojs/check": "0.9.12",
     "@pagefind/default-ui": "1.5.2",
     "markdownlint-cli2": "0.24.0",
-    "oxfmt": "0.74.0",
+    "oxfmt": "0.75.0",
     "oxlint": "1.90.0",
     "pagefind": "1.5.2",
     "prettier": "3.9.10",
