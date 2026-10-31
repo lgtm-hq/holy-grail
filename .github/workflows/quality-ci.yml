@@ -15,11 +15,11 @@ concurrency:
 jobs:
   quality:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-quality-lint.yml@8f0fd9339df5d30a529aa572ceb51345b8be33a0 # v0.79.2
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-quality-lint.yml@c40cd60334b5b5f2952e1af99e2e083be50c1620 # v0.80.0
     with:
       egress-policy: block
       job-name: '🛠️ Lintro Code Quality'
-      tooling-ref: '8f0fd9339df5d30a529aa572ceb51345b8be33a0' # v0.79.2
+      tooling-ref: 'c40cd60334b5b5f2952e1af99e2e083be50c1620' # v0.80.0
     permissions:
       contents: read
       packages: read
@@ -31,18 +31,18 @@ jobs:
       && github.event_name == 'pull_request'
       && github.event.pull_request.head.repo.fork == false
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-publish-quality-summary.yml@8f0fd9339df5d30a529aa572ceb51345b8be33a0 # v0.79.2
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-publish-quality-summary.yml@c40cd60334b5b5f2952e1af99e2e083be50c1620 # v0.80.0
     with:
       egress-policy: block
       exit-code: ${{ needs.quality.outputs.exit-code }}
-      tooling-ref: '8f0fd9339df5d30a529aa572ceb51345b8be33a0' # v0.79.2
+      tooling-ref: 'c40cd60334b5b5f2952e1af99e2e083be50c1620' # v0.80.0
     permissions:
       contents: read
       pull-requests: write
 
   build:
     # yamllint disable-line rule:line-length
-    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-build-artifact.yml@8f0fd9339df5d30a529aa572ceb51345b8be33a0 # v0.79.2
+    uses: lgtm-hq/lgtm-ci/.github/workflows/reusable-build-artifact.yml@c40cd60334b5b5f2952e1af99e2e083be50c1620 # v0.80.0
     with:
       egress-policy: block
       job-name: '🏗️ Build & Test'
@@ -50,6 +50,6 @@ jobs:
       node-version: '22.23.4'
       artifact-name: site-dist
       artifact-path: dist
-      tooling-ref: '8f0fd9339df5d30a529aa572ceb51345b8be33a0' # v0.79.2
+      tooling-ref: 'c40cd60334b5b5f2952e1af99e2e083be50c1620' # v0.80.0
     permissions:
       contents: read
