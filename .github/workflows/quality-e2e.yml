@@ -19,7 +19,7 @@ permissions:
 jobs:
   e2e:
     name: 🎭 E2E Tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.LGTM_CI_RUNNER || 'ubuntu-26.04' }}
 
     steps:
       - name: Checkout
