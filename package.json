@@ -18,7 +18,7 @@
     "@astrojs/rss": "^4.0.15",
     "@astrojs/sitemap": "^3.7.0",
     "@lgtm-hq/turbo-themes": "^0.44.0",
-    "astro": "^7.1.0"
+    "astro": "^7.4.7"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.12",
@@ -39,7 +39,7 @@
     "fast-uri": "4.2.3",
     "fast-xml-parser": "5.11.2",
     "ws": "8.22.1",
-    "astro": "7.4.5",
+    "astro": "7.4.7",
     "esbuild": "0.28.2",
     "sharp": "0.35.5",
     "h3": "2.0.8",
